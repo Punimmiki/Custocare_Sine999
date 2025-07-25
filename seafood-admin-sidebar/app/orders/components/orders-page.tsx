@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { CalendarIcon, Eye, Printer, Search } from "lucide-react"
+import Link from "next/link"
+import { CalendarIcon, Eye, Plus, Printer, Search } from "lucide-react"
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
 
@@ -81,7 +82,7 @@ const paymentStatusMap = {
   paid: { label: "ชำระแล้ว", variant: "default" as const },
 }
 
-export function OrdersPage() {
+const OrdersPage = () => {
   const [searchTerm, setSearchTerm] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState("all")
   const [dateFrom, setDateFrom] = React.useState<Date>()
@@ -103,9 +104,17 @@ export function OrdersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">คำสั่งซื้อ</h1>
-        <p className="text-muted-foreground">จัดการและติดตามคำสั่งซื้อทั้งหมด</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">คำสั่งซื้อ</h1>
+          <p className="text-muted-foreground">จัดการและติดตามคำสั่งซื้อทั้งหมด</p>
+        </div>
+        <Button asChild>
+          <Link href="/orders/create">
+            <Plus className="h-4 w-4 mr-2" />
+            สร้างคำสั่งซื้อใหม่
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -303,3 +312,6 @@ export function OrdersPage() {
     </div>
   )
 }
+
+export { OrdersPage }
+export default OrdersPage
