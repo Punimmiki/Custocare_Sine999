@@ -57,7 +57,7 @@ const initialProducts = [
   },
   {
     id: "4",
-    name: "หอยแมลงภู่",
+    name: "หอยแมลง",
     image: "/placeholder.svg?height=60&width=60",
     price: 180,
     unit: "กิโลกรัม",
