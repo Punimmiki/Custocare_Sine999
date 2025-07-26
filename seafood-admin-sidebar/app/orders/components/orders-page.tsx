@@ -322,7 +322,7 @@ const OrdersPage = () => {
   const selectedCustomerData = customers.find((c) => c.id === selectedCustomer)
 
   return (
-    <div className="space-y-6 px-6 py-6">
+    <div className="space-y-6">
       {/* Navbar */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">คำสั่งซื้อ</h1>
