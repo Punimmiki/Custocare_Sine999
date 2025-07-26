@@ -76,18 +76,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton size="default" asChild>
               <Link href="/orders">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-                  <Fish className="size-4" />
+                  <Fish className="size-3" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left text-xs leading-tight">
                   <span className="truncate font-semibold">ระบบจัดการซีฟู้ด</span>
-                  <span className="truncate text-xs text-muted-foreground">บริหารธุรกิจอาหารทะเล</span>
+                  <span className="truncate text-xs text-muted-foreground">จัดการ</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -102,9 +102,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={pathname === item.url || pathname.startsWith(item.url + "/")}>
-                    <Link href={item.url} className="flex items-center gap-3">
+                    <Link href={item.url} className="flex items-center gap-2">
                       <item.icon className="size-4" />
-                      <span className="font-medium">{item.title}</span>
+                      <span className="text-sm">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

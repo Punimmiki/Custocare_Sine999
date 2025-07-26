@@ -14,10 +14,7 @@ import {
   History,
   X,
   TrendingUp,
-  Calendar,
-  Clock,
   Receipt,
-  Download,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -25,7 +22,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -42,7 +38,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 
 // Sample product data
 const products = [
@@ -272,6 +268,7 @@ const POSPage = () => {
   // Save current order
   const saveOrder = () => {
     if (cartItems.length === 0) return
+
     const newSavedOrder: SavedOrder = {
       id: `ORDER-${Date.now()}`,
       items: [...cartItems],
@@ -281,6 +278,7 @@ const POSPage = () => {
       discount,
       discountType,
     }
+
     setSavedOrders([...savedOrders, newSavedOrder])
     clearCart()
     alert("บันทึกคำสั่งซื้อเรียบร้อย!")
@@ -309,6 +307,7 @@ const POSPage = () => {
   // Handle sale confirmation
   const handleConfirmSale = () => {
     if (cartItems.length === 0) return
+
     const saleRecord: SaleRecord = {
       id: `SALE-${Date.now()}`,
       items: [...cartItems],
@@ -320,6 +319,7 @@ const POSPage = () => {
       timestamp: new Date(),
       customerNotes,
     }
+
     setSalesHistory([saleRecord, ...salesHistory])
     setShowReceiptPreview(true)
   }
@@ -373,7 +373,6 @@ const POSPage = () => {
     const transferSales = filteredSales
       .filter((sale) => sale.paymentMethod === "transfer")
       .reduce((sum, sale) => sum + sale.total, 0)
-
     const averageTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0
 
     // Top selling products
@@ -423,13 +422,8 @@ const POSPage = () => {
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-6xl max-h-[90vh]">
-                <DialogHeader>
-                  
-                </DialogHeader>
-
+                <DialogHeader></DialogHeader>
                 <Tabs defaultValue="overview" className="w-full">
-                  
-
                   <TabsContent value="overview" className="space-y-6">
                     {/* Date Filter */}
                     <div className="flex items-center gap-4">
@@ -544,9 +538,6 @@ const POSPage = () => {
                       </Card>
                     </div>
                   </TabsContent>
-
-                  
-                  
                 </Tabs>
               </DialogContent>
             </Dialog>
@@ -750,31 +741,36 @@ const POSPage = () => {
               {cartItems.length > 0 && (
                 <div className="p-6 border-t">
                   <div className="space-y-4 mb-6">
-
                     {/* Discount Input */}
                     <div className="space-y-2">
                       <Label className="text-base font-medium">ส่วนลด:</Label>
-                      <div className="flex gap-2">
-                        <Select
-                          value={discountType}
-                          onValueChange={(value: "percent" | "amount") => setDiscountType(value)}
-                        >
-                          <SelectTrigger className="w-24">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="percent">%</SelectItem>
-                            <SelectItem value="amount">฿</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Button
+                            variant={discountType === "percent" ? "default" : "outline"}
+                            size="sm"
+                            className="flex-1 h-12"
+                            onClick={() => setDiscountType("percent")}
+                          >
+                            %
+                          </Button>
+                          <Button
+                            variant={discountType === "amount" ? "default" : "outline"}
+                            size="sm"
+                            className="flex-1 h-12"
+                            onClick={() => setDiscountType("amount")}
+                          >
+                            ฿
+                          </Button>
+                        </div>
                         <Input
                           type="number"
                           min="0"
                           max={discountType === "percent" ? "100" : subtotal.toString()}
-                          value={discount}
+                          value={discount || ""}
                           onChange={(e) => setDiscount(Number(e.target.value) || 0)}
                           className="h-10"
-                          placeholder="0"
+                          placeholder="กรอกจำนวนส่วนลด"
                         />
                       </div>
                     </div>
@@ -788,7 +784,9 @@ const POSPage = () => {
                         <span>-฿{discountAmount.toLocaleString()}</span>
                       </div>
                     )}
+
                     <Separator />
+
                     <div className="flex justify-between font-bold text-xl">
                       <span>ยอดสุทธิ:</span>
                       <span className="text-blue-600">฿{total.toLocaleString()}</span>
@@ -865,6 +863,7 @@ const POSPage = () => {
               <p className="text-sm text-muted-foreground">123 ถนนสุขุมวิท กรุงเทพฯ</p>
               <p className="text-sm text-muted-foreground">โทร: 02-123-4567</p>
             </div>
+
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>วันที่:</span>
@@ -875,7 +874,9 @@ const POSPage = () => {
                 <span>{paymentMethod === "cash" ? "เงินสด" : "โอนเงิน"}</span>
               </div>
             </div>
+
             <Separator />
+
             <div className="space-y-2">
               {cartItems.map((item) => (
                 <div key={item.id} className="flex justify-between text-sm">
@@ -889,7 +890,9 @@ const POSPage = () => {
                 </div>
               ))}
             </div>
+
             <Separator />
+
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span>ยอดรวม:</span>
@@ -909,6 +912,7 @@ const POSPage = () => {
                 <span>฿{total.toLocaleString()}</span>
               </div>
             </div>
+
             {customerNotes && (
               <>
                 <Separator />
@@ -918,7 +922,9 @@ const POSPage = () => {
                 </div>
               </>
             )}
+
             <div className="text-center text-sm text-muted-foreground border-t pt-4">ขอบคุณที่ใช้บริการ</div>
+
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setShowReceiptPreview(false)} className="flex-1">
                 ยกเลิก

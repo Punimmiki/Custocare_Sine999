@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CalendarIcon, Search, Plus, Trash2, Send } from "lucide-react"
+import { CalendarIcon, Search, Plus, Trash2, Send, ChevronLeft, ChevronRight } from "lucide-react"
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
 
@@ -36,7 +36,7 @@ const orders = [
   {
     id: "ORD-001",
     customerName: "นายสมชาย ใจดี",
-    channel: "LINE",
+    channel: "ออนไลน์",
     orderDate: "2024-01-15",
     receiveDate: "2024-01-20",
     totalPrice: 2450,
@@ -54,7 +54,7 @@ const orders = [
   {
     id: "ORD-002",
     customerName: "บริษัท อาหารทะเล จำกัด",
-    channel: "Facebook",
+    channel: "หน้าร้าน",
     orderDate: "2024-01-15",
     receiveDate: "2024-01-22",
     totalPrice: 8900,
@@ -72,7 +72,7 @@ const orders = [
   {
     id: "ORD-003",
     customerName: "นางสาวมาลี สวยงาม",
-    channel: "Shopee",
+    channel: "ออนไลน์",
     orderDate: "2024-01-14",
     receiveDate: "2024-01-19",
     totalPrice: 1200,
@@ -90,7 +90,7 @@ const orders = [
   {
     id: "ORD-004",
     customerName: "ร้านอาหารทะเลสด",
-    channel: "Lazada",
+    channel: "หน้าร้าน",
     orderDate: "2024-01-14",
     receiveDate: "2024-01-18",
     totalPrice: 15600,
@@ -108,7 +108,7 @@ const orders = [
   {
     id: "ORD-005",
     customerName: "นายประยุทธ์ รักทะเล",
-    channel: "LINE",
+    channel: "ออนไลน์",
     orderDate: "2024-01-13",
     receiveDate: "2024-01-21",
     totalPrice: 3200,
@@ -126,7 +126,7 @@ const orders = [
   {
     id: "ORD-006",
     customerName: "โรงแรมสีฟู้ด พาราไดซ์",
-    channel: "เว็บไซต์",
+    channel: "หน้าร้าน",
     orderDate: "2024-01-13",
     receiveDate: "2024-01-20",
     totalPrice: 25400,
@@ -197,6 +197,7 @@ const OrdersPage = () => {
   const [receiveDateFrom, setReceiveDateFrom] = React.useState<Date>()
   const [showSalesDialog, setShowSalesDialog] = React.useState(false)
   const [showNewOrderDialog, setShowNewOrderDialog] = React.useState(false)
+  const [activeCardFilter, setActiveCardFilter] = React.useState<string | null>(null)
 
   // New Order Form States
   const [selectedCustomer, setSelectedCustomer] = React.useState("")
@@ -214,9 +215,9 @@ const OrdersPage = () => {
   const [totalDiscount, setTotalDiscount] = React.useState(0)
   const [notes, setNotes] = React.useState("")
 
-  // Pagination state
-  const [page, setPage] = React.useState(1)
-  const [rowsPerPage, setRowsPerPage] = React.useState(20)
+  // Pagination state - เปลี่ยนให้เหมือนกับหน้า customers
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [itemsPerPage, setItemsPerPage] = React.useState(10)
 
   // คำนวณยอดต่างๆ
   const totalAmount = orders.reduce((sum, o) => sum + o.totalPrice, 0)
@@ -257,9 +258,68 @@ const OrdersPage = () => {
     )
   })
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage)
-  const pagedOrders = filteredOrders.slice((page - 1) * rowsPerPage, page * rowsPerPage)
+  // Pagination calculations - เหมือนกับหน้า customers
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentOrders = filteredOrders.slice(startIndex, endIndex)
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1)
+  }, [
+    searchTerm,
+    customerTypeFilter,
+    channelFilter,
+    orderStatusFilter,
+    paymentStatusFilter,
+    printStatusFilter,
+    dateFrom,
+    receiveDateFrom,
+    activeCardFilter,
+  ])
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value))
+    setCurrentPage(1)
+  }
+
+  const handleCardFilter = (filterType: string) => {
+    // Reset all filters first
+    setSearchTerm("")
+    setCustomerTypeFilter("all")
+    setChannelFilter("all")
+    setPaymentStatusFilter("all")
+    setPrintStatusFilter("all")
+    setDateFrom(undefined)
+    setReceiveDateFrom(undefined)
+
+    // Apply the selected card filter
+    if (activeCardFilter === filterType) {
+      // If clicking the same card, reset all filters
+      setActiveCardFilter(null)
+      setOrderStatusFilter("all")
+    } else {
+      setActiveCardFilter(filterType)
+      setOrderStatusFilter(filterType)
+    }
+  }
+
+  const clearAllFilters = () => {
+    setSearchTerm("")
+    setCustomerTypeFilter("all")
+    setChannelFilter("all")
+    setOrderStatusFilter("all")
+    setPaymentStatusFilter("all")
+    setPrintStatusFilter("all")
+    setDateFrom(undefined)
+    setReceiveDateFrom(undefined)
+    setActiveCardFilter(null)
+  }
 
   const handleDocumentChange = (orderId: string, documentType: string, checked: boolean) => {
     console.log(`Order ${orderId}: ${documentType} = ${checked}`)
@@ -285,7 +345,6 @@ const OrdersPage = () => {
       if (!product) return sum
       return sum + (product.price * item.quantity - item.discount)
     }, 0)
-
     const total = subtotal - totalDiscount + shippingCost
     return { subtotal, total }
   }
@@ -338,7 +397,6 @@ const OrdersPage = () => {
               <DialogHeader>
                 <DialogTitle>สร้างคำสั่งซื้อใหม่</DialogTitle>
               </DialogHeader>
-
               <div className="space-y-6 py-4">
                 {/* ข้อมูลลูกค้าและช่องทางติดต่อ */}
                 <div className="grid grid-cols-2 gap-4">
@@ -357,22 +415,17 @@ const OrdersPage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div>
                     <Label>ช่องทางติดต่อ</Label>
                     <RadioGroup value={contactChannel} onValueChange={setContactChannel}>
                       <div className="flex space-x-4">
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="LINE" id="line" />
-                          <Label htmlFor="line">LINE</Label>
+                          <RadioGroupItem value="ออนไลน์" id="online" />
+                          <Label htmlFor="online">ออนไลน์</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="Facebook" id="facebook" />
-                          <Label htmlFor="facebook">Facebook</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="Tel" id="tel" />
-                          <Label htmlFor="tel">โทรศัพท์</Label>
+                          <RadioGroupItem value="หน้าร้าน" id="store" />
+                          <Label htmlFor="store">หน้าร้าน</Label>
                         </div>
                       </div>
                     </RadioGroup>
@@ -437,7 +490,6 @@ const OrdersPage = () => {
                       เพิ่มสินค้า
                     </Button>
                   </div>
-
                   <div className="space-y-3">
                     {orderItems.map((item, index) => (
                       <Card key={index}>
@@ -461,7 +513,6 @@ const OrdersPage = () => {
                                 </SelectContent>
                               </Select>
                             </div>
-
                             <div>
                               <Label>จำนวน</Label>
                               <Input
@@ -471,7 +522,6 @@ const OrdersPage = () => {
                                 min="1"
                               />
                             </div>
-
                             <div>
                               <Label>ส่วนลด (บาท)</Label>
                               <Input
@@ -481,7 +531,6 @@ const OrdersPage = () => {
                                 min="0"
                               />
                             </div>
-
                             <div>
                               <Label>ราคารวม</Label>
                               <p className="font-semibold">
@@ -492,7 +541,6 @@ const OrdersPage = () => {
                                 })()}
                               </p>
                             </div>
-
                             <Button
                               variant="outline"
                               size="sm"
@@ -519,7 +567,6 @@ const OrdersPage = () => {
                       min="0"
                     />
                   </div>
-
                   <div>
                     <Label>ค่าส่งสินค้า (บาท)</Label>
                     <Input
@@ -529,7 +576,6 @@ const OrdersPage = () => {
                       min="0"
                     />
                   </div>
-
                   <div>
                     <Label>ขนส่ง</Label>
                     <Select value={shippingMethod} onValueChange={setShippingMethod}>
@@ -577,30 +623,24 @@ const OrdersPage = () => {
                           </div>
                         )
                       })}
-
                       <Separator />
-
                       <div className="flex justify-between text-sm">
                         <span>ยอดรวมสินค้า</span>
                         <span>฿{calculateOrderSummary().subtotal.toLocaleString()}</span>
                       </div>
-
                       {totalDiscount > 0 && (
                         <div className="flex justify-between text-sm text-red-600">
                           <span>ส่วนลดทั้งบิล</span>
                           <span>-฿{totalDiscount.toLocaleString()}</span>
                         </div>
                       )}
-
                       {shippingCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>ค่าส่งสินค้า</span>
                           <span>฿{shippingCost.toLocaleString()}</span>
                         </div>
                       )}
-
                       <Separator />
-
                       <div className="flex justify-between font-semibold">
                         <span>ยอดรวมทั้งสิ้น</span>
                         <span>฿{calculateOrderSummary().total.toLocaleString()}</span>
@@ -614,7 +654,6 @@ const OrdersPage = () => {
                   <Button variant="outline" onClick={clearForm}>
                     เคลียร์ข้อมูล
                   </Button>
-
                   <div className="flex gap-2">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -634,7 +673,6 @@ const OrdersPage = () => {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button>สร้างคำสั่งซื้อ</Button>
@@ -655,7 +693,6 @@ const OrdersPage = () => {
               </div>
             </DialogContent>
           </Dialog>
-
           <Dialog open={showSalesDialog} onOpenChange={setShowSalesDialog}>
             <DialogTrigger asChild>
               <Button className="rounded-xl">ดูยอดสรุป</Button>
@@ -669,17 +706,14 @@ const OrdersPage = () => {
                   <span className="text-sm font-medium text-blue-700">ยอดรวมทั้งหมด</span>
                   <span className="text-xl font-bold text-blue-800">฿{totalAmount.toLocaleString()}</span>
                 </div>
-
                 <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
                   <span className="text-sm font-medium text-green-700">ยอดที่ชำระแล้ว</span>
                   <span className="text-xl font-bold text-green-800">฿{totalPaid.toLocaleString()}</span>
                 </div>
-
                 <div className="flex justify-between items-center p-4 bg-red-50 rounded-lg">
                   <span className="text-sm font-medium text-red-700">ยอดค้างชำระ</span>
                   <span className="text-xl font-bold text-red-800">฿{totalUnpaid.toLocaleString()}</span>
                 </div>
-
                 <Button
                   variant="outline"
                   className="w-full mt-6 bg-transparent"
@@ -693,10 +727,16 @@ const OrdersPage = () => {
         </div>
       </div>
 
-      {/* Status Summary Cards */}
+      {/* Status Summary Cards - Now clickable */}
       <div className="grid grid-cols-4 gap-4">
         {["pending", "packing", "delivering", "completed"].map((status) => (
-          <Card key={status}>
+          <Card
+            key={status}
+            className={`cursor-pointer transition-all hover:shadow-md ${
+              activeCardFilter === status ? "ring-2 ring-primary bg-primary/5" : ""
+            }`}
+            onClick={() => handleCardFilter(status)}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-center">
                 {orderStatusMap[status as keyof typeof orderStatusMap].label}
@@ -709,10 +749,30 @@ const OrdersPage = () => {
         ))}
       </div>
 
+      {/* Active Filter Indicator */}
+      {activeCardFilter && (
+        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="text-sm text-blue-800">
+            <strong>กำลังกรองข้อมูล:</strong> {orderStatusMap[activeCardFilter as keyof typeof orderStatusMap].label}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCardFilter("")}
+            className="h-6 px-2 text-xs bg-white"
+          >
+            ล้างตัวกรอง
+          </Button>
+        </div>
+      )}
+
       {/* Filters */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>ค้นหาและกรองข้อมูล</CardTitle>
+          <Button variant="outline" size="sm" onClick={clearAllFilters} className="bg-transparent">
+            ล้างตัวกรอง
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:items-end">
@@ -747,7 +807,7 @@ const OrdersPage = () => {
               </Select>
             </div>
 
-            {/* ช่องทางการสั่งซื้อ */}
+            {/* ช่องทางการสั่งซื้อ - แก้ไขให้มีแค่ ออนไลน์ และ หน้าร้าน */}
             <div>
               <Label>ช่องทางการสั่งซื้อ</Label>
               <Select value={channelFilter} onValueChange={setChannelFilter}>
@@ -756,11 +816,8 @@ const OrdersPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">ทั้งหมด</SelectItem>
-                  <SelectItem value="LINE">LINE</SelectItem>
-                  <SelectItem value="Facebook">Facebook</SelectItem>
-                  <SelectItem value="Shopee">Shopee</SelectItem>
-                  <SelectItem value="Lazada">Lazada</SelectItem>
-                  <SelectItem value="เว็บไซต์">เว็บไซต์</SelectItem>
+                  <SelectItem value="ออนไลน์">ออนไลน์</SelectItem>
+                  <SelectItem value="หน้าร้าน">หน้าร้าน</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -863,29 +920,26 @@ const OrdersPage = () => {
           <div>
             <CardTitle>รายการคำสั่งซื้อ</CardTitle>
             <CardDescription>
-              แสดง {filteredOrders.length} รายการจากทั้งหมด {orders.length} รายการ
+              แสดง {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} จาก {filteredOrders.length} รายการ
+              (ทั้งหมด {orders.length} รายการ)
             </CardDescription>
           </div>
-          <div className="flex items-center space-x-2">
-            <Label htmlFor="rowsPerPage" className="whitespace-nowrap">
-              แสดงต่อหน้า:
+          <div className="flex items-center gap-2">
+            <Label htmlFor="itemsPerPage" className="text-sm">
+              แสดง:
             </Label>
-            <Select
-              value={String(rowsPerPage)}
-              onValueChange={(val) => {
-                setRowsPerPage(Number.parseInt(val))
-                setPage(1) // reset page
-              }}
-            >
-              <SelectTrigger className="w-24">
+            <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+              <SelectTrigger className="w-20">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
                 <SelectItem value="20">20</SelectItem>
                 <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
+            <span className="text-sm text-muted-foreground">รายการ</span>
           </div>
         </CardHeader>
         <CardContent>
@@ -904,7 +958,7 @@ const OrdersPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pagedOrders.map((order) => (
+                {currentOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">{order.id}</TableCell>
                     <TableCell>{order.customerName}</TableCell>
@@ -980,31 +1034,62 @@ const OrdersPage = () => {
             </Table>
           </div>
 
-          {/* Pagination */}
-          <div className="flex justify-center space-x-2 mt-4">
-            <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-              ก่อนหน้า
-            </Button>
-            {[...Array(totalPages)].map((_, i) => {
-              const pageNum = i + 1
-              return (
+          {/* Pagination - เหมือนกับหน้า customers */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                หน้า {currentPage} จาก {totalPages}
+              </div>
+              <div className="flex items-center gap-2">
                 <Button
-                  key={pageNum}
-                  variant={pageNum === page ? "default" : "outline"}
-                  onClick={() => setPage(pageNum)}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="h-8 px-2"
                 >
-                  {pageNum}
+                  <ChevronLeft className="h-4 w-4" />
+                  ก่อนหน้า
                 </Button>
-              )
-            })}
-            <Button
-              variant="outline"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              ถัดไป
-            </Button>
-          </div>
+                {/* Page numbers */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNumber
+                    if (totalPages <= 5) {
+                      pageNumber = i + 1
+                    } else if (currentPage <= 3) {
+                      pageNumber = i + 1
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNumber = totalPages - 4 + i
+                    } else {
+                      pageNumber = currentPage - 2 + i
+                    }
+                    return (
+                      <Button
+                        key={pageNumber}
+                        variant={currentPage === pageNumber ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNumber)}
+                        className="h-8 w-8 p-0"
+                      >
+                        {pageNumber}
+                      </Button>
+                    )
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="h-8 px-2"
+                >
+                  ถัดไป
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

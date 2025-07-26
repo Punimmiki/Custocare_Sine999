@@ -409,7 +409,7 @@ const CustomersPage = () => {
   const lineEnabledCustomers = customers.filter((c) => c.lineNotifications).length
 
   return (
-    <div className="w-full max-w-full space-y-6 ">
+    <div className="space-y-6 ">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -621,7 +621,7 @@ const CustomersPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ลูกค้า</TableHead>
+                  <TableHead className="w-28">ลูกค้า</TableHead>
                   <TableHead className="w-28">เบอร์โทร</TableHead>
                   <TableHead className="w-20">ประเภท</TableHead>
                   <TableHead className="w-20">สถานะ</TableHead>
