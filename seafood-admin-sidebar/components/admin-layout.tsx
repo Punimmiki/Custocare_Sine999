@@ -12,7 +12,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "16rem",
+          "--sidebar-width": "14rem",
           "--sidebar-width-mobile": "16rem",
           "--sidebar-width-icon": "5rem",
         } as React.CSSProperties

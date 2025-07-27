@@ -87,7 +87,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       className="border-r-0"
       style={
         {
-          "--sidebar-width": "16rem",
+          "--sidebar-width": "14rem",
           "--sidebar-width-mobile": "16rem",
           "--sidebar-width-icon": "5rem",
         } as React.CSSProperties
@@ -127,8 +127,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* Menu */}
         <SidebarContent className="flex-1 px-3 py-4 group-data-[collapsible=icon]:px-2 overflow-hidden">
           <SidebarGroup className="h-full">
-            <SidebarGroupContent className="h-full flex flex-col">
-              <SidebarMenu className="space-y-2 flex-1 flex flex-col justify-center">
+            <SidebarGroupContent className="flex flex-col">
+              <SidebarMenu className="space-y-2">
                 {menuItems.map((item) => {
                   const isActive = pathname === item.url || pathname.startsWith(item.url + "/")
                   return (
