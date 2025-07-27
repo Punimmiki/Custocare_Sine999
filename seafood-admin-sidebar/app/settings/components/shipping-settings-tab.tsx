@@ -145,7 +145,6 @@ export function ShippingSettingsTab() {
 
   const handleSubmitProvider = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (editingProvider) {
       setProviders(
         providers.map((provider) => (provider.id === editingProvider.id ? { ...provider, ...providerForm } : provider)),
@@ -157,7 +156,6 @@ export function ShippingSettingsTab() {
       }
       setProviders([...providers, newProvider])
     }
-
     setIsAddProviderOpen(false)
   }
 
@@ -195,7 +193,6 @@ export function ShippingSettingsTab() {
 
   const handleSubmitFeeRule = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (editingFeeRule) {
       setFeeRules(feeRules.map((rule) => (rule.id === editingFeeRule.id ? { ...rule, ...feeRuleForm } : rule)))
     } else {
@@ -205,7 +202,6 @@ export function ShippingSettingsTab() {
       }
       setFeeRules([...feeRules, newFeeRule])
     }
-
     setIsAddFeeRuleOpen(false)
   }
 
@@ -421,7 +417,6 @@ export function ShippingSettingsTab() {
                 required
               />
             </div>
-
             <div>
               <Label htmlFor="provider-type">ประเภท *</Label>
               <Select
@@ -437,7 +432,6 @@ export function ShippingSettingsTab() {
                 </SelectContent>
               </Select>
             </div>
-
             <div>
               <Label htmlFor="provider-description">รายละเอียด</Label>
               <Textarea
@@ -448,7 +442,6 @@ export function ShippingSettingsTab() {
                 rows={3}
               />
             </div>
-
             <div>
               <Label htmlFor="provider-contact">ข้อมูลติดต่อ</Label>
               <Input
@@ -458,7 +451,6 @@ export function ShippingSettingsTab() {
                 placeholder="เบอร์โทร หรือข้อมูลติดต่อ"
               />
             </div>
-
             <div className="flex items-center space-x-2">
               <Switch
                 id="provider-active"
@@ -467,7 +459,6 @@ export function ShippingSettingsTab() {
               />
               <Label htmlFor="provider-active">เปิดใช้งาน</Label>
             </div>
-
             <div className="flex gap-4 pt-4">
               <Button type="submit" className="flex-1">
                 {editingProvider ? "บันทึกการแก้ไข" : "เพิ่มผู้ให้บริการ"}
@@ -498,7 +489,6 @@ export function ShippingSettingsTab() {
                 required
               />
             </div>
-
             <div>
               <Label htmlFor="rule-zone">เขต *</Label>
               <Input
@@ -509,7 +499,6 @@ export function ShippingSettingsTab() {
                 required
               />
             </div>
-
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="rule-min-order">ยอดขั้นต่ำ (บาท)</Label>
@@ -534,7 +523,6 @@ export function ShippingSettingsTab() {
                 />
               </div>
             </div>
-
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="rule-base-fee">ค่าจัดส่งพื้นฐาน (บาท)</Label>
@@ -559,7 +547,6 @@ export function ShippingSettingsTab() {
                 />
               </div>
             </div>
-
             <div className="flex items-center space-x-2">
               <Switch
                 id="rule-active"
@@ -568,7 +555,6 @@ export function ShippingSettingsTab() {
               />
               <Label htmlFor="rule-active">เปิดใช้งาน</Label>
             </div>
-
             <div className="flex gap-4 pt-4">
               <Button type="submit" className="flex-1">
                 {editingFeeRule ? "บันทึกการแก้ไข" : "เพิ่มกฎใหม่"}

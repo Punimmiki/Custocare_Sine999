@@ -428,7 +428,7 @@ const CustomersPage = () => {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
-            activeCardFilter === "all" ? "ring-2 ring-primary bg-primary/5" : ""
+            activeCardFilter === "all" ? "border-primary" : ""
           }`}
           onClick={() => handleCardFilter("all")}
         >
@@ -445,7 +445,7 @@ const CustomersPage = () => {
 
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
-            activeCardFilter === "credit" ? "ring-2 ring-blue-500 bg-blue-50" : ""
+            activeCardFilter === "credit" ? "border-primary" : ""
           }`}
           onClick={() => handleCardFilter("credit")}
         >
@@ -460,7 +460,7 @@ const CustomersPage = () => {
 
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
-            activeCardFilter === "cash" ? "ring-2 ring-amber-500 bg-amber-50" : ""
+            activeCardFilter === "cash" ? "border-primary" : ""
           }`}
           onClick={() => handleCardFilter("cash")}
         >
@@ -475,7 +475,7 @@ const CustomersPage = () => {
 
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
-            activeCardFilter === "line" ? "ring-2 ring-green-500 bg-green-50" : ""
+            activeCardFilter === "line" ? "border-primary" : ""
           }`}
           onClick={() => handleCardFilter("line")}
         >

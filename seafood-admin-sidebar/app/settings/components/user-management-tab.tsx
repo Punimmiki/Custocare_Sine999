@@ -3,7 +3,7 @@
 import * as React from "react"
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
-import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react"
+import { Plus, Edit, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,17 +13,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 
 // Sample user data
@@ -150,12 +139,7 @@ export function UserManagementTab() {
       }
       setUsers([...users, newUser])
     }
-
     setIsAddUserOpen(false)
-  }
-
-  const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter((user) => user.id !== userId))
   }
 
   const handleToggleActive = (userId: string, isActive: boolean) => {
@@ -235,39 +219,10 @@ export function UserManagementTab() {
                     </TableCell>
                     <TableCell>{format(new Date(user.lastLogin), "dd/MM/yyyy HH:mm", { locale: th })}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
-                          <Edit className="h-4 w-4 mr-1" />
-                          แก้ไข
-                        </Button>
-                        {user.role !== "Owner" && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                ลบ
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>ยืนยันการลบผู้ใช้</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  คุณแน่ใจหรือไม่ที่จะลบผู้ใช้ "{user.fullName}" การดำเนินการนี้ไม่สามารถย้อนกลับได้
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteUser(user.id)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  ลบผู้ใช้
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </div>
+                      <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
+                        <Edit className="h-4 w-4 mr-1" />
+                        แก้ไข
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -307,7 +262,6 @@ export function UserManagementTab() {
                 />
               </div>
             </div>
-
             <div>
               <Label htmlFor="email">อีเมล *</Label>
               <Input
@@ -319,7 +273,6 @@ export function UserManagementTab() {
                 required
               />
             </div>
-
             <div>
               <Label htmlFor="password">รหัสผ่าน {editingUser ? "(เว้นว่างหากไม่ต้องการเปลี่ยน)" : "*"}</Label>
               <div className="relative">
@@ -342,7 +295,6 @@ export function UserManagementTab() {
                 </Button>
               </div>
             </div>
-
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="role">บทบาท *</Label>
@@ -369,7 +321,6 @@ export function UserManagementTab() {
                 <Label htmlFor="isActive">เปิดใช้งานบัญชี</Label>
               </div>
             </div>
-
             <div>
               <Label className="text-base font-medium">สิทธิ์การเข้าถึง</Label>
               <div className="mt-2 space-y-3 max-h-48 overflow-y-auto border rounded-lg p-4">
@@ -393,7 +344,6 @@ export function UserManagementTab() {
                 ))}
               </div>
             </div>
-
             <div className="flex gap-4 pt-4">
               <Button type="submit" className="flex-1">
                 {editingUser ? "บันทึกการแก้ไข" : "เพิ่มผู้ใช้"}

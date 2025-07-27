@@ -186,7 +186,7 @@ const customers = [
   },
 ]
 
-const OrdersPage = () => {
+export function OrdersPage() {
   const [searchTerm, setSearchTerm] = React.useState("")
   const [customerTypeFilter, setCustomerTypeFilter] = React.useState("all")
   const [channelFilter, setChannelFilter] = React.useState("all")
@@ -215,7 +215,7 @@ const OrdersPage = () => {
   const [totalDiscount, setTotalDiscount] = React.useState(0)
   const [notes, setNotes] = React.useState("")
 
-  // Pagination state - เปลี่ยนให้เหมือนกับหน้า customers
+  // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
 
@@ -258,7 +258,7 @@ const OrdersPage = () => {
     )
   })
 
-  // Pagination calculations - เหมือนกับหน้า customers
+  // Pagination calculations
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
@@ -388,12 +388,12 @@ const OrdersPage = () => {
         <div className="flex gap-2">
           <Dialog open={showNewOrderDialog} onOpenChange={setShowNewOrderDialog}>
             <DialogTrigger asChild>
-              <Button className="rounded-xl">
+              <Button className="rounded-2xl bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white shadow-lg">
                 <Plus className="w-4 h-4 mr-2" />
                 เพิ่มคำสั่งซื้อ
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto border-0 rounded-3xl shadow-2xl">
               <DialogHeader>
                 <DialogTitle>สร้างคำสั่งซื้อใหม่</DialogTitle>
               </DialogHeader>
@@ -434,7 +434,7 @@ const OrdersPage = () => {
 
                 {/* ข้อมูลเครดิต */}
                 {selectedCustomerData?.type === "credit" && (
-                  <Card>
+                  <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
                     <CardHeader>
                       <CardTitle className="text-sm">ข้อมูลเครดิต</CardTitle>
                     </CardHeader>
@@ -492,7 +492,7 @@ const OrdersPage = () => {
                   </div>
                   <div className="space-y-3">
                     {orderItems.map((item, index) => (
-                      <Card key={index}>
+                      <Card className="border-0 shadow-sm rounded-2xl bg-gray-50" key={index}>
                         <CardContent className="p-4">
                           <div className="grid grid-cols-5 gap-4 items-end">
                             <div>
@@ -545,7 +545,7 @@ const OrdersPage = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => removeOrderItem(index)}
-                              className="text-red-600 hover:text-red-700"
+                              className="text-red-600 hover:text-red-700 border-0 shadow-sm rounded-2xl hover:shadow-md"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -605,7 +605,7 @@ const OrdersPage = () => {
                 </div>
 
                 {/* สรุปคำสั่งซื้อ */}
-                <Card>
+                <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
                   <CardHeader>
                     <CardTitle>สรุปคำสั่งซื้อ</CardTitle>
                   </CardHeader>
@@ -651,18 +651,25 @@ const OrdersPage = () => {
 
                 {/* ปุ่มต่างๆ */}
                 <div className="flex justify-between">
-                  <Button variant="outline" onClick={clearForm}>
+                  <Button
+                    variant="outline"
+                    className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent"
+                    onClick={clearForm}
+                  >
                     เคลียร์ข้อมูล
                   </Button>
                   <div className="flex gap-2">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline">
+                        <Button
+                          variant="outline"
+                          className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent"
+                        >
                           <Send className="w-4 h-4 mr-2" />
                           ส่งไป LINE
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
                         <AlertDialogHeader>
                           <AlertDialogTitle>ยืนยันการส่งข้อมูล</AlertDialogTitle>
                           <AlertDialogDescription>ต้องการส่งข้อมูลคำสั่งซื้อไปยัง LINE ใช่หรือไม่?</AlertDialogDescription>
@@ -675,9 +682,11 @@ const OrdersPage = () => {
                     </AlertDialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button>สร้างคำสั่งซื้อ</Button>
+                        <Button className="bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white rounded-2xl shadow-lg">
+                          สร้างคำสั่งซื้อ
+                        </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
                         <AlertDialogHeader>
                           <AlertDialogTitle>ยืนยันการสร้างคำสั่งซื้อ</AlertDialogTitle>
                           <AlertDialogDescription>ต้องการยืนยันการสร้างคำสั่งซื้อใช่หรือไม่?</AlertDialogDescription>
@@ -693,11 +702,14 @@ const OrdersPage = () => {
               </div>
             </DialogContent>
           </Dialog>
+
           <Dialog open={showSalesDialog} onOpenChange={setShowSalesDialog}>
             <DialogTrigger asChild>
-              <Button className="rounded-xl">ดูยอดสรุป</Button>
+              <Button className="rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg">
+                ดูยอดสรุป
+              </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md border-0 rounded-3xl shadow-2xl">
               <DialogHeader>
                 <DialogTitle className="text-center">สรุปยอดขาย</DialogTitle>
               </DialogHeader>
@@ -716,7 +728,7 @@ const OrdersPage = () => {
                 </div>
                 <Button
                   variant="outline"
-                  className="w-full mt-6 bg-transparent"
+                  className="w-full mt-6 bg-transparent border-0 shadow-sm rounded-2xl hover:shadow-md"
                   onClick={() => setShowSalesDialog(false)}
                 >
                   ปิด
@@ -732,9 +744,7 @@ const OrdersPage = () => {
         {["pending", "packing", "delivering", "completed"].map((status) => (
           <Card
             key={status}
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              activeCardFilter === status ? "ring-2 ring-primary bg-primary/5" : ""
-            }`}
+            className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${activeCardFilter === status ? "ring-2 ring-blue-500" : ""}`}
             onClick={() => handleCardFilter(status)}
           >
             <CardHeader className="pb-2">
@@ -751,7 +761,7 @@ const OrdersPage = () => {
 
       {/* Active Filter Indicator */}
       {activeCardFilter && (
-        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl shadow-sm border-0">
           <div className="text-sm text-blue-800">
             <strong>กำลังกรองข้อมูล:</strong> {orderStatusMap[activeCardFilter as keyof typeof orderStatusMap].label}
           </div>
@@ -759,7 +769,7 @@ const OrdersPage = () => {
             variant="outline"
             size="sm"
             onClick={() => handleCardFilter("")}
-            className="h-6 px-2 text-xs bg-white"
+            className="h-7 px-3 text-xs bg-white rounded-xl border-0 shadow-sm hover:shadow-md"
           >
             ล้างตัวกรอง
           </Button>
@@ -767,10 +777,15 @@ const OrdersPage = () => {
       )}
 
       {/* Filters */}
-      <Card>
+      <Card className="border-0 shadow-sm rounded-2xl bg-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>ค้นหาและกรองข้อมูล</CardTitle>
-          <Button variant="outline" size="sm" onClick={clearAllFilters} className="bg-transparent">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearAllFilters}
+            className="bg-white border-0 shadow-sm rounded-xl hover:shadow-md"
+          >
             ล้างตัวกรอง
           </Button>
         </CardHeader>
@@ -807,7 +822,7 @@ const OrdersPage = () => {
               </Select>
             </div>
 
-            {/* ช่องทางการสั่งซื้อ - แก้ไขให้มีแค่ ออนไลน์ และ หน้าร้าน */}
+            {/* ช่องทางการสั่งซื้อ */}
             <div>
               <Label>ช่องทางการสั่งซื้อ</Label>
               <Select value={channelFilter} onValueChange={setChannelFilter}>
@@ -915,7 +930,7 @@ const OrdersPage = () => {
       </Card>
 
       {/* Orders Table */}
-      <Card>
+      <Card className="border-0 shadow-sm rounded-2xl bg-white">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
             <CardTitle>รายการคำสั่งซื้อ</CardTitle>
@@ -994,9 +1009,7 @@ const OrdersPage = () => {
                           <Checkbox
                             id={`${order.id}-package`}
                             checked={order.documents.packageLabel}
-                            onCheckedChange={(checked) =>
-                              handleDocumentChange(order.id, "packageLabel", checked as boolean)
-                            }
+                            onCheckedChange={(checked) => handleDocumentChange(order.id, "packageLabel", checked)}
                           />
                           <Label htmlFor={`${order.id}-package`} className="text-sm font-normal cursor-pointer">
                             ใบปะหน้าพัสดุ
@@ -1006,9 +1019,7 @@ const OrdersPage = () => {
                           <Checkbox
                             id={`${order.id}-packing`}
                             checked={order.documents.packingList}
-                            onCheckedChange={(checked) =>
-                              handleDocumentChange(order.id, "packingList", checked as boolean)
-                            }
+                            onCheckedChange={(checked) => handleDocumentChange(order.id, "packingList", checked)}
                           />
                           <Label htmlFor={`${order.id}-packing`} className="text-sm font-normal cursor-pointer">
                             Packing List
@@ -1018,9 +1029,7 @@ const OrdersPage = () => {
                           <Checkbox
                             id={`${order.id}-pick`}
                             checked={order.documents.pickList}
-                            onCheckedChange={(checked) =>
-                              handleDocumentChange(order.id, "pickList", checked as boolean)
-                            }
+                            onCheckedChange={(checked) => handleDocumentChange(order.id, "pickList", checked)}
                           />
                           <Label htmlFor={`${order.id}-pick`} className="text-sm font-normal cursor-pointer">
                             Pick List
@@ -1034,7 +1043,7 @@ const OrdersPage = () => {
             </Table>
           </div>
 
-          {/* Pagination - เหมือนกับหน้า customers */}
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <div className="text-sm text-muted-foreground">
@@ -1046,11 +1055,12 @@ const OrdersPage = () => {
                   size="sm"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="h-8 px-2"
+                  className="h-8 px-3 border-0 shadow-sm rounded-xl hover:shadow-md"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   ก่อนหน้า
                 </Button>
+
                 {/* Page numbers */}
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -1064,25 +1074,27 @@ const OrdersPage = () => {
                     } else {
                       pageNumber = currentPage - 2 + i
                     }
+
                     return (
                       <Button
                         key={pageNumber}
                         variant={currentPage === pageNumber ? "default" : "outline"}
                         size="sm"
                         onClick={() => handlePageChange(pageNumber)}
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 border-0 shadow-sm rounded-xl hover:shadow-md"
                       >
                         {pageNumber}
                       </Button>
                     )
                   })}
                 </div>
+
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="h-8 px-2"
+                  className="h-8 px-3 border-0 shadow-sm rounded-xl hover:shadow-md"
                 >
                   ถัดไป
                   <ChevronRight className="h-4 w-4" />
@@ -1095,6 +1107,3 @@ const OrdersPage = () => {
     </div>
   )
 }
-
-export { OrdersPage }
-export default OrdersPage
