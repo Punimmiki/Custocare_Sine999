@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowLeft, Package, Upload, X, Star, Settings } from "lucide-react"
+import { ArrowLeft, Package, Upload, X, Star } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -33,6 +34,19 @@ interface ProductImage {
   isCover: boolean
 }
 
+interface ExistingProduct {
+  name: string
+  unit: string
+  category: string
+}
+
+// Mock existing products data
+const existingProducts: ExistingProduct[] = [
+  { name: "ปลาทู", unit: "กิโลกรัม", category: "ปลา" },
+  { name: "กุ้งขาว", unit: "กิโลกรัม", category: "กุ้ง" },
+  { name: "หอยแมลงภู่", unit: "กิโลกรัม", category: "หอย" },
+]
+
 const CreateProductPage = () => {
   const [productName, setProductName] = React.useState("")
   const [productPrice, setProductPrice] = React.useState("")
@@ -44,6 +58,8 @@ const CreateProductPage = () => {
   const [showOnWebsite, setShowOnWebsite] = React.useState(true)
   const [categoryShowOnWebsite, setCategoryShowOnWebsite] = React.useState(true)
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = React.useState(false)
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = React.useState(false)
+  const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = React.useState(false)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -71,10 +87,12 @@ const CreateProductPage = () => {
   const removeImage = (imageId: string) => {
     setProductImages((prev) => {
       const filtered = prev.filter((img) => img.id !== imageId)
+
       // If removed image was cover, make first image the new cover
       if (filtered.length > 0 && !filtered.some((img) => img.isCover)) {
         filtered[0].isCover = true
       }
+
       return filtered
     })
   }
@@ -88,8 +106,24 @@ const CreateProductPage = () => {
     )
   }
 
+  const checkDuplicateProduct = () => {
+    return existingProducts.some(
+      (product) =>
+        product.name.toLowerCase() === productName.toLowerCase() &&
+        product.unit === productUnit &&
+        product.category === productCategory,
+    )
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Check for duplicate product
+    if (checkDuplicateProduct()) {
+      setIsDuplicateDialogOpen(true)
+      return
+    }
+
     setIsSubmitDialogOpen(true)
   }
 
@@ -105,8 +139,23 @@ const CreateProductPage = () => {
       showOnWebsite,
       categoryShowOnWebsite,
     })
+
     setIsSubmitDialogOpen(false)
-    // TODO: Add success toast and redirect
+    setIsSuccessDialogOpen(true)
+  }
+
+  const handleSuccessConfirm = () => {
+    setIsSuccessDialogOpen(false)
+    // Reset form or redirect
+    setProductName("")
+    setProductPrice("")
+    setProductUnit("")
+    setProductCategory("")
+    setProductStock("")
+    setProductDescription("")
+    setProductImages([])
+    setShowOnWebsite(true)
+    setCategoryShowOnWebsite(true)
   }
 
   return (
@@ -122,12 +171,6 @@ const CreateProductPage = () => {
           <h1 className="text-3xl font-bold">เพิ่มสินค้าใหม่</h1>
           <p className="text-muted-foreground">เพิ่มสินค้าใหม่เข้าสู่ระบบ</p>
         </div>
-        <Button variant="outline" asChild>
-          <Link href="/products/categories">
-            <Settings className="h-4 w-4 mr-2" />
-            จัดการหมวดหมู่
-          </Link>
-        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -240,7 +283,6 @@ const CreateProductPage = () => {
                   </div>
                   <Switch checked={showOnWebsite} onCheckedChange={setShowOnWebsite} />
                 </div>
-
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>แสดงหมวดหมู่บนเว็บไซต์</Label>
@@ -297,10 +339,8 @@ const CreateProductPage = () => {
                         alt="Product preview"
                         className="w-full h-24 object-cover rounded-lg border"
                       />
-
                       {/* Cover Badge */}
                       {image.isCover && <Badge className="absolute top-1 left-1 text-xs">หน้าปก</Badge>}
-
                       {/* Action Buttons */}
                       <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
@@ -367,6 +407,38 @@ const CreateProductPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <AlertDialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>เพิ่มสินค้าสำเร็จ</AlertDialogTitle>
+            <AlertDialogDescription>สินค้า "{productName}" ได้ถูกเพิ่มเข้าสู่ระบบเรียบร้อยแล้ว</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleSuccessConfirm} className="bg-green-600 hover:bg-green-700">
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Duplicate Product Dialog */}
+      <AlertDialog open={isDuplicateDialogOpen} onOpenChange={setIsDuplicateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>พบสินค้าซ้ำ</AlertDialogTitle>
+            <AlertDialogDescription>
+              สินค้า "{productName}" ในหน่วย "{productUnit}" หมวดหมู่ "{productCategory}" มีอยู่ในระบบแล้ว กรุณาตรวจสอบข้อมูลอีกครั้ง
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsDuplicateDialogOpen(false)} className="bg-red-600 hover:bg-red-700">
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

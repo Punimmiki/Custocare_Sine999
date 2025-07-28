@@ -9,7 +9,66 @@ import { BankTab } from "./bank-tab"
 import { CompanyTab } from "./company-tab"
 import { SalesChannelsTab } from "./sales-channels-tab"
 import { WebsiteTab } from "./website-tab"
-import { Users, MessageCircle, Truck, Calculator, Building2, Building, Store, Globe } from "lucide-react"
+import { Users, MessageCircle, Truck, Calculator, Building2, Building, Store, Globe, Package } from "lucide-react"
+import { ManageCategoriesPage } from "./manageproducts"
+import { ScrollArea } from "@/components/ui/scroll-area"
+
+const settingsTabs = [
+  {
+    value: "users",
+    label: "ผู้ใช้",
+    icon: Users,
+    component: UserManagementTab,
+  },
+  {
+    value: "company",
+    label: "บริษัท",
+    icon: Building,
+    component: CompanyTab,
+  },
+  {
+    value: "units",
+    label: "หน่วยนับ",
+    icon: Calculator,
+    component: UnitsTab,
+  },
+  {
+    value: "categories",
+    label: "หมวดหมู่",
+    icon: Package,
+    component: ManageCategoriesPage,
+  },
+  {
+    value: "bank",
+    label: "ธนาคาร",
+    icon: Building2,
+    component: BankTab,
+  },
+  {
+    value: "sales-channels",
+    label: "ช่องทางขาย",
+    icon: Store,
+    component: SalesChannelsTab,
+  },
+  {
+    value: "shipping",
+    label: "จัดส่ง",
+    icon: Truck,
+    component: ShippingSettingsTab,
+  },
+  {
+    value: "website",
+    label: "เว็บไซต์",
+    icon: Globe,
+    component: WebsiteTab,
+  },
+  {
+    value: "line",
+    label: "LINE",
+    icon: MessageCircle,
+    component: LineNotificationTab,
+  },
+]
 
 const SettingsPage = () => {
   return (
@@ -22,72 +81,36 @@ const SettingsPage = () => {
 
       {/* Tabbed Settings */}
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">ผู้ใช้</span>
-          </TabsTrigger>
-          <TabsTrigger value="company" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            <span className="hidden sm:inline">บริษัท</span>
-          </TabsTrigger>
-          <TabsTrigger value="units" className="flex items-center gap-2">
-            <Calculator className="h-4 w-4" />
-            <span className="hidden sm:inline">หน่วยนับ</span>
-          </TabsTrigger>
-          <TabsTrigger value="bank" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">ธนาคาร</span>
-          </TabsTrigger>
-          <TabsTrigger value="sales-channels" className="flex items-center gap-2">
-            <Store className="h-4 w-4" />
-            <span className="hidden sm:inline">ช่องทางขาย</span>
-          </TabsTrigger>
-          <TabsTrigger value="shipping" className="flex items-center gap-2">
-            <Truck className="h-4 w-4" />
-            <span className="hidden sm:inline">จัดส่ง</span>
-          </TabsTrigger>
-          <TabsTrigger value="website" className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            <span className="hidden sm:inline">เว็บไซต์</span>
-          </TabsTrigger>
-          <TabsTrigger value="line" className="flex items-center gap-2">
-            <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">LINE</span>
-          </TabsTrigger>
-        </TabsList>
+        {/* Responsive Tabs List */}
+        <div className="border-0 shadow-sm rounded-2xl bg-white p-1">
+          <ScrollArea className="w-full">
+            <TabsList className="inline-flex h-auto w-max min-w-full bg-transparent p-1 gap-1">
+              {settingsTabs.map((tab) => {
+                const IconComponent = tab.icon
+                return (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-700 data-[state=active]:to-slate-800 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-50 transition-all whitespace-nowrap"
+                  >
+                    <IconComponent className="h-4 w-4" />
+                    <span className="hidden sm:inline font-medium">{tab.label}</span>
+                  </TabsTrigger>
+                )
+              })}
+            </TabsList>
+          </ScrollArea>
+        </div>
 
-        <TabsContent value="users">
-          <UserManagementTab />
-        </TabsContent>
-
-        <TabsContent value="company">
-          <CompanyTab />
-        </TabsContent>
-
-        <TabsContent value="units">
-          <UnitsTab />
-        </TabsContent>
-
-        <TabsContent value="bank">
-          <BankTab />
-        </TabsContent>
-
-        <TabsContent value="sales-channels">
-          <SalesChannelsTab />
-        </TabsContent>
-
-        <TabsContent value="shipping">
-          <ShippingSettingsTab />
-        </TabsContent>
-
-        <TabsContent value="website">
-          <WebsiteTab />
-        </TabsContent>
-
-        <TabsContent value="line">
-          <LineNotificationTab />
-        </TabsContent>
+        {/* Tab Contents */}
+        {settingsTabs.map((tab) => {
+          const ComponentToRender = tab.component
+          return (
+            <TabsContent key={tab.value} value={tab.value} className="mt-6">
+              <ComponentToRender />
+            </TabsContent>
+          )
+        })}
       </Tabs>
     </div>
   )

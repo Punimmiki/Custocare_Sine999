@@ -245,7 +245,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="product-stock">���ำนวนคงเหลือ *</Label>
+                    <Label htmlFor="product-stock">จำนวนคงเหลือ *</Label>
                     <Input
                       id="product-stock"
                       type="number"

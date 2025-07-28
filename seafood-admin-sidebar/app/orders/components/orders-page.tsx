@@ -1,10 +1,9 @@
 "use client"
 
 import React from "react"
-import { CalendarIcon, Search, Plus, Trash2, Send, ChevronLeft, ChevronRight } from "lucide-react"
+import { CalendarIcon, Search, Plus, ChevronLeft, ChevronRight, Eye, CreditCard, Banknote } from "lucide-react"
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
-
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -16,130 +15,163 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 const orders = [
   {
     id: "ORD-001",
     customerName: "นายสมชาย ใจดี",
-    channel: "ออนไลน์",
+    channel: "Line",
     orderDate: "2024-01-15",
     receiveDate: "2024-01-20",
     totalPrice: 2450,
     orderStatus: "pending",
     paymentStatus: "unpaid",
+    paymentMethod: "cash",
     printed: false,
-    customerType: "บุคคล",
+    customerType: "ลูกค้าเงินสด",
     deliveryMethod: "ขนส่งเอกชน",
     documents: {
       packageLabel: false,
       packingList: false,
       pickList: false,
     },
+    items: [
+      { name: "ปลาทูน่าสด", quantity: 2, unit: "กิโลกรัม", price: 250, total: 500 },
+      { name: "กุ้งขาว", quantity: 1, unit: "กิโลกรัม", price: 180, total: 180 },
+    ],
+    shippingAddress: "123 ถนนสุขุมวิท แขวงคลองตัน เขตคลองตัน กรุงเทพฯ 10110",
+    notes: "ต้องการสินค้าสดใหม่",
   },
   {
     id: "ORD-002",
     customerName: "บริษัท อาหารทะเล จำกัด",
-    channel: "หน้าร้าน",
+    channel: "Facebook",
     orderDate: "2024-01-15",
     receiveDate: "2024-01-22",
     totalPrice: 8900,
     orderStatus: "packing",
     paymentStatus: "paid",
+    paymentMethod: "scb",
     printed: true,
-    customerType: "บริษัท",
+    customerType: "ลูกค้าเครดิต",
     deliveryMethod: "ขนส่งไปรษณีย์",
     documents: {
       packageLabel: true,
       packingList: true,
       pickList: false,
     },
+    items: [
+      { name: "ปลาแซลมอน", quantity: 10, unit: "กิโลกรัม", price: 450, total: 4500 },
+      { name: "หอยแมลงภู่", quantity: 5, unit: "กิโลกรัม", price: 120, total: 600 },
+    ],
+    shippingAddress: "789 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500",
+    notes: "สำหรับงานเลี้ยงบริษัท",
   },
   {
     id: "ORD-003",
     customerName: "นางสาวมาลี สวยงาม",
-    channel: "ออนไลน์",
+    channel: "Tel",
     orderDate: "2024-01-14",
     receiveDate: "2024-01-19",
     totalPrice: 1200,
     orderStatus: "delivering",
     paymentStatus: "paid",
+    paymentMethod: "kbank",
     printed: false,
-    customerType: "บุคคล",
+    customerType: "ลูกค้าเงินสด",
     deliveryMethod: "ขนส่งเอกชน",
     documents: {
       packageLabel: false,
       packingList: false,
       pickList: true,
     },
+    items: [
+      { name: "กุ้งขาว", quantity: 2, unit: "กิโลกรัม", price: 180, total: 360 },
+      { name: "หอยแมลงภู่", quantity: 3, unit: "กิโลกรัม", price: 120, total: 360 },
+    ],
+    shippingAddress: "456 ถนนพระราม 4 แขวงสุริยวงศ์ เขตบางรัก กรุงเทพฯ 10500",
+    notes: "",
   },
   {
     id: "ORD-004",
     customerName: "ร้านอาหารทะเลสด",
-    channel: "หน้าร้าน",
+    channel: "Line",
     orderDate: "2024-01-14",
     receiveDate: "2024-01-18",
     totalPrice: 15600,
     orderStatus: "completed",
     paymentStatus: "paid",
+    paymentMethod: "bbl",
     printed: true,
-    customerType: "ร้านค้า",
+    customerType: "ลูกค้าเครดิต",
     deliveryMethod: "ขนส่งไปรษณีย์",
     documents: {
       packageLabel: true,
       packingList: true,
       pickList: true,
     },
+    items: [
+      { name: "ปลาทูน่าสด", quantity: 20, unit: "กิโลกรัม", price: 250, total: 5000 },
+      { name: "ปลาแซลมอน", quantity: 15, unit: "กิโลกรัม", price: 450, total: 6750 },
+      { name: "กุ้งขาว", quantity: 10, unit: "กิโลกรัม", price: 180, total: 1800 },
+    ],
+    shippingAddress: "321 ถนนเพชรบุรี แขวงมักกะสัน เขตราชเทวี กรุงเทพฯ 10400",
+    notes: "สำหรับร้านอาหาร ต้องการคุณภาพดี",
   },
   {
     id: "ORD-005",
     customerName: "นายประยุทธ์ รักทะเล",
-    channel: "ออนไลน์",
+    channel: "Facebook",
     orderDate: "2024-01-13",
     receiveDate: "2024-01-21",
     totalPrice: 3200,
     orderStatus: "pending",
     paymentStatus: "partially_paid",
+    paymentMethod: "cash",
     printed: false,
-    customerType: "บุคคล",
+    customerType: "ลูกค้าเงินสด",
     deliveryMethod: "ขนส่งเอกชน",
     documents: {
       packageLabel: false,
       packingList: false,
       pickList: false,
     },
+    items: [
+      { name: "ปลาแซลมอน", quantity: 5, unit: "กิโลกรัม", price: 450, total: 2250 },
+      { name: "กุ้งขาว", quantity: 3, unit: "กิโลกรัม", price: 180, total: 540 },
+    ],
+    shippingAddress: "654 ถนนลาดพร้าว แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900",
+    notes: "ชำระเงินมัดจำแล้ว 1,500 บาท",
   },
   {
     id: "ORD-006",
     customerName: "โรงแรมสีฟู้ด พาราไดซ์",
-    channel: "หน้าร้าน",
+    channel: "Tel",
     orderDate: "2024-01-13",
     receiveDate: "2024-01-20",
     totalPrice: 25400,
     orderStatus: "packing",
     paymentStatus: "paid",
+    paymentMethod: "scb",
     printed: true,
-    customerType: "บริษัท",
+    customerType: "ลูกค้าเครดิต",
     deliveryMethod: "ขนส่งไปรษณีย์",
     documents: {
       packageLabel: true,
       packingList: false,
       pickList: true,
     },
+    items: [
+      { name: "ปลาทูน่าสด", quantity: 30, unit: "กิโลกรัม", price: 250, total: 7500 },
+      { name: "ปลาแซลมอน", quantity: 25, unit: "กิโลกรัม", price: 450, total: 11250 },
+      { name: "กุ้งขาว", quantity: 20, unit: "กิโลกรัม", price: 180, total: 3600 },
+      { name: "หอยแมลงภู่", quantity: 15, unit: "กิโลกรัม", price: 120, total: 1800 },
+    ],
+    shippingAddress: "888 ถนนสุขุมวิท แขวงพระโขนง เขตวัฒนา กรุงเทพฯ 10110",
+    notes: "สำหรับบุฟเฟ่ต์โรงแรม ต้องการจัดส่งเช้า 6 โมง",
   },
 ]
 
@@ -186,6 +218,15 @@ const customers = [
   },
 ]
 
+const bankMap = {
+  cash: { name: "เงินสด", color: "bg-green-100 text-green-800" },
+  scb: { name: "ไทยพาณิชย์", color: "bg-purple-100 text-purple-800" },
+  kbank: { name: "กสิกรไทย", color: "bg-green-100 text-green-800" },
+  bbl: { name: "กรุงเทพ", color: "bg-blue-100 text-blue-800" },
+  ktb: { name: "กรุงไทย", color: "bg-blue-100 text-blue-800" },
+  tmb: { name: "ทหารไทย", color: "bg-yellow-100 text-yellow-800" },
+} as const
+
 export function OrdersPage() {
   const [searchTerm, setSearchTerm] = React.useState("")
   const [customerTypeFilter, setCustomerTypeFilter] = React.useState("all")
@@ -196,35 +237,54 @@ export function OrdersPage() {
   const [dateFrom, setDateFrom] = React.useState<Date>()
   const [receiveDateFrom, setReceiveDateFrom] = React.useState<Date>()
   const [showSalesDialog, setShowSalesDialog] = React.useState(false)
-  const [showNewOrderDialog, setShowNewOrderDialog] = React.useState(false)
+  const [showOrderDetail, setShowOrderDetail] = React.useState(false)
+  const [selectedOrder, setSelectedOrder] = React.useState<any>(null)
+  const [summaryDateFrom, setSummaryDateFrom] = React.useState<Date>()
+  const [summaryDateTo, setSummaryDateTo] = React.useState<Date>()
   const [activeCardFilter, setActiveCardFilter] = React.useState<string | null>(null)
-
-  // New Order Form States
-  const [selectedCustomer, setSelectedCustomer] = React.useState("")
-  const [contactChannel, setContactChannel] = React.useState("")
-  const [selectedAddress, setSelectedAddress] = React.useState("")
-  const [orderItems, setOrderItems] = React.useState<
-    Array<{
-      productId: string
-      quantity: number
-      discount: number
-    }>
-  >([])
-  const [shippingCost, setShippingCost] = React.useState(0)
-  const [shippingMethod, setShippingMethod] = React.useState("")
-  const [totalDiscount, setTotalDiscount] = React.useState(0)
-  const [notes, setNotes] = React.useState("")
 
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
 
-  // คำนวณยอดต่างๆ
-  const totalAmount = orders.reduce((sum, o) => sum + o.totalPrice, 0)
-  const totalPaid = orders.filter((o) => o.paymentStatus === "paid").reduce((sum, o) => sum + o.totalPrice, 0)
-  const totalUnpaid = orders
+  // คำนวณยอดต่างๆ ตาม filter วันที่
+  const getFilteredOrdersForSummary = () => {
+    return orders.filter((order) => {
+      const orderDate = new Date(order.orderDate)
+      const matchesFromDate = !summaryDateFrom || orderDate >= summaryDateFrom
+      const matchesToDate = !summaryDateTo || orderDate <= summaryDateTo
+      return matchesFromDate && matchesToDate
+    })
+  }
+
+  const filteredOrdersForSummary = getFilteredOrdersForSummary()
+  const totalAmount = filteredOrdersForSummary.reduce((sum, o) => sum + o.totalPrice, 0)
+  const totalPaid = filteredOrdersForSummary
+    .filter((o) => o.paymentStatus === "paid")
+    .reduce((sum, o) => sum + o.totalPrice, 0)
+  const totalUnpaid = filteredOrdersForSummary
     .filter((o) => o.paymentStatus === "unpaid" || o.paymentStatus === "partially_paid")
     .reduce((sum, o) => sum + o.totalPrice, 0)
+
+  // คำนวณยอดตามธนาคาร
+  const paidOrdersByBank = filteredOrdersForSummary
+    .filter((o) => o.paymentStatus === "paid")
+    .reduce(
+      (acc, order) => {
+        const bank = order.paymentMethod
+        if (!acc[bank]) {
+          acc[bank] = 0
+        }
+        acc[bank] += order.totalPrice
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+
+  // คำสั่งซื้อล่าสุด (5 รายการ)
+  const latestOrders = filteredOrdersForSummary
+    .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
+    .slice(0, 5)
 
   // กรอง orders ตาม filter
   const filteredOrders = orders.filter((order) => {
@@ -325,60 +385,10 @@ export function OrdersPage() {
     console.log(`Order ${orderId}: ${documentType} = ${checked}`)
   }
 
-  const addOrderItem = () => {
-    setOrderItems([...orderItems, { productId: "", quantity: 1, discount: 0 }])
+  const handleViewOrder = (order: any) => {
+    setSelectedOrder(order)
+    setShowOrderDetail(true)
   }
-
-  const removeOrderItem = (index: number) => {
-    setOrderItems(orderItems.filter((_, i) => i !== index))
-  }
-
-  const updateOrderItem = (index: number, field: string, value: any) => {
-    const updatedItems = [...orderItems]
-    updatedItems[index] = { ...updatedItems[index], [field]: value }
-    setOrderItems(updatedItems)
-  }
-
-  const calculateOrderSummary = () => {
-    const subtotal = orderItems.reduce((sum, item) => {
-      const product = products.find((p) => p.id === item.productId)
-      if (!product) return sum
-      return sum + (product.price * item.quantity - item.discount)
-    }, 0)
-    const total = subtotal - totalDiscount + shippingCost
-    return { subtotal, total }
-  }
-
-  const clearForm = () => {
-    setSelectedCustomer("")
-    setContactChannel("")
-    setSelectedAddress("")
-    setOrderItems([])
-    setShippingCost(0)
-    setShippingMethod("")
-    setTotalDiscount(0)
-    setNotes("")
-  }
-
-  const handleCreateOrder = () => {
-    console.log("สร้างคำสั่งซื้อ:", {
-      customer: selectedCustomer,
-      channel: contactChannel,
-      address: selectedAddress,
-      items: orderItems,
-      shipping: { cost: shippingCost, method: shippingMethod },
-      discount: totalDiscount,
-      notes,
-    })
-    setShowNewOrderDialog(false)
-    clearForm()
-  }
-
-  const handleSendToLine = () => {
-    console.log("ส่งข้อมูลไป LINE")
-  }
-
-  const selectedCustomerData = customers.find((c) => c.id === selectedCustomer)
 
   return (
     <div className="space-y-6">
@@ -386,320 +396,199 @@ export function OrdersPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">คำสั่งซื้อ</h1>
         <div className="flex gap-2">
-          <Dialog open={showNewOrderDialog} onOpenChange={setShowNewOrderDialog}>
-            <DialogTrigger asChild>
-              <Button className="rounded-2xl bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white shadow-lg">
-                <Plus className="w-4 h-4 mr-2" />
-                เพิ่มคำสั่งซื้อ
-              </Button>
-            </DialogTrigger>
+          <Button
+            asChild
+            className="rounded-2xl bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white shadow-lg"
+          >
+            <Link href="/orders/create">
+              <Plus className="w-4 h-4 mr-2" />
+              เพิ่มคำสั่งซื้อ
+            </Link>
+          </Button>
+
+          {/* Order Detail Dialog */}
+          <Dialog open={showOrderDetail} onOpenChange={setShowOrderDetail}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto border-0 rounded-3xl shadow-2xl">
               <DialogHeader>
-                <DialogTitle>สร้างคำสั่งซื้อใหม่</DialogTitle>
+                <DialogTitle>รายละเอียดคำสั่งซื้อ {selectedOrder?.id}</DialogTitle>
               </DialogHeader>
-              <div className="space-y-6 py-4">
-                {/* ข้อมูลลูกค้าและช่องทางติดต่อ */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>เลือกลูกค้า</Label>
-                    <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="เลือกลูกค้า" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {customers.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.name} ({customer.type === "credit" ? "เครดิต" : "เงินสด"})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>ช่องทางติดต่อ</Label>
-                    <RadioGroup value={contactChannel} onValueChange={setContactChannel}>
-                      <div className="flex space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="ออนไลน์" id="online" />
-                          <Label htmlFor="online">ออนไลน์</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="หน้าร้าน" id="store" />
-                          <Label htmlFor="store">หน้าร้าน</Label>
-                        </div>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </div>
-
-                {/* ข้อมูลเครดิต */}
-                {selectedCustomerData?.type === "credit" && (
+              {selectedOrder && (
+                <div className="space-y-6 py-4">
+                  {/* ข้อมูลลูกค้า */}
                   <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
                     <CardHeader>
-                      <CardTitle className="text-sm">ข้อมูลเครดิต</CardTitle>
+                      <CardTitle className="text-lg">ข้อมูลลูกค้า</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label>วงเงินเครดิต</Label>
-                          <p className="font-semibold">฿{selectedCustomerData.creditLimit?.toLocaleString()}</p>
+                          <Label className="text-sm font-medium">ชื่อลูกค้า</Label>
+                          <p className="text-sm">{selectedOrder.customerName}</p>
                         </div>
                         <div>
-                          <Label>ประเภทเครดิต</Label>
-                          <p className="font-semibold">
-                            {selectedCustomerData.creditType === "amount" ? "ตามจำนวนเงิน" : "ตามจำนวนบิล"}
-                          </p>
+                          <Label className="text-sm font-medium">ประเภทลูกค้า</Label>
+                          <Badge variant="outline" className="ml-2">
+                            {selectedOrder.customerType}
+                          </Badge>
                         </div>
                         <div>
-                          <Label>จำนวนวัน</Label>
-                          <p className="font-semibold">{selectedCustomerData.creditDays} วัน</p>
+                          <Label className="text-sm font-medium">ช่องทางการสั่งซื้อ</Label>
+                          <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700 border-blue-200">
+                            {selectedOrder.channel}
+                          </Badge>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">วิธีการจัดส่ง</Label>
+                          <p className="text-sm">{selectedOrder.deliveryMethod}</p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                )}
 
-                {/* เลือกที่อยู่จัดส่ง */}
-                {selectedCustomerData && (
-                  <div>
-                    <Label>เลือกที่อยู่จัดส่ง</Label>
-                    <RadioGroup value={selectedAddress} onValueChange={setSelectedAddress}>
-                      {selectedCustomerData.addresses.map((address) => (
-                        <div key={address.id} className="flex items-start space-x-2">
-                          <RadioGroupItem value={address.id} id={address.id} className="mt-1" />
-                          <Label htmlFor={address.id} className="text-sm leading-relaxed">
-                            {address.address}{" "}
-                            {address.isDefault && (
-                              <Badge variant="secondary" className="ml-2">
-                                ค่าเริ่มต้น
-                              </Badge>
-                            )}
-                          </Label>
+                  {/* ข้อมูลคำสั่งซื้อ */}
+                  <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+                    <CardHeader>
+                      <CardTitle className="text-lg">ข้อมูลคำสั่งซื้อ</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm font-medium">วันที่สั่งซื้อ</Label>
+                          <p className="text-sm">
+                            {format(new Date(selectedOrder.orderDate), "dd/MM/yyyy", { locale: th })}
+                          </p>
                         </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-                )}
+                        <div>
+                          <Label className="text-sm font-medium">วันที่ต้องการรับสินค้า</Label>
+                          <p className="text-sm">
+                            {format(new Date(selectedOrder.receiveDate), "dd/MM/yyyy", { locale: th })}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">สถานะคำสั่งซื้อ</Label>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "ml-2 border",
+                              orderStatusMap[selectedOrder.orderStatus as keyof typeof orderStatusMap].color,
+                            )}
+                          >
+                            {orderStatusMap[selectedOrder.orderStatus as keyof typeof orderStatusMap].label}
+                          </Badge>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">สถานะการชำระเงิน</Label>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "ml-2 border",
+                              paymentStatusMap[selectedOrder.paymentStatus as keyof typeof paymentStatusMap].color,
+                            )}
+                          >
+                            {paymentStatusMap[selectedOrder.paymentStatus as keyof typeof paymentStatusMap].label}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                {/* เลือกสินค้า */}
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <Label className="text-base font-semibold">รายการสินค้า</Label>
-                    <Button onClick={addOrderItem} size="sm">
-                      <Plus className="w-4 h-4 mr-2" />
-                      เพิ่มสินค้า
+                  {/* ที่อยู่จัดส่ง */}
+                  <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+                    <CardHeader>
+                      <CardTitle className="text-lg">ที่อยู่จัดส่ง</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm">{selectedOrder.shippingAddress}</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* รายการสินค้า */}
+                  <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+                    <CardHeader>
+                      <CardTitle className="text-lg">รายการสินค้า</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ชื่อสินค้า</TableHead>
+                              <TableHead>จำนวน</TableHead>
+                              <TableHead>หน่วย</TableHead>
+                              <TableHead>ราคาต่อหน่วย</TableHead>
+                              <TableHead>ราคารวม</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {selectedOrder.items.map((item: any, index: number) => (
+                              <TableRow key={index}>
+                                <TableCell>{item.name}</TableCell>
+                                <TableCell>{item.quantity}</TableCell>
+                                <TableCell>{item.unit}</TableCell>
+                                <TableCell>฿{item.price.toLocaleString()}</TableCell>
+                                <TableCell>฿{item.total.toLocaleString()}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                      <Separator className="my-4" />
+                      <div className="flex justify-end">
+                        <div className="text-right">
+                          <div className="text-lg font-semibold">
+                            ยอดรวมทั้งสิ้น: ฿{selectedOrder.totalPrice.toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* หมายเหตุ */}
+                  {selectedOrder.notes && (
+                    <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+                      <CardHeader>
+                        <CardTitle className="text-lg">หมายเหตุ</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm">{selectedOrder.notes}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* สถานะเอกสาร */}
+                  <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+                    <CardHeader>
+                      <CardTitle className="text-lg">สถานะเอกสาร</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox checked={selectedOrder.documents.packageLabel} disabled />
+                          <Label className="text-sm">ใบปะหน้าพัสดุ</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox checked={selectedOrder.documents.packingList} disabled />
+                          <Label className="text-sm">Packing List</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox checked={selectedOrder.documents.pickList} disabled />
+                          <Label className="text-sm">Pick List</Label>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowOrderDetail(false)}
+                      className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent"
+                    >
+                      ปิด
                     </Button>
                   </div>
-                  <div className="space-y-3">
-                    {orderItems.map((item, index) => (
-                      <Card className="border-0 shadow-sm rounded-2xl bg-gray-50" key={index}>
-                        <CardContent className="p-4">
-                          <div className="grid grid-cols-5 gap-4 items-end">
-                            <div>
-                              <Label>สินค้า</Label>
-                              <Select
-                                value={item.productId}
-                                onValueChange={(value) => updateOrderItem(index, "productId", value)}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="เลือกสินค้า" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {products.map((product) => (
-                                    <SelectItem key={product.id} value={product.id}>
-                                      {product.name} - ฿{product.price}/{product.unit}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <Label>จำนวน</Label>
-                              <Input
-                                type="number"
-                                value={item.quantity}
-                                onChange={(e) => updateOrderItem(index, "quantity", Number(e.target.value))}
-                                min="1"
-                              />
-                            </div>
-                            <div>
-                              <Label>ส่วนลด (บาท)</Label>
-                              <Input
-                                type="number"
-                                value={item.discount}
-                                onChange={(e) => updateOrderItem(index, "discount", Number(e.target.value))}
-                                min="0"
-                              />
-                            </div>
-                            <div>
-                              <Label>ราคารวม</Label>
-                              <p className="font-semibold">
-                                ฿{(() => {
-                                  const product = products.find((p) => p.id === item.productId)
-                                  if (!product) return 0
-                                  return (product.price * item.quantity - item.discount).toLocaleString()
-                                })()}
-                              </p>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeOrderItem(index)}
-                              className="text-red-600 hover:text-red-700 border-0 shadow-sm rounded-2xl hover:shadow-md"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
                 </div>
-
-                {/* ส่วนลดทั้งบิลและค่าส่ง */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>ส่วนลดทั้งบิล (บาท)</Label>
-                    <Input
-                      type="number"
-                      value={totalDiscount}
-                      onChange={(e) => setTotalDiscount(Number(e.target.value))}
-                      min="0"
-                    />
-                  </div>
-                  <div>
-                    <Label>ค่าส่งสินค้า (บาท)</Label>
-                    <Input
-                      type="number"
-                      value={shippingCost}
-                      onChange={(e) => setShippingCost(Number(e.target.value))}
-                      min="0"
-                    />
-                  </div>
-                  <div>
-                    <Label>ขนส่ง</Label>
-                    <Select value={shippingMethod} onValueChange={setShippingMethod}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="เลือกขนส่ง" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kerry">Kerry Express</SelectItem>
-                        <SelectItem value="thailand_post">ไปรษณีย์ไทย</SelectItem>
-                        <SelectItem value="flash">Flash Express</SelectItem>
-                        <SelectItem value="j&t">J&T Express</SelectItem>
-                        <SelectItem value="pickup">รับเอง</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* หมายเหตุ */}
-                <div>
-                  <Label>หมายเหตุ</Label>
-                  <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="หมายเหตุเพิ่มเติม..."
-                    rows={3}
-                  />
-                </div>
-
-                {/* สรุปคำสั่งซื้อ */}
-                <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
-                  <CardHeader>
-                    <CardTitle>สรุปคำสั่งซื้อ</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {orderItems.map((item, index) => {
-                        const product = products.find((p) => p.id === item.productId)
-                        if (!product) return null
-                        return (
-                          <div key={index} className="flex justify-between text-sm">
-                            <span>
-                              {product.name} x {item.quantity} {product.unit}
-                            </span>
-                            <span>฿{(product.price * item.quantity - item.discount).toLocaleString()}</span>
-                          </div>
-                        )
-                      })}
-                      <Separator />
-                      <div className="flex justify-between text-sm">
-                        <span>ยอดรวมสินค้า</span>
-                        <span>฿{calculateOrderSummary().subtotal.toLocaleString()}</span>
-                      </div>
-                      {totalDiscount > 0 && (
-                        <div className="flex justify-between text-sm text-red-600">
-                          <span>ส่วนลดทั้งบิล</span>
-                          <span>-฿{totalDiscount.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {shippingCost > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span>ค่าส่งสินค้า</span>
-                          <span>฿{shippingCost.toLocaleString()}</span>
-                        </div>
-                      )}
-                      <Separator />
-                      <div className="flex justify-between font-semibold">
-                        <span>ยอดรวมทั้งสิ้น</span>
-                        <span>฿{calculateOrderSummary().total.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* ปุ่มต่างๆ */}
-                <div className="flex justify-between">
-                  <Button
-                    variant="outline"
-                    className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent"
-                    onClick={clearForm}
-                  >
-                    เคลียร์ข้อมูล
-                  </Button>
-                  <div className="flex gap-2">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent"
-                        >
-                          <Send className="w-4 h-4 mr-2" />
-                          ส่งไป LINE
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>ยืนยันการส่งข้อมูล</AlertDialogTitle>
-                          <AlertDialogDescription>ต้องการส่งข้อมูลคำสั่งซื้อไปยัง LINE ใช่หรือไม่?</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleSendToLine}>ใช่</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button className="bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white rounded-2xl shadow-lg">
-                          สร้างคำสั่งซื้อ
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>ยืนยันการสร้างคำสั่งซื้อ</AlertDialogTitle>
-                          <AlertDialogDescription>ต้องการยืนยันการสร้างคำสั่งซื้อใช่หรือไม่?</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleCreateOrder}>ใช่</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-              </div>
+              )}
             </DialogContent>
           </Dialog>
 
@@ -709,23 +598,155 @@ export function OrdersPage() {
                 ดูยอดสรุป
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md border-0 rounded-3xl shadow-2xl">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto border-0 rounded-3xl shadow-2xl">
               <DialogHeader>
                 <DialogTitle className="text-center">สรุปยอดขาย</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
-                  <span className="text-sm font-medium text-blue-700">ยอดรวมทั้งหมด</span>
-                  <span className="text-xl font-bold text-blue-800">฿{totalAmount.toLocaleString()}</span>
+              <div className="space-y-6 py-4">
+                {/* Filter วันที่ */}
+                <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+                  <CardHeader>
+                    <CardTitle className="text-sm">กรองตามวันที่</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>จากวันที่</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !summaryDateFrom && "text-muted-foreground",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {summaryDateFrom ? format(summaryDateFrom, "dd/MM/yyyy", { locale: th }) : "เลือกวันที่"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={summaryDateFrom}
+                              onSelect={setSummaryDateFrom}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div>
+                        <Label>ถึงวันที่</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !summaryDateTo && "text-muted-foreground",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {summaryDateTo ? format(summaryDateTo, "dd/MM/yyyy", { locale: th }) : "เลือกวันที่"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar mode="single" selected={summaryDateTo} onSelect={setSummaryDateTo} initialFocus />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+                    <div className="flex justify-end mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSummaryDateFrom(undefined)
+                          setSummaryDateTo(undefined)
+                        }}
+                        className="border-0 shadow-sm rounded-xl hover:shadow-md"
+                      >
+                        ล้างตัวกรอง
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* คำสั่งซื้อล่าสุด */}
+                <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+                  <CardHeader>
+                    <CardTitle className="text-sm">คำสั่งซื้อล่าสุด</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {latestOrders.map((order) => (
+                        <div
+                          key={order.id}
+                          className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm"
+                        >
+                          <div>
+                            <div className="font-medium text-sm">{order.id}</div>
+                            <div className="text-xs text-gray-500">{order.customerName}</div>
+                            <div className="text-xs text-gray-500">
+                              {format(new Date(order.orderDate), "dd/MM/yyyy", { locale: th })}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-sm">฿{order.totalPrice.toLocaleString()}</div>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-xs",
+                                paymentStatusMap[order.paymentStatus as keyof typeof paymentStatusMap].color,
+                              )}
+                            >
+                              {paymentStatusMap[order.paymentStatus as keyof typeof paymentStatusMap].label}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* สรุปยอด */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+                    <span className="text-sm font-medium text-blue-700">ยอดรวมทั้งหมด</span>
+                    <span className="text-xl font-bold text-blue-800">฿{totalAmount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+                    <span className="text-sm font-medium text-green-700">ยอดที่ชำระแล้ว</span>
+                    <span className="text-xl font-bold text-green-800">฿{totalPaid.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-4 bg-red-50 rounded-lg">
+                    <span className="text-sm font-medium text-red-700">ยอดค้างชำระ</span>
+                    <span className="text-xl font-bold text-red-800">฿{totalUnpaid.toLocaleString()}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
-                  <span className="text-sm font-medium text-green-700">ยอดที่ชำระแล้ว</span>
-                  <span className="text-xl font-bold text-green-800">฿{totalPaid.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-red-50 rounded-lg">
-                  <span className="text-sm font-medium text-red-700">ยอดค้างชำระ</span>
-                  <span className="text-xl font-bold text-red-800">฿{totalUnpaid.toLocaleString()}</span>
-                </div>
+
+                {/* ยอดตามธนาคาร */}
+                <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+                  <CardHeader>
+                    <CardTitle className="text-sm">ยอดที่ชำระแล้วแยกตามธนาคาร</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {Object.entries(paidOrdersByBank).map(([bank, amount]) => (
+                        <div key={bank} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                          <div className="flex items-center space-x-2">
+                            {bank === "cash" ? <Banknote className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
+                            <span className="text-sm font-medium">
+                              {bankMap[bank as keyof typeof bankMap]?.name || bank}
+                            </span>
+                          </div>
+                          <span className="text-sm font-bold">฿{amount.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
                 <Button
                   variant="outline"
                   className="w-full mt-6 bg-transparent border-0 shadow-sm rounded-2xl hover:shadow-md"
@@ -744,7 +765,9 @@ export function OrdersPage() {
         {["pending", "packing", "delivering", "completed"].map((status) => (
           <Card
             key={status}
-            className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${activeCardFilter === status ? "ring-2 ring-blue-500" : ""}`}
+            className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${
+              activeCardFilter === status ? "ring-2 ring-blue-500" : ""
+            }`}
             onClick={() => handleCardFilter(status)}
           >
             <CardHeader className="pb-2">
@@ -815,9 +838,8 @@ export function OrdersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">ทั้งหมด</SelectItem>
-                  <SelectItem value="บุคคล">บุคคล</SelectItem>
-                  <SelectItem value="บริษัท">บริษัท</SelectItem>
-                  <SelectItem value="ร้านค้า">ร้านค้า</SelectItem>
+                  <SelectItem value="ลูกค้าเงินสด">ลูกค้าเงินสด</SelectItem>
+                  <SelectItem value="ลูกค้าเครดิต">ลูกค้าเครดิต</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -831,8 +853,9 @@ export function OrdersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">ทั้งหมด</SelectItem>
-                  <SelectItem value="ออนไลน์">ออนไลน์</SelectItem>
-                  <SelectItem value="หน้าร้าน">หน้าร้าน</SelectItem>
+                  <SelectItem value="Line">Line</SelectItem>
+                  <SelectItem value="Facebook">Facebook</SelectItem>
+                  <SelectItem value="Tel">Tel</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -970,6 +993,7 @@ export function OrdersPage() {
                   <TableHead>สถานะคำสั่งซื้อ</TableHead>
                   <TableHead>สถานะการชำระเงิน</TableHead>
                   <TableHead>พิมพ์เอกสาร</TableHead>
+                  <TableHead>เพิ่มเติม</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1036,6 +1060,16 @@ export function OrdersPage() {
                           </Label>
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewOrder(order)}
+                        className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

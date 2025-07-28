@@ -283,7 +283,7 @@ const DeliveryPage = () => {
           <h1 className="text-3xl font-bold">การจัดส่ง</h1>
           <p className="text-muted-foreground">จัดการการจัดส่งและติดตามสถานะ</p>
         </div>
-        <Link href="/products/create">
+        <Link href="/delivery/create">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
             เพิ่มการจัดส่งใหม่

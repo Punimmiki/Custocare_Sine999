@@ -8,12 +8,13 @@ import {
   Package,
   Plus,
   Power,
-  PowerOff,
   ChevronLeft,
   ChevronRight,
   Loader2,
   Eye,
   Clock,
+  AlertTriangle,
+  XCircle,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -519,6 +520,7 @@ const ProductsPage = () => {
   const [updatingProductId, setUpdatingProductId] = React.useState<string | null>(null)
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = React.useState(false)
+  const [activeCardFilter, setActiveCardFilter] = React.useState<string | null>(null)
   const { toast } = useToast()
 
   const filteredProducts = React.useMemo(() => {
@@ -548,22 +550,24 @@ const ProductsPage = () => {
   // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, categoryFilter, activeFilter, statusFilter])
+  }, [searchTerm, categoryFilter, activeFilter, statusFilter, activeCardFilter])
 
   const handleToggleActive = async (productId: string) => {
     setUpdatingProductId(productId)
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
+
       setProducts((prevProducts) =>
         prevProducts.map((product) =>
           product.id === productId ? { ...product, isActive: !product.isActive } : product,
         ),
       )
+
       const product = products.find((p) => p.id === productId)
       toast({
         title: "อัปเดตสำเร็จ",
-        description: `${product?.name} ได้รับการ${product?.isActive ? "ปิด" : "เปิด"}ใช้งานแล้ว`,
+        description: `${product?.name} ได้รับ���าร${product?.isActive ? "ปิด" : "เปิด"}ใช้งานแล้ว`,
       })
     } catch (error) {
       toast({
@@ -590,20 +594,46 @@ const ProductsPage = () => {
     setCurrentPage(1)
   }
 
+  const handleCardFilter = (filterType: string) => {
+    // Reset all filters first
+    setSearchTerm("")
+    setCategoryFilter("ทั้งหมด")
+    setActiveFilter("ทั้งหมด")
+
+    // Apply the selected card filter
+    if (activeCardFilter === filterType) {
+      // If clicking the same card, reset all filters
+      setActiveCardFilter(null)
+      setStatusFilter("ทั้งหมด")
+    } else {
+      setActiveCardFilter(filterType)
+      if (filterType === "all") {
+        setStatusFilter("ทั้งหมด")
+      } else if (filterType === "active") {
+        setStatusFilter("พร้อมจำหน่าย")
+      } else if (filterType === "low_stock") {
+        setStatusFilter("สต็อกต่ำ")
+      } else if (filterType === "out_of_stock") {
+        setStatusFilter("หมด")
+      }
+    }
+  }
+
   const clearFilters = () => {
     setSearchTerm("")
     setCategoryFilter("ทั้งหมด")
     setActiveFilter("ทั้งหมด")
     setStatusFilter("ทั้งหมด")
+    setActiveCardFilter(null)
   }
 
   // Statistics calculations
   const stats = React.useMemo(() => {
     const totalProducts = products.length
-    const activeProducts = products.filter((p) => p.isActive).length
-    const inactiveProducts = products.filter((p) => !p.isActive).length
+    const activeProducts = products.filter((p) => p.status === "active").length
+    const lowStockProducts = products.filter((p) => p.status === "low_stock").length
     const outOfStockProducts = products.filter((p) => p.status === "out_of_stock").length
-    return { totalProducts, activeProducts, inactiveProducts, outOfStockProducts }
+    return { totalProducts, activeProducts, lowStockProducts, outOfStockProducts }
   }, [products])
 
   if (isLoading) {
@@ -656,7 +686,10 @@ const ProductsPage = () => {
           <h1 className="text-3xl font-bold">จัดการสินค้า</h1>
           <p className="text-muted-foreground">จัดการสินค้าและคลังสินค้า</p>
         </div>
-        <Button asChild>
+        <Button
+          asChild
+          className="rounded-2xl bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white shadow-lg"
+        >
           <Link href="/products/create">
             <Plus className="h-4 w-4 mr-2" />
             เพิ่มสินค้าใหม่
@@ -664,9 +697,14 @@ const ProductsPage = () => {
         </Button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Now clickable */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card
+          className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${
+            activeCardFilter === "all" ? "ring-2 ring-blue-500" : ""
+          }`}
+          onClick={() => handleCardFilter("all")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">สินค้าทั้งหมด</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -675,27 +713,46 @@ const ProductsPage = () => {
             <div className="text-2xl font-bold">{stats.totalProducts}</div>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card
+          className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${
+            activeCardFilter === "active" ? "ring-2 ring-green-500" : ""
+          }`}
+          onClick={() => handleCardFilter("active")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">สินค้าใช้งาน</CardTitle>
+            <CardTitle className="text-sm font-medium">สินค้าพร้อมจำหน่าย</CardTitle>
             <Power className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.activeProducts}</div>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card
+          className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${
+            activeCardFilter === "low_stock" ? "ring-2 ring-amber-500" : ""
+          }`}
+          onClick={() => handleCardFilter("low_stock")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">สินค้าไม่ใช้งาน</CardTitle>
-            <PowerOff className="h-4 w-4 text-gray-600" />
+            <CardTitle className="text-sm font-medium">สินค้าสต็อกต่ำ</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-600">{stats.inactiveProducts}</div>
+            <div className="text-2xl font-bold text-amber-600">{stats.lowStockProducts}</div>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card
+          className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${
+            activeCardFilter === "out_of_stock" ? "ring-2 ring-red-500" : ""
+          }`}
+          onClick={() => handleCardFilter("out_of_stock")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">สินค้าหมด</CardTitle>
+            <XCircle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{stats.outOfStockProducts}</div>
@@ -703,10 +760,41 @@ const ProductsPage = () => {
         </Card>
       </div>
 
+      {/* Active Filter Indicator */}
+      {activeCardFilter && (
+        <div className="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl shadow-sm border-0">
+          <div className="text-sm text-blue-800">
+            <strong>กำลังกรองข้อมูล:</strong>{" "}
+            {activeCardFilter === "all"
+              ? "สินค้าทั้งหมด"
+              : activeCardFilter === "active"
+                ? "สินค้าพร้อมจำหน่าย"
+                : activeCardFilter === "low_stock"
+                  ? "สินค้าสต็อกต่ำ"
+                  : "สินค้าหมด"}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCardFilter("")}
+            className="h-7 px-3 text-xs bg-white rounded-xl border-0 shadow-sm hover:shadow-md"
+          >
+            ล้างตัวกรอง
+          </Button>
+        </div>
+      )}
+
       {/* Filters */}
-      <Card>
-        <CardHeader>
+      <Card className="border-0 shadow-sm rounded-2xl bg-white">
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>ค้นหาและกรองข้อมูล</CardTitle>
+          <Button
+            variant="outline"
+            onClick={clearFilters}
+            className="bg-white border-0 shadow-sm rounded-xl hover:shadow-md"
+          >
+            ล้างตัวกรอง
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row md:items-end">
@@ -768,15 +856,12 @@ const ProductsPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <Button variant="outline" onClick={clearFilters}>
-              ล้างตัวกรอง
-            </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Products Table */}
-      <Card>
+      <Card className="border-0 shadow-sm rounded-2xl bg-white">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
@@ -872,13 +957,18 @@ const ProductsPage = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleViewProduct(product)}
-                            className="h-8 px-2 text-xs bg-transparent"
+                            className="h-8 px-2 text-xs bg-transparent border border-gray-200 shadow-sm rounded-xl hover:shadow-md"
                             title="ดูรายละเอียด"
                           >
                             <Eye className="h-3 w-3 mr-1" />
                             ดู
                           </Button>
-                          <Button variant="outline" size="sm" asChild className="h-8 px-2 text-xs bg-transparent">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="h-8 px-2 text-xs bg-transparent border border-gray-200 shadow-sm rounded-xl hover:shadow-md"
+                          >
                             <Link href={`/products/${product.id}/edit`}>
                               <Edit className="h-3 w-3 mr-1" />
                               แก้ไข
@@ -900,7 +990,7 @@ const ProductsPage = () => {
                                   )}
                                 </div>
                               </AlertDialogTrigger>
-                              <AlertDialogContent>
+                              <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>ยืนยันการ{product.isActive ? "ปิด" : "เปิด"}ใช้งานสินค้า</AlertDialogTitle>
                                   <AlertDialogDescription>
@@ -949,11 +1039,12 @@ const ProductsPage = () => {
                   size="sm"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="h-8 px-2"
+                  className="h-8 px-2 border-0 shadow-sm rounded-xl hover:shadow-md"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   ก่อนหน้า
                 </Button>
+
                 {/* Page numbers */}
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -967,25 +1058,27 @@ const ProductsPage = () => {
                     } else {
                       pageNumber = currentPage - 2 + i
                     }
+
                     return (
                       <Button
                         key={pageNumber}
                         variant={currentPage === pageNumber ? "default" : "outline"}
                         size="sm"
                         onClick={() => handlePageChange(pageNumber)}
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 border-0 shadow-sm rounded-xl hover:shadow-md"
                       >
                         {pageNumber}
                       </Button>
                     )
                   })}
                 </div>
+
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="h-8 px-2"
+                  className="h-8 px-2 border-0 shadow-sm rounded-xl hover:shadow-md"
                 >
                   ถัดไป
                   <ChevronRight className="h-4 w-4" />

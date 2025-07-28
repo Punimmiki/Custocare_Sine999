@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
-import { ArrowLeft, Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react"
+import { Plus, Edit, Trash2, Eye, EyeOff, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -96,26 +95,21 @@ const ManageCategoriesPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
-          <Link href="/products/create">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">จัดการหมวดหมู่</h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">จัดการหมวดหมู่</h2>
           <p className="text-muted-foreground">เพิ่ม แก้ไข และจัดการหมวดหมู่สินค้า</p>
         </div>
 
         {/* Add Category Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="rounded-2xl bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white shadow-lg">
               <Plus className="h-4 w-4 mr-2" />
               เพิ่มหมวดหมู่
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="border-0 rounded-3xl shadow-2xl">
             <DialogHeader>
               <DialogTitle>เพิ่มหมวดหมู่ใหม่</DialogTitle>
               <DialogDescription>กรอกชื่อหมวดหมู่ใหม่ที่ต้องการเพิ่ม</DialogDescription>
@@ -148,61 +142,71 @@ const ManageCategoriesPage = () => {
         </Dialog>
       </div>
 
-      {/* Categories List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>รายการหมวดหมู่</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {categories.map((category) => (
-              <div key={category.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
+      {/* Categories Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {categories.map((category) => (
+          <Card key={category.id} className="border-0 shadow-sm rounded-2xl bg-white hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                    <Package className="h-5 w-5 text-slate-600" />
+                  </div>
                   <div>
-                    <h3 className="font-medium">{category.name}</h3>
+                    <CardTitle className="text-lg">{category.name}</CardTitle>
                     <p className="text-sm text-muted-foreground">{category.productCount} สินค้า</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {category.showOnWebsite ? (
-                      <Badge variant="default" className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        แสดงบนเว็บ
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <EyeOff className="h-3 w-3" />
-                        ซ่อนจากเว็บ
-                      </Badge>
-                    )}
-                  </div>
+                </div>
+                <Badge
+                  variant={category.showOnWebsite ? "default" : "secondary"}
+                  className={`flex items-center gap-1 ${
+                    category.showOnWebsite
+                      ? "bg-green-100 text-green-800 border-green-200"
+                      : "bg-gray-100 text-gray-600 border-gray-200"
+                  }`}
+                >
+                  {category.showOnWebsite ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                  {category.showOnWebsite ? "แสดงบนเว็บ" : "ซ่อนจากเว็บ"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor={`website-${category.id}`} className="text-sm">
+                    แสดงบนเว็บ
+                  </Label>
+                  <Switch
+                    id={`website-${category.id}`}
+                    checked={category.showOnWebsite}
+                    onCheckedChange={() => toggleWebsiteVisibility(category.id)}
+                  />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {/* Website Visibility Toggle */}
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor={`website-${category.id}`} className="text-sm">
-                      แสดงบนเว็บ
-                    </Label>
-                    <Switch
-                      id={`website-${category.id}`}
-                      checked={category.showOnWebsite}
-                      onCheckedChange={() => toggleWebsiteVisibility(category.id)}
-                    />
-                  </div>
-
                   {/* Edit Button */}
-                  <Button variant="outline" size="sm" onClick={() => openEditDialog(category)}>
-                    <Edit className="h-4 w-4" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEditDialog(category)}
+                    className="h-8 px-2 border-0 shadow-sm rounded-xl hover:shadow-md bg-transparent"
+                  >
+                    <Edit className="h-3 w-3" />
                   </Button>
 
                   {/* Delete Button */}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" disabled={category.productCount > 0}>
-                        <Trash2 className="h-4 w-4" />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={category.productCount > 0}
+                        className="h-8 px-2 border-0 shadow-sm rounded-xl hover:shadow-md bg-transparent disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
                       <AlertDialogHeader>
                         <AlertDialogTitle>ยืนยันการลบหมวดหมู่</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -222,18 +226,30 @@ const ManageCategoriesPage = () => {
                   </AlertDialog>
                 </div>
               </div>
-            ))}
 
-            {categories.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">ยังไม่มีหมวดหมู่ คลิกปุ่ม "เพิ่มหมวดหมู่" เพื่อเริ่มต้น</div>
-            )}
+              {category.productCount > 0 && (
+                <p className="text-xs text-amber-600 mt-2">⚠️ ไม่สามารถลบได้เนื่องจากมีสินค้าในหมวดหมู่นี้</p>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+
+        {categories.length === 0 && (
+          <div className="col-span-full">
+            <Card className="border-0 shadow-sm rounded-2xl bg-white">
+              <CardContent className="text-center py-12">
+                <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">ยังไม่มีหมวดหมู่</p>
+                <p className="text-sm text-muted-foreground">คลิกปุ่ม "เพิ่มหมวดหมู่" เพื่อเริ่มต้น</p>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Edit Category Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="border-0 rounded-3xl shadow-2xl">
           <DialogHeader>
             <DialogTitle>แก้ไขหมวดหมู่</DialogTitle>
             <DialogDescription>แก้ไขชื่อหมวดหมู่ "{editingCategory?.name}"</DialogDescription>
@@ -268,6 +284,5 @@ const ManageCategoriesPage = () => {
   )
 }
 
-
-export {ManageCategoriesPage}
+export { ManageCategoriesPage }
 export default ManageCategoriesPage

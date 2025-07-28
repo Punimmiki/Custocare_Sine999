@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { AppSidebar } from "./app-sidebar"
 import { AdminHeader } from "./admin-header"
@@ -5,9 +7,10 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 interface AdminLayoutProps {
   children: React.ReactNode
+  hideHeader?: boolean
 }
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout({ children, hideHeader = false }: AdminLayoutProps) {
   return (
     <SidebarProvider
       style={
@@ -20,8 +23,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     >
       <AppSidebar />
       <SidebarInset className="flex flex-col min-h-screen">
-        <AdminHeader />
-        <div className="flex flex-1 flex-col gap-4 p-6 pt-4 bg-slate-50 min-h-0">{children}</div>
+        {!hideHeader && <AdminHeader />}
+        <div className={`flex flex-1 flex-col gap-4 ${hideHeader ? "p-0" : "p-6 pt-4"} bg-slate-50 min-h-0`}>
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )
