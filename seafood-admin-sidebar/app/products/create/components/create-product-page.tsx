@@ -186,7 +186,7 @@ const CreateProductPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="product-name">ชื่อสินค้า *</Label>
+                  <Label htmlFor="product-name">ชื่อสินค้า <span className="text-red-500">*</span></Label>
                   <Input
                     id="product-name"
                     value={productName}
@@ -198,7 +198,7 @@ const CreateProductPage = () => {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="product-price">ราคา (บาท) *</Label>
+                    <Label htmlFor="product-price">ราคา (บาท) <span className="text-red-500">*</span></Label>
                     <Input
                       id="product-price"
                       type="number"
@@ -211,7 +211,7 @@ const CreateProductPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="product-unit">หน่วย *</Label>
+                    <Label htmlFor="product-unit">หน่วย <span className="text-red-500">*</span></Label>
                     <Select value={productUnit} onValueChange={setProductUnit} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกหน่วย" />
@@ -229,7 +229,7 @@ const CreateProductPage = () => {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="product-category">หมวดหมู่ *</Label>
+                    <Label htmlFor="product-category">หมวดหมู่ <span className="text-red-500">*</span></Label>
                     <Select value={productCategory} onValueChange={setProductCategory} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกหมวดหมู่" />
@@ -244,7 +244,7 @@ const CreateProductPage = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="product-stock">จำนวนคงเหลือ *</Label>
+                    <Label htmlFor="product-stock">จำนวนคงเหลือ <span className="text-red-500">*</span></Label>
                     <Input
                       id="product-stock"
                       type="number"

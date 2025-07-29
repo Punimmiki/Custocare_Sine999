@@ -23,6 +23,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { CalendarIcon } from "lucide-react"
 
 // Sample data for reports
 const dailySalesData = [
@@ -100,6 +103,7 @@ const deliverySummaryData = [
 const ReportsPage = () => {
   const [dateRange, setDateRange] = React.useState("15days")
   const [reportType, setReportType] = React.useState("sales")
+  const [selectedDate, setSelectedDate] = React.useState<Date>()
 
   // Calculate summary statistics
   const totalSales = dailySalesData.reduce((sum, day) => sum + day.sales, 0)
@@ -133,19 +137,35 @@ const ReportsPage = () => {
           <h1 className="text-3xl font-bold">รายงาน</h1>
           <p className="text-muted-foreground">รายงานยอดขายและสถิติต่างๆ</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="เลือกช่วงเวลา" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7days">7 วัน</SelectItem>
-              <SelectItem value="15days">15 วัน</SelectItem>
-              <SelectItem value="30days">30 วัน</SelectItem>
-              <SelectItem value="90days">90 วัน</SelectItem>
+              <SelectItem value="7days">7 วันที่ผ่านมา</SelectItem>
+              <SelectItem value="15days">15 วันที่ผ่านมา</SelectItem>
+              <SelectItem value="30days">30 วันที่ผ่านมา</SelectItem>
+              <SelectItem value="90days">90 วันที่ผ่านมา</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-36 justify-start text-left bg-transparent bg-white">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? format(selectedDate, "dd/MM/yyyy", { locale: th }) : "เลือกวันที่"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus />
+            </PopoverContent>
+          </Popover>
+          <Button
+            variant="outline"
+            onClick={() =>
+              alert(`ส่งออกข้อมูลวันที่ ${selectedDate ? format(selectedDate, "dd/MM/yyyy", { locale: th }) : "ไม่ได้เลือก"}`)
+            }
+          >
             <Download className="h-4 w-4 mr-2" />
             ส่งออก
           </Button>
@@ -338,31 +358,33 @@ const ReportsPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ชื่อลูกค้า</TableHead>
-                  <TableHead>เบอร์โทร</TableHead>
-                  <TableHead>วงเงินเครดิต</TableHead>
-                  <TableHead>ยอดค้างชำระ</TableHead>
-                  <TableHead>การชำระล่าสุด</TableHead>
-                  <TableHead>วันเกินกำหนด</TableHead>
-                  <TableHead>สถานะ</TableHead>
+                  <TableHead className="text-center">ชื่อลูกค้า</TableHead>
+                  <TableHead className="text-center">เบอร์โทร</TableHead>
+                  <TableHead className="text-center">วงเงินเครดิต</TableHead>
+                  <TableHead className="text-center">ยอดค้างชำระ</TableHead>
+                  <TableHead className="text-center">การชำระล่าสุด</TableHead>
+                  <TableHead className="text-center">วันเกินกำหนด</TableHead>
+                  <TableHead className="text-center">สถานะ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {outstandingCreditData.map((customer) => (
                   <TableRow key={customer.id}>
-                    <TableCell className="font-medium">{customer.customerName}</TableCell>
-                    <TableCell>{customer.phone}</TableCell>
-                    <TableCell>{formatCurrency(customer.creditLimit)}</TableCell>
-                    <TableCell className="font-medium text-red-600">
+                    <TableCell className="font-medium text-center">{customer.customerName}</TableCell>
+                    <TableCell className="text-center">{customer.phone}</TableCell>
+                    <TableCell className="text-center">{formatCurrency(customer.creditLimit)}</TableCell>
+                    <TableCell className="font-medium text-red-600 text-center">
                       {formatCurrency(customer.outstandingBalance)}
                     </TableCell>
-                    <TableCell>{format(new Date(customer.lastPayment), "dd/MM/yyyy", { locale: th })}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(customer.lastPayment), "dd/MM/yyyy", { locale: th })}
+                    </TableCell>
+                    <TableCell className="text-center">
                       <span className={customer.daysPastDue > 7 ? "text-red-600 font-medium" : "text-yellow-600"}>
                         {customer.daysPastDue} วัน
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge variant={customer.daysPastDue > 7 ? "destructive" : "secondary"}>
                         {customer.daysPastDue > 7 ? "เกินกำหนด" : "ใกล้ครบกำหนด"}
                       </Badge>

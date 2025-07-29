@@ -567,13 +567,7 @@ export function ShippingSettingsTab() {
         </DialogContent>
       </Dialog>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave} size="lg">
-          <Save className="h-4 w-4 mr-2" />
-          บันทึกการตั้งค่า
-        </Button>
-      </div>
+    
     </div>
   )
 }

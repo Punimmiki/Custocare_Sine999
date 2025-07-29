@@ -179,7 +179,7 @@ const CreateCustomerPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/30">
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" asChild>
@@ -193,7 +193,7 @@ const CreateCustomerPage = () => {
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Customer Information */}
             <Card>
@@ -205,7 +205,9 @@ const CreateCustomerPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="customer-name">ชื่อลูกค้า *</Label>
+                 <Label htmlFor="customer-name">
+                ชื่อลูกค้า <span className="text-red-500">*</span>
+              </Label>
                   <Input
                     id="customer-name"
                     value={customerName}
@@ -215,7 +217,7 @@ const CreateCustomerPage = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="customer-phone">เบอร์โทรศัพท์ *</Label>
+                  <Label htmlFor="customer-phone">เบอร์โทรศัพท์ <span className="text-red-500">*</span></Label>
                   <Input
                     id="customer-phone"
                     value={customerPhone}
@@ -225,7 +227,7 @@ const CreateCustomerPage = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="primary-bank">ธนาคารหลักที่ชำระเงิน *</Label>
+                  <Label htmlFor="primary-bank">ธนาคารหลักที่ชำระเงิน <span className="text-red-500">*</span></Label>
                   <Select value={primaryBank} onValueChange={setPrimaryBank} required>
                     <SelectTrigger>
                       <SelectValue placeholder="เลือกธนาคาร" />

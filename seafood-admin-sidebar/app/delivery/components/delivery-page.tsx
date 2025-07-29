@@ -14,6 +14,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { CalendarIcon } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { useToast } from "@/hooks/use-toast"
 
 // Sample delivery data
 const initialDeliveries = [
@@ -28,8 +32,13 @@ const initialDeliveries = [
     serviceProvider: "Kerry Express",
     driverPhone: "081-111-2222",
     status: "preparing",
-    deliveryDate: "2024-07-27", // Today
+    deliveryDate: "2024-07-27",
     notes: "ส่งก่อน 14:00 น.",
+    items: [
+      { name: "ปลาทูน่าสด", quantity: 5, unit: "กิโลกรัม", price: 250, total: 1250 },
+      { name: "กุ้งขาว", quantity: 2, unit: "กิโลกรัม", price: 400, total: 800 },
+      { name: "หอยแมลงภู่", quantity: 3, unit: "กิโลกรัม", price: 180, total: 540 },
+    ],
   },
   {
     id: "DEL-002",
@@ -42,8 +51,13 @@ const initialDeliveries = [
     serviceProvider: "Flash Express",
     driverPhone: "089-333-4444",
     status: "shipped",
-    deliveryDate: "2024-07-28", // Tomorrow
+    deliveryDate: "2024-07-28",
     notes: "ติดต่อล่วงหน้า 30 นาที",
+    items: [
+      { name: "ปลาแซลมอนสด", quantity: 10, unit: "กิโลกรัม", price: 450, total: 4500 },
+      { name: "ปูม้า", quantity: 4, unit: "ตัว", price: 300, total: 1200 },
+      { name: "หอยเชลล์", quantity: 2, unit: "กิโลกรัม", price: 220, total: 440 },
+    ],
   },
   {
     id: "DEL-003",
@@ -56,134 +70,12 @@ const initialDeliveries = [
     serviceProvider: "ไปรษณีย์ไทย",
     driverPhone: "082-555-6666",
     status: "delivered",
-    deliveryDate: "2024-07-26", // Yesterday
-    notes: "",
-  },
-  {
-    id: "DEL-004",
-    orderId: "ORD-004",
-    customerName: "ร้านอาหารทะเลสด",
-    customerAddress: "321 ถนนรัชดาภิเษก แขวงห้วยขวง เขตห้วยขวง กรุงเทพฯ 10310",
-    driverName: "นายสมชาย ขนส่ง",
-    vehiclePlate: "ชซ-3456",
-    vehicleType: "รถบรรทุก",
-    serviceProvider: "Kerry Express",
-    driverPhone: "083-777-8888",
-    status: "preparing",
-    deliveryDate: "2024-07-27", // Today
-    notes: "ใช้ประตูหลัง",
-  },
-  {
-    id: "DEL-005",
-    orderId: "ORD-005",
-    customerName: "นายประยุทธ์ รักทะเล",
-    customerAddress: "654 ถนนเพชรบุรี แขวงมักกะสัน เขตราชเทวี กรุงเทพฯ 10400",
-    driverName: "นายสมศักดิ์ ขับรถ",
-    vehiclePlate: "กข-1235",
-    vehicleType: "รถกระบะ",
-    serviceProvider: "Flash Express",
-    driverPhone: "081-111-2223",
-    status: "shipped",
-    deliveryDate: "2024-07-28", // Tomorrow
-    notes: "โทรแจ้งก่อนเข้า",
-  },
-  {
-    id: "DEL-006",
-    orderId: "ORD-006",
-    customerName: "ร้านอาหารญี่ปุ่น",
-    customerAddress: "111 ถนนพลับพลา แขวงลุมพินี เขตปทุมวัน กรุงเทพฯ 10330",
-    driverName: "นายสมบัติ ส่งด่วน",
-    vehiclePlate: "ดต-7890",
-    vehicleType: "รถจักรยานยนต์",
-    serviceProvider: "J&T Express",
-    driverPhone: "084-999-1111",
-    status: "delivered",
-    deliveryDate: "2024-07-25",
-    notes: "ส่งถึงแล้ว",
-  },
-  {
-    id: "DEL-007",
-    orderId: "ORD-007",
-    customerName: "โรงแรมแกรนด์",
-    customerAddress: "222 ถนนราชดำริ แขวงลุมพินี เขตปทุมวัน กรุงเทพฯ 10330",
-    driverName: "นายวิชัย จัดส่ง",
-    vehiclePlate: "จฉ-9012",
-    vehicleType: "รถกระบะ",
-    serviceProvider: "DHL",
-    driverPhone: "082-555-6666",
-    status: "preparing",
-    deliveryDate: "2024-07-27",
-    notes: "ส่งที่ห้องครัว",
-  },
-  {
-    id: "DEL-008",
-    orderId: "ORD-008",
-    customerName: "ตลาดสดบางซื่อ",
-    customerAddress: "333 ถนนประชาชื่น แขวงบางซื่อ เขตบางซื่อ กรุงเทพฯ 10800",
-    driverName: "นายสมชาย ขนส่ง",
-    vehiclePlate: "ชซ-3456",
-    vehicleType: "รถบรรทุก",
-    serviceProvider: "Kerry Express",
-    driverPhone: "083-777-8888",
-    status: "shipped",
-    deliveryDate: "2024-07-28",
-    notes: "เข้าตลาดตอน 5 โมงเช้า",
-  },
-  {
-    id: "DEL-009",
-    orderId: "ORD-009",
-    customerName: "ร้านซีฟู้ดริมทะเล",
-    customerAddress: "444 ถนนสุขุมวิท แขวงพระโขนง เขตวัฒนา กรุงเทพฯ 10110",
-    driverName: "นายประยุทธ์ ส่งของ",
-    vehiclePlate: "คง-5678",
-    vehicleType: "รถตู้",
-    serviceProvider: "Flash Express",
-    driverPhone: "089-333-4444",
-    status: "delivered",
     deliveryDate: "2024-07-26",
-    notes: "ส่งเรียบร้อย",
-  },
-  {
-    id: "DEL-010",
-    orderId: "ORD-010",
-    customerName: "บริษัท เฟรชมาร์ท จำกัด",
-    customerAddress: "555 ถนนพระราม 4 แขวงคลองตัน เขตคลองเตย กรุงเทพฯ 10110",
-    driverName: "นายสมศักดิ์ ขับรถ",
-    vehiclePlate: "กข-1235",
-    vehicleType: "รถกระบะ",
-    serviceProvider: "ไปรษณีย์ไทย",
-    driverPhone: "081-111-2223",
-    status: "preparing",
-    deliveryDate: "2024-07-27",
-    notes: "ส่งก่อน 10 โมง",
-  },
-  {
-    id: "DEL-011",
-    orderId: "ORD-011",
-    customerName: "ร้านอาหารเวียดนาม",
-    customerAddress: "666 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500",
-    driverName: "นายสมบัติ ส่งด่วน",
-    vehiclePlate: "ดต-7890",
-    vehicleType: "รถจักรยานยนต์",
-    serviceProvider: "J&T Express",
-    driverPhone: "084-999-1111",
-    status: "shipped",
-    deliveryDate: "2024-07-28",
-    notes: "โทรก่อนส่ง",
-  },
-  {
-    id: "DEL-012",
-    orderId: "ORD-012",
-    customerName: "โรงพยาบาลเอกชน",
-    customerAddress: "777 ถนนพญาไท แขวงทุ่งพญาไท เขตราชเทวี กรุงเทพฯ 10400",
-    driverName: "นายวิชัย จัดส่ง",
-    vehiclePlate: "จฉ-9012",
-    vehicleType: "รถกระบะ",
-    serviceProvider: "DHL",
-    driverPhone: "082-555-6666",
-    status: "delivered",
-    deliveryDate: "2024-07-25",
-    notes: "ส่งที่แผนกโภชนาการ",
+    notes: "",
+    items: [
+      { name: "ปลาทับทิมแดง", quantity: 3, unit: "กิโลกรัม", price: 320, total: 960 },
+      { name: "กุ้งแชบ๊วย", quantity: 1, unit: "กิโลกรัม", price: 500, total: 500 },
+    ],
   },
 ]
 
@@ -211,9 +103,153 @@ const DeliveryPage = () => {
   const [deliveryDateFilter, setDeliveryDateFilter] = React.useState("")
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
+  const { toast } = useToast()
 
   const today = format(new Date(), "yyyy-MM-dd")
   const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd")
+
+  // Print function - เหลือแค่ฟังก์ชันเดียว
+  const handlePrintOrder = (delivery: any) => {
+    toast({
+      title: "กำลังพิมพ์ใบคำสั่งซื้อ",
+      description: `พิมพ์ใบคำสั่งซื้อสำหรับ ${delivery.orderId} - ${delivery.customerName}`,
+    })
+
+    // คำนวณยอดรวม
+    const subtotal = delivery.items?.reduce((sum: number, item: any) => sum + item.total, 0) || 0
+    const vat = subtotal * 0.07 // VAT 7%
+    const grandTotal = subtotal + vat
+
+    const printContent = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="margin: 0; font-size: 24px;">ใบคำสั่งซื้อ</h1>
+        <p style="margin: 5px 0; color: #666;">Purchase Order</p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+        <div>
+          <strong>รหัสคำสั่งซื้อ:</strong> ${delivery.orderId}<br>
+          <strong>วันที่สั่งซื้อ:</strong> ${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}<br>
+        </div>
+        <div style="text-align: right;">
+          <strong>สถานะ:</strong> ${statusMap[delivery.status as keyof typeof statusMap]?.label}<br>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">ข้อมูลลูกค้า</h3>
+        <div style="padding-left: 10px;">
+          <strong>ชื่อลูกค้า:</strong> ${delivery.customerName}<br>
+          <strong>ที่อยู่จัดส่ง:</strong> ${delivery.customerAddress}<br>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">รายการสินค้า</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <thead>
+            <tr style="background-color: #f8f9fa;">
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">รายการ</th>
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">จำนวน</th>
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">หน่วย</th>
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">ราคา/หน่วย</th>
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">รวม</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${
+              delivery.items
+                ?.map(
+                  (item: any) => `
+              <tr>
+                <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.quantity}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.unit}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${item.price.toLocaleString()} บาท</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${item.total.toLocaleString()} บาท</td>
+              </tr>
+            `,
+                )
+                .join("") ||
+              '<tr><td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: center;">ไม่มีรายการสินค้า</td></tr>'
+            }
+          </tbody>
+        </table>
+
+        <div style="text-align: right; margin-top: 20px;">
+          <table style="margin-left: auto; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 5px 15px; text-align: right;"><strong>ยอดรวม:</strong></td>
+              <td style="padding: 5px 15px; text-align: right; border-bottom: 1px solid #ddd;">${subtotal.toLocaleString()} บาท</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 15px; text-align: right;"><strong>ภาษีมูลค่าเพิ่ม 7%:</strong></td>
+              <td style="padding: 5px 15px; text-align: right; border-bottom: 1px solid #ddd;">${vat.toLocaleString()} บาท</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 15px; text-align: right; font-size: 18px;"><strong>ยอดรวมทั้งสิ้น:</strong></td>
+              <td style="padding: 5px 15px; text-align: right; font-size: 18px; font-weight: bold; border-bottom: 2px solid #000;">${grandTotal.toLocaleString()} บาท</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">ข้อมูลการจัดส่ง</h3>
+        <div style="padding-left: 10px;">
+          <strong>คนขับ:</strong> ${delivery.driverName}<br>
+          <strong>เบอร์โทรศัพท์:</strong> ${delivery.driverPhone}<br>
+          <strong>ทะเบียนรถ:</strong> ${delivery.vehiclePlate}<br>
+          <strong>ประเภทรถ:</strong> ${delivery.vehicleType}<br>
+          <strong>ผู้ให้บริการ:</strong> ${delivery.serviceProvider}<br>
+        </div>
+      </div>
+
+      ${
+        delivery.notes
+          ? `
+      <div style="margin-bottom: 30px;">
+        <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">หมายเหตุ</h3>
+        <div style="padding-left: 10px;">
+          ${delivery.notes}
+        </div>
+      </div>
+      `
+          : ""
+      }
+
+      <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+        <div style="text-align: center; width: 200px;">
+          <div style="border-top: 1px solid #000; padding-top: 5px;">
+            ลายเซ็นผู้สั่งซื้อ
+          </div>
+          <div style="margin-top: 20px;">
+            วันที่: _______________
+          </div>
+        </div>
+        <div style="text-align: center; width: 200px;">
+          <div style="border-top: 1px solid #000; padding-top: 5px;">
+            ลายเซ็นผู้รับ
+          </div>
+          <div style="margin-top: 20px;">
+            วันที่: _______________
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 15px;">
+        พิมพ์เมื่อ: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: th })}
+      </div>
+    </div>`
+
+    const printWindow = window.open("", "_blank")
+    if (printWindow) {
+      printWindow.document.write(printContent)
+      printWindow.document.close()
+      printWindow.print()
+    }
+  }
 
   const filteredDeliveries = React.useMemo(() => {
     return deliveries.filter((delivery) => {
@@ -430,15 +466,34 @@ const DeliveryPage = () => {
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="delivery-date">วันที่ส่ง</Label>
-              <Input
-                id="delivery-date"
-                type="date"
-                value={deliveryDateFilter}
-                onChange={(e) => setDeliveryDateFilter(e.target.value)}
-                placeholder="เลือกวันที่ส่ง"
-              />
+            <div className="mb-4">
+              <Label>วันที่ส่ง</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !deliveryDateFilter && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {deliveryDateFilter
+                      ? format(new Date(deliveryDateFilter), "dd/MM/yyyy", { locale: th })
+                      : "เลือกวันที่ส่ง"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={deliveryDateFilter ? new Date(deliveryDateFilter) : undefined}
+                    onSelect={(date) => {
+                      if (date) setDeliveryDateFilter(date.toISOString()) // หรือ format ให้เป็น 'yyyy-MM-dd'
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </CardContent>
@@ -480,16 +535,16 @@ const DeliveryPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="min-w-[80px]">รหัส</TableHead>
-                    <TableHead className="min-w-[120px]">ลูกค้า</TableHead>
-                    <TableHead className="min-w-[120px]">คนขับ</TableHead>
-                    <TableHead className="min-w-[100px]">ทะเบียน</TableHead>
-                    <TableHead className="min-w-[120px]">เบอร์โทร</TableHead>
-                    <TableHead className="min-w-[100px]">ประเภทรถ</TableHead>
-                    <TableHead className="min-w-[130px]">ผู้ให้บริการ</TableHead>
-                    <TableHead className="min-w-[120px]">วันที่จัดส่ง</TableHead>
-                    <TableHead className="min-w-[100px]">สถานะ</TableHead>
-                    <TableHead className="min-w-[140px] text-right">การดำเนินการ</TableHead>
+                    <TableHead className="min-w-[80px] text-center">รหัส</TableHead>
+                    <TableHead className="min-w-[120px] text-center">ลูกค้า</TableHead>
+                    <TableHead className="min-w-[120px] text-center">คนขับ</TableHead>
+                    <TableHead className="min-w-[100px] text-center">ทะเบียน</TableHead>
+                    <TableHead className="min-w-[120px] text-center">เบอร์โทร</TableHead>
+                    <TableHead className="min-w-[100px] text-center">ประเภทรถ</TableHead>
+                    <TableHead className="min-w-[130px] text-center">ผู้ให้บริการ</TableHead>
+                    <TableHead className="min-w-[120px] text-center">วันที่จัดส่ง</TableHead>
+                    <TableHead className="min-w-[100px] text-center">สถานะ</TableHead>
+                    <TableHead className="min-w-[140px] text-center">การดำเนินการ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -502,60 +557,59 @@ const DeliveryPage = () => {
                   ) : (
                     currentDeliveries.map((delivery) => (
                       <TableRow key={delivery.id}>
-                        <TableCell className="font-medium text-sm truncate">{delivery.orderId}</TableCell>
-                        <TableCell>
+                        <TableCell className="font-medium text-sm truncate text-center">{delivery.orderId}</TableCell>
+                        <TableCell className="text-center">
                           <div>
                             <p className="font-medium text-sm truncate" title={delivery.customerName}>
                               {delivery.customerName}
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
                             <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                             <span className="text-sm truncate" title={delivery.driverName}>
                               {delivery.driverName}
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
                             <Truck className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                             <span className="text-sm truncate">{delivery.vehiclePlate}</span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
                             <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                             <span className="text-sm truncate">{delivery.driverPhone}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm truncate" title={delivery.vehicleType}>
+                        <TableCell className="text-sm truncate text-center" title={delivery.vehicleType}>
                           {delivery.vehicleType}
                         </TableCell>
-                        <TableCell className="text-sm truncate" title={delivery.serviceProvider}>
+                        <TableCell className="text-sm truncate text-center" title={delivery.serviceProvider}>
                           {delivery.serviceProvider}
                         </TableCell>
-                        <TableCell className="text-sm">
-                          <div className="flex items-center gap-1">
+                        <TableCell className="text-sm text-center">
+                          <div className="flex items-center justify-center gap-1">
                             <CalendarDays className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                             <span className="truncate">
                               {format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                           <Badge className={statusMap[delivery.status as keyof typeof statusMap]?.className}>
                             {statusMap[delivery.status as keyof typeof statusMap]?.label || delivery.status}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
+                        <TableCell className="text-center">
+                          <div className="flex justify-center gap-1">
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button variant="outline" size="sm" className="h-8 px-2 text-xs bg-transparent">
                                   <Eye className="h-3 w-3 mr-1" />
-                                  ดู
                                 </Button>
                               </DialogTrigger>
                               <DialogContent className="max-w-md">
@@ -642,9 +696,15 @@ const DeliveryPage = () => {
                                 </div>
                               </DialogContent>
                             </Dialog>
-                            <Button variant="outline" size="sm" className="h-8 px-2 text-xs bg-transparent">
+
+                            {/* เปลี่ยนจาก DropdownMenu เป็น Button ธรรมดา */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-2 text-xs bg-transparent"
+                              onClick={() => handlePrintOrder(delivery)}
+                            >
                               <Printer className="h-3 w-3 mr-1" />
-                              พิมพ์
                             </Button>
                           </div>
                         </TableCell>

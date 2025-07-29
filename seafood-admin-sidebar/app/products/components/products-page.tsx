@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   XCircle,
 } from "lucide-react"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -521,6 +522,7 @@ const ProductsPage = () => {
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = React.useState(false)
   const [activeCardFilter, setActiveCardFilter] = React.useState<string | null>(null)
+
   const { toast } = useToast()
 
   const filteredProducts = React.useMemo(() => {
@@ -567,7 +569,7 @@ const ProductsPage = () => {
       const product = products.find((p) => p.id === productId)
       toast({
         title: "อัปเดตสำเร็จ",
-        description: `${product?.name} ได้รับ���าร${product?.isActive ? "ปิด" : "เปิด"}ใช้งานแล้ว`,
+        description: `${product?.name} ได้รับการ${product?.isActive ? "ปิด" : "เปิด"}ใช้งานแล้ว`,
       })
     } catch (error) {
       toast({
@@ -633,6 +635,7 @@ const ProductsPage = () => {
     const activeProducts = products.filter((p) => p.status === "active").length
     const lowStockProducts = products.filter((p) => p.status === "low_stock").length
     const outOfStockProducts = products.filter((p) => p.status === "out_of_stock").length
+
     return { totalProducts, activeProducts, lowStockProducts, outOfStockProducts }
   }, [products])
 
@@ -646,6 +649,7 @@ const ProductsPage = () => {
           </div>
           <Skeleton className="h-10 w-32" />
         </div>
+
         <div className="grid gap-4 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
@@ -659,6 +663,7 @@ const ProductsPage = () => {
             </Card>
           ))}
         </div>
+
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-48" />
@@ -895,12 +900,12 @@ const ProductsPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-20">รูปภาพ</TableHead>
-                  <TableHead>ชื่อสินค้า</TableHead>
-                  <TableHead className="w-24">ราคาขาย</TableHead>
-                  <TableHead className="w-20">หน่วย</TableHead>
-                  <TableHead className="w-24">หมวดหมู่</TableHead>
-                  <TableHead className="w-32">สถานะสินค้า</TableHead>
+                  <TableHead className="w-20 text-center">รูปภาพ</TableHead>
+                  <TableHead className="text-center">ชื่อสินค้า</TableHead>
+                  <TableHead className="w-24 text-center">ราคาขาย</TableHead>
+                  <TableHead className="w-20 text-center">หน่วย</TableHead>
+                  <TableHead className="w-24 text-center">หมวดหมู่</TableHead>
+                  <TableHead className="w-32 text-center">สถานะสินค้า</TableHead>
                   <TableHead className="w-48 text-center">การดำเนินการ</TableHead>
                 </TableRow>
               </TableHeader>
@@ -914,8 +919,8 @@ const ProductsPage = () => {
                 ) : (
                   currentProducts.map((product) => (
                     <TableRow key={product.id}>
-                      <TableCell>
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                      <TableCell className="text-center">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center mx-auto">
                           <img
                             src={product.image || "/placeholder.svg"}
                             alt={product.name}
@@ -927,17 +932,17 @@ const ProductsPage = () => {
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium text-sm">{product.name}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-medium text-sm text-center">{product.name}</TableCell>
+                      <TableCell className="text-center">
                         <span className="font-medium text-xs">฿{product.price.toLocaleString()}</span>
                       </TableCell>
-                      <TableCell className="text-xs">{product.unit}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-center">{product.unit}</TableCell>
+                      <TableCell className="text-center">
                         <Badge variant="outline" className="text-xs border-blue-200 bg-blue-50 text-blue-700">
                           {product.category}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <Badge
                           variant="outline"
                           className={`text-xs whitespace-nowrap ${
@@ -961,7 +966,6 @@ const ProductsPage = () => {
                             title="ดูรายละเอียด"
                           >
                             <Eye className="h-3 w-3 mr-1" />
-                            ดู
                           </Button>
                           <Button
                             variant="outline"
@@ -984,7 +988,7 @@ const ProductsPage = () => {
                                     <Switch
                                       checked={product.isActive}
                                       onCheckedChange={() => {}}
-                                      className="scale-75 cursor-pointer"
+                                      className="scale-75 cursor-pointer data-[state=checked]:bg-green-500"
                                       disabled={updatingProductId === product.id}
                                     />
                                   )}
@@ -1014,9 +1018,7 @@ const ProductsPage = () => {
                             </AlertDialog>
                             <span
                               className={`text-xs font-medium ${product.isActive ? "text-green-700" : "text-red-600"}`}
-                            >
-                              {product.isActive ? "เปิด" : "ปิด"}
-                            </span>
+                            ></span>
                           </div>
                         </div>
                       </TableCell>

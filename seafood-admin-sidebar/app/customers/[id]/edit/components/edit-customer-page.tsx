@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+// --- เพิ่มส่วนที่ 1: Import Dialog ---
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface EditCustomerPageProps {
   customerId: string
@@ -34,9 +36,18 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
   const [creditLimit, setCreditLimit] = React.useState(sampleCustomer.creditLimit)
   const [lineNotifications, setLineNotifications] = React.useState(sampleCustomer.lineNotifications)
 
+  // --- เพิ่มส่วนที่ 2: State สำหรับควบคุม Dialog ---
+  const [showEditConfirmation, setShowEditConfirmation] = React.useState(false)
+
+  // --- แก้ไขส่วนที่ 3: handleSubmit จะเปลี่ยนเป็นเปิด Dialog ---
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
+    setShowEditConfirmation(true) // เปิด Dialog แทนการ submit โดยตรง
+  }
+  
+  // --- เพิ่มส่วนที่ 4: ฟังก์ชันสำหรับยืนยันการแก้ไขและยกเลิก ---
+  const confirmEdit = () => {
+    // นำ Logic การ submit เดิมมาไว้ที่นี่
     console.log({
       customerId,
       customerName,
@@ -46,7 +57,13 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
       creditLimit,
       lineNotifications,
     })
+    setShowEditConfirmation(false) // ปิด Dialog หลังยืนยัน
   }
+
+  const cancelEdit = () => {
+    setShowEditConfirmation(false) // ปิด Dialog
+  }
+
 
   return (
     <div className="space-y-6">
@@ -75,7 +92,7 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="customer-name">ชื่อลูกค้า *</Label>
+                <Label htmlFor="customer-name">ชื่อลูกค้า <span className="text-red-500">*</span></Label>
                 <Input
                   id="customer-name"
                   value={customerName}
@@ -86,7 +103,7 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
               </div>
 
               <div>
-                <Label htmlFor="customer-phone">เบอร์โทรศัพท์ *</Label>
+                <Label htmlFor="customer-phone">เบอร์โทรศัพท์ <span className="text-red-500">*</span></Label>
                 <Input
                   id="customer-phone"
                   value={customerPhone}
@@ -97,7 +114,7 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
               </div>
 
               <div>
-                <Label htmlFor="customer-address">ที่อยู่</Label>
+                <Label htmlFor="customer-address">ที่อยู่ <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="customer-address"
                   value={customerAddress}
@@ -184,7 +201,27 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
             </Button>
           </div>
         </form>
+
       </div>
+
+      {/* --- เพิ่มส่วนที่ 5: โค้ด JSX ของ Dialog --- */}
+      <Dialog open={showEditConfirmation} onOpenChange={setShowEditConfirmation}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>ยืนยันการแก้ไขข้อมูล</DialogTitle>
+            <DialogDescription>
+              คุณต้องการบันทึกการเปลี่ยนแปลงข้อมูลสำหรับลูกค้า "{customerName}" หรือไม่?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={cancelEdit}>
+              ยกเลิก
+            </Button>
+            <Button onClick={confirmEdit}>ยืนยันการแก้ไข</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
     </div>
   )
 }

@@ -35,42 +35,230 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-// Sample product data for customer purchases
+// Sample product data for customer purchases - เพิ่มหน่วยนับ
 const customerPurchases = {
   "1": [
-    { id: "P001", name: "ปลาแซลมอนสด", lastPrice: 450, discount: 0, lastPurchaseDate: "2024-01-15", quantity: 2 },
-    { id: "P002", name: "กุ้งแม่น้ำ", lastPrice: 280, discount: 20, lastPurchaseDate: "2024-01-10", quantity: 1 },
+    {
+      id: "P001",
+      name: "ปลาแซลมอนสด",
+      lastPrice: 450,
+      discount: 0,
+      lastPurchaseDate: "2024-01-15",
+      quantity: 2,
+      unit: "กิโลกรัม",
+    },
+    {
+      id: "P002",
+      name: "กุ้งแม่น้ำ",
+      lastPrice: 280,
+      discount: 20,
+      lastPurchaseDate: "2024-01-10",
+      quantity: 1,
+      unit: "กิโลกรัม",
+    },
   ],
   "2": [
-    { id: "P001", name: "ปลาแซลมอนสด", lastPrice: 450, discount: 50, lastPurchaseDate: "2024-01-14", quantity: 5 },
-    { id: "P003", name: "ปลาทูน่าสด", lastPrice: 380, discount: 30, lastPurchaseDate: "2024-01-12", quantity: 3 },
-    { id: "P004", name: "หอยเชลล์", lastPrice: 150, discount: 0, lastPurchaseDate: "2024-01-08", quantity: 2 },
+    {
+      id: "P001",
+      name: "ปลาแซลมอนสด",
+      lastPrice: 450,
+      discount: 50,
+      lastPurchaseDate: "2024-01-14",
+      quantity: 5,
+      unit: "กิโลกรัม",
+    },
+    {
+      id: "P003",
+      name: "ปลาทูน่าสด",
+      lastPrice: 380,
+      discount: 30,
+      lastPurchaseDate: "2024-01-12",
+      quantity: 3,
+      unit: "กิโลกรัม",
+    },
+    {
+      id: "P004",
+      name: "หอยเชลล์",
+      lastPrice: 150,
+      discount: 0,
+      lastPurchaseDate: "2024-01-08",
+      quantity: 2,
+      unit: "กิโลกรัม",
+    },
   ],
-  "3": [{ id: "P002", name: "กุ้งแม่น้ำ", lastPrice: 280, discount: 15, lastPurchaseDate: "2024-01-13", quantity: 1 }],
+  "3": [
+    {
+      id: "P002",
+      name: "กุ้งแม่น้ำ",
+      lastPrice: 280,
+      discount: 15,
+      lastPurchaseDate: "2024-01-13",
+      quantity: 1,
+      unit: "กิโลกรัม",
+    },
+  ],
   "4": [
-    { id: "P001", name: "ปลาแซลมอนสด", lastPrice: 450, discount: 40, lastPurchaseDate: "2024-01-12", quantity: 4 },
-    { id: "P005", name: "ปูทะเล", lastPrice: 320, discount: 25, lastPurchaseDate: "2024-01-10", quantity: 2 },
-    { id: "P002", name: "กุ้งแม่น้ำ", lastPrice: 280, discount: 0, lastPurchaseDate: "2024-01-05", quantity: 3 },
+    {
+      id: "P001",
+      name: "ปลาแซลมอนสด",
+      lastPrice: 450,
+      discount: 40,
+      lastPurchaseDate: "2024-01-12",
+      quantity: 4,
+      unit: "กิโลกรัม",
+    },
+    {
+      id: "P005",
+      name: "ปูทะเล",
+      lastPrice: 320,
+      discount: 25,
+      lastPurchaseDate: "2024-01-10",
+      quantity: 2,
+      unit: "ตัว",
+    },
+    {
+      id: "P002",
+      name: "กุ้งแม่น้ำ",
+      lastPrice: 280,
+      discount: 0,
+      lastPurchaseDate: "2024-01-05",
+      quantity: 3,
+      unit: "กิโลกรัม",
+    },
   ],
-  "5": [{ id: "P003", name: "ปลาทูน่าสด", lastPrice: 380, discount: 0, lastPurchaseDate: "2024-01-10", quantity: 1 }],
+  "5": [
+    {
+      id: "P003",
+      name: "ปลาทูน่าสด",
+      lastPrice: 380,
+      discount: 0,
+      lastPurchaseDate: "2024-01-10",
+      quantity: 1,
+      unit: "กิโลกรัม",
+    },
+  ],
   "6": [
-    { id: "P001", name: "ปลาแซลมอนสด", lastPrice: 450, discount: 60, lastPurchaseDate: "2024-01-09", quantity: 8 },
-    { id: "P002", name: "กุ้งแม่น้ำ", lastPrice: 280, discount: 35, lastPurchaseDate: "2024-01-07", quantity: 6 },
-    { id: "P003", name: "ปลาทูน่าสด", lastPrice: 380, discount: 45, lastPurchaseDate: "2024-01-05", quantity: 4 },
-    { id: "P004", name: "หอยเชลล์", lastPrice: 150, discount: 10, lastPurchaseDate: "2024-01-03", quantity: 5 },
-    { id: "P005", name: "ปูทะเล", lastPrice: 320, discount: 30, lastPurchaseDate: "2024-01-01", quantity: 3 },
+    {
+      id: "P001",
+      name: "ปลาแซลมอนสด",
+      lastPrice: 450,
+      discount: 60,
+      lastPurchaseDate: "2024-01-09",
+      quantity: 8,
+      unit: "กิโลกรัม",
+    },
+    {
+      id: "P002",
+      name: "กุ้งแม่น้ำ",
+      lastPrice: 280,
+      discount: 35,
+      lastPurchaseDate: "2024-01-07",
+      quantity: 6,
+      unit: "กิโลกรัม",
+    },
+    {
+      id: "P003",
+      name: "ปลาทูน่าสด",
+      lastPrice: 380,
+      discount: 45,
+      lastPurchaseDate: "2024-01-05",
+      quantity: 4,
+      unit: "กิโลกรัม",
+    },
+    {
+      id: "P004",
+      name: "หอยเชลล์",
+      lastPrice: 150,
+      discount: 10,
+      lastPurchaseDate: "2024-01-03",
+      quantity: 5,
+      unit: "กิโลกรัม",
+    },
+    {
+      id: "P005",
+      name: "ปูทะเล",
+      lastPrice: 320,
+      discount: 30,
+      lastPurchaseDate: "2024-01-01",
+      quantity: 3,
+      unit: "ตัว",
+    },
   ],
-  "7": [{ id: "P001", name: "ปลาแซลมอนสด", lastPrice: 450, discount: 0, lastPurchaseDate: "2024-01-08", quantity: 1 }],
+  "7": [
+    {
+      id: "P001",
+      name: "ปลาแซลมอนสด",
+      lastPrice: 450,
+      discount: 0,
+      lastPurchaseDate: "2024-01-08",
+      quantity: 1,
+      unit: "กิโลกรัม",
+    },
+  ],
   "8": [
-    { id: "P002", name: "กุ้งแม่น้ำ", lastPrice: 280, discount: 10, lastPurchaseDate: "2024-01-07", quantity: 2 },
-    { id: "P003", name: "ปลาทูน่าสด", lastPrice: 380, discount: 20, lastPurchaseDate: "2024-01-06", quantity: 1 },
+    {
+      id: "P002",
+      name: "กุ้งแม่น้ำ",
+      lastPrice: 280,
+      discount: 10,
+      lastPurchaseDate: "2024-01-07",
+      quantity: 2,
+      unit: "กิโลกรัม",
+    },
+    {
+      id: "P003",
+      name: "ปลาทูน่าสด",
+      lastPrice: 380,
+      discount: 20,
+      lastPurchaseDate: "2024-01-06",
+      quantity: 1,
+      unit: "กิโลกรัม",
+    },
   ],
-  "9": [{ id: "P004", name: "หอยเชลล์", lastPrice: 150, discount: 5, lastPurchaseDate: "2024-01-05", quantity: 3 }],
-  "10": [{ id: "P005", name: "ปูทะเล", lastPrice: 320, discount: 15, lastPurchaseDate: "2024-01-04", quantity: 1 }],
+  "9": [
+    {
+      id: "P004",
+      name: "หอยเชลล์",
+      lastPrice: 150,
+      discount: 5,
+      lastPurchaseDate: "2024-01-05",
+      quantity: 3,
+      unit: "กิโลกรัม",
+    },
+  ],
+  "10": [
+    {
+      id: "P005",
+      name: "ปูทะเล",
+      lastPrice: 320,
+      discount: 15,
+      lastPurchaseDate: "2024-01-04",
+      quantity: 1,
+      unit: "ตัว",
+    },
+  ],
   "11": [
-    { id: "P001", name: "ปลาแซลมอนสด", lastPrice: 450, discount: 25, lastPurchaseDate: "2024-01-03", quantity: 2 },
+    {
+      id: "P001",
+      name: "ปลาแซลมอนสด",
+      lastPrice: 450,
+      discount: 25,
+      lastPurchaseDate: "2024-01-03",
+      quantity: 2,
+      unit: "กิโลกรัม",
+    },
   ],
-  "12": [{ id: "P002", name: "กุ้งแม่น้ำ", lastPrice: 280, discount: 0, lastPurchaseDate: "2024-01-02", quantity: 4 }],
+  "12": [
+    {
+      id: "P002",
+      name: "กุ้งแม่น้ำ",
+      lastPrice: 280,
+      discount: 0,
+      lastPurchaseDate: "2024-01-02",
+      quantity: 4,
+      unit: "กิโลกรัม",
+    },
+  ],
 }
 
 // Sample customer data (expanded for pagination)
@@ -277,10 +465,12 @@ const CustomersPage = () => {
       customer.address.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesType = typeFilter === "all" || customer.type === typeFilter
+
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "active" && customer.isActive) ||
       (statusFilter === "inactive" && !customer.isActive)
+
     const matchesLine =
       lineFilter === "all" ||
       (lineFilter === "enabled" && customer.lineNotifications) ||
@@ -621,23 +811,22 @@ const CustomersPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-28">ลูกค้า</TableHead>
-                  <TableHead className="w-28">เบอร์โทร</TableHead>
-                  <TableHead className="w-20">ประเภท</TableHead>
-                  <TableHead className="w-20">สถานะ</TableHead>
-                  <TableHead className="w-28">เครดิต/ค้างชำระ</TableHead>
-                  <TableHead className="w-20">บิลค้าง</TableHead>
-                  <TableHead className="w-20">วันค้าง</TableHead>
-                  <TableHead className="w-28">ยอดค้าง</TableHead>
-                  <TableHead className="w-24">คำสั่งซื้อล่าสุด</TableHead>
-                  <TableHead className="w-20">LINE</TableHead>
+                  <TableHead className="w-28 text-center">ลูกค้า</TableHead>
+                  <TableHead className="w-28 text-center">เบอร์โทร</TableHead>
+                  <TableHead className="w-20 text-center">ประเภท</TableHead>
+                  <TableHead className="w-28 text-center">วงเงินเครดิต</TableHead>
+                  <TableHead className="w-20 text-center">บิลค้าง</TableHead>
+                  <TableHead className="w-20 text-center">วันค้าง</TableHead>
+                  <TableHead className="w-28 text-center">ค้างชำระ</TableHead>
+                  <TableHead className="w-24 text-center">คำสั่งซื้อล่าสุด</TableHead>
+                  <TableHead className="w-20 text-center">LINE</TableHead>
                   <TableHead className="w-40 text-center">การดำเนินการ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {currentCustomers.map((customer) => (
                   <TableRow key={customer.id} className={!customer.isActive ? "opacity-60" : ""}>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <div>
                         <p className="font-medium text-sm">{customer.name}</p>
                         <p className="text-xs text-muted-foreground truncate max-w-[180px]" title={customer.address}>
@@ -645,13 +834,13 @@ const CustomersPage = () => {
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
                         <Phone className="h-3 w-3 text-muted-foreground" />
                         <span className="text-xs">{customer.phone}</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         variant="outline"
                         className={`text-xs ${
@@ -670,34 +859,23 @@ const CustomersPage = () => {
                         </div>
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={customer.isActive ? "outline" : "secondary"}
-                        className={`text-xs ${customer.isActive ? "border-green-200 bg-green-50 text-green-700" : ""}`}
-                      >
-                        {customer.isActive ? "ใช้งาน" : "ไม่ใช้งาน"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {customer.type === "credit" ? (
                         <div className="text-xs">
                           <div className="font-medium">฿{customer.creditLimit.toLocaleString()}</div>
-                          {customer.outstandingBalance > 0 && (
-                            <div className="text-red-600">฿{customer.outstandingBalance.toLocaleString()}</div>
-                          )}
                         </div>
                       ) : (
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {customer.unpaidBills > 0 ? (
                         <span className="text-xs font-medium text-orange-600">{customer.unpaidBills}</span>
                       ) : (
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {customer.overdueDays > 0 ? (
                         <span
                           className={`text-xs font-medium ${
@@ -714,7 +892,7 @@ const CustomersPage = () => {
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {customer.overdueAmount > 0 ? (
                         <span className="text-xs font-medium text-red-600">
                           ฿{customer.overdueAmount.toLocaleString()}
@@ -723,19 +901,16 @@ const CustomersPage = () => {
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-xs">
+                    <TableCell className="text-xs text-center">
                       {format(new Date(customer.lastOrderDate), "dd/MM/yyyy", { locale: th })}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
                         <Switch
                           checked={customer.lineNotifications}
                           onCheckedChange={(checked) => handleLineNotificationToggle(customer.id, checked)}
-                          className="scale-75"
-                        />
-                        <MessageCircle
-                          className={`h-3 w-3 ${customer.lineNotifications ? "text-green-600" : "text-gray-400"}`}
-                        />
+                          className="scale-75 bg-gray-200 data-[state=checked]:bg-green-500 transition-colors w-11 h-6 rounded-full relative"
+                        ></Switch>
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
@@ -744,10 +919,9 @@ const CustomersPage = () => {
                           <DialogTrigger asChild>
                             <Button variant="outline" size="sm" className="h-8 px-2 text-xs bg-transparent">
                               <Eye className="h-3 w-3 mr-1" />
-                              View
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                          <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>รายละเอียดลูกค้า - {customer.name}</DialogTitle>
                               <DialogDescription>ข้อมูลการซื้อและส่วนลดของลูกค้า</DialogDescription>
@@ -795,13 +969,21 @@ const CustomersPage = () => {
                                     <Table>
                                       <TableHeader>
                                         <TableRow>
-                                          <TableHead>ชื่อสินค้า</TableHead>
-                                          <TableHead className="w-24">ราคาล่าสุด</TableHead>
-                                          <TableHead className="w-20">จำนวน</TableHead>
-                                          <TableHead className="w-32">ส่วนลดปัจจุบัน</TableHead>
-                                          <TableHead className="w-32">ตั้งส่วนลดใหม่</TableHead>
-                                          <TableHead className="w-28">วันที่ซื้อล่าสุด</TableHead>
-                                          <TableHead className="w-20">การดำเนินการ</TableHead>
+                                          <TableHead className="text-center">ชื่อสินค้า</TableHead>
+                                          <TableHead className="w-24 text-center">ราคาล่าสุด</TableHead>
+                                          <TableHead className="w-28 text-center">จำนวนที่ซื้อ</TableHead>
+                                          <TableHead className="w-32 text-center">
+                                            ส่วนลดปัจจุบัน
+                                            <br />
+                                            <span className="text-xs text-muted-foreground">(บาท/หน่วย)</span>
+                                          </TableHead>
+                                          <TableHead className="w-32 text-center">
+                                            ตั้งส่วนลดใหม่
+                                            <br />
+                                            <span className="text-xs text-muted-foreground">(บาท/หน่วย)</span>
+                                          </TableHead>
+                                          <TableHead className="w-28 text-center">วันที่ซื้อล่าสุด</TableHead>
+                                          <TableHead className="w-20 text-center">การดำเนินการ</TableHead>
                                         </TableRow>
                                       </TableHeader>
                                       <TableBody>
@@ -810,10 +992,16 @@ const CustomersPage = () => {
                                           const isEditing = editingDiscounts.hasOwnProperty(editKey)
                                           return (
                                             <TableRow key={product.id}>
-                                              <TableCell className="font-medium">{product.name}</TableCell>
-                                              <TableCell>฿{product.lastPrice.toLocaleString()}</TableCell>
-                                              <TableCell>{product.quantity}</TableCell>
-                                              <TableCell>
+                                              <TableCell className="font-medium text-center">{product.name}</TableCell>
+                                              <TableCell className="text-center">
+                                                ฿{product.lastPrice.toLocaleString()}
+                                              </TableCell>
+                                              <TableCell className="text-center">
+                                                <span className="font-medium">
+                                                  {product.quantity} {product.unit}
+                                                </span>
+                                              </TableCell>
+                                              <TableCell className="text-center">
                                                 {product.discount > 0 ? (
                                                   <span className="text-green-600 font-medium">
                                                     ฿{product.discount.toLocaleString()}
@@ -822,7 +1010,7 @@ const CustomersPage = () => {
                                                   <span className="text-muted-foreground">ไม่มี</span>
                                                 )}
                                               </TableCell>
-                                              <TableCell>
+                                              <TableCell className="text-center">
                                                 <Input
                                                   type="number"
                                                   placeholder="0"
@@ -838,12 +1026,12 @@ const CustomersPage = () => {
                                                   min="0"
                                                 />
                                               </TableCell>
-                                              <TableCell className="text-xs">
+                                              <TableCell className="text-xs text-center">
                                                 {format(new Date(product.lastPurchaseDate), "dd/MM/yyyy", {
                                                   locale: th,
                                                 })}
                                               </TableCell>
-                                              <TableCell>
+                                              <TableCell className="text-center">
                                                 <Button
                                                   size="sm"
                                                   onClick={() => handleSaveDiscount(customer.id, product.id)}
@@ -867,29 +1055,25 @@ const CustomersPage = () => {
                               {/* Note */}
                               <div className="p-4 bg-blue-50 rounded-lg">
                                 <p className="text-sm text-blue-800">
-                                  <strong>หมายเหตุ:</strong> เมื่อลูกค้าทำการสั่งซื้อใหม่ ระบบจะดึงข้อมูลส่วนลดล่าสุดมาใช้อัตโนมัติ
+                                  <strong>หมายเหตุ:</strong> ส่วนลดจะคำนวณเป็นบาทต่อหน่วย เมื่อลูกค้าทำการสั่งซื้อใหม่
+                                  ระบบจะดึงข้อมูลส่วนลดล่าสุดมาใช้อัตโนมัติ
                                 </p>
                               </div>
                             </div>
                           </DialogContent>
                         </Dialog>
-
                         <Button variant="outline" size="sm" asChild className="h-8 px-2 text-xs bg-transparent">
                           <Link href={`/customers/${customer.id}/edit`}>
                             <Edit className="h-3 w-3 mr-1" />
                             แก้ไข
                           </Link>
                         </Button>
-
                         <div className="flex items-center gap-1">
                           <Switch
                             checked={customer.isActive}
                             onCheckedChange={(checked) => handleStatusToggle(customer.id, checked)}
-                            className="scale-75"
-                          />
-                          <span className={`text-xs ${customer.isActive ? "text-green-700" : "text-red-600"}`}>
-                            {customer.isActive ? "เปิด" : "ปิด"}
-                          </span>
+                            className="scale-75 data-[state=checked]:bg-green-500 bg-gray-200 rounded-full w-11 h-6 relative transition-colors"
+                          ></Switch>
                         </div>
                       </div>
                     </TableCell>
@@ -1015,7 +1199,7 @@ const CustomersPage = () => {
                               ดู
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                          <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>รายละเอียดลูกค้า - {customer.name}</DialogTitle>
                               <DialogDescription>ข้อมูลการซื้อและส่วนลดของลูกค้า</DialogDescription>
@@ -1063,13 +1247,21 @@ const CustomersPage = () => {
                                     <Table>
                                       <TableHeader>
                                         <TableRow>
-                                          <TableHead>ชื่อสินค้า</TableHead>
-                                          <TableHead className="w-24">ราคาล่าสุด</TableHead>
-                                          <TableHead className="w-20">จำนวน</TableHead>
-                                          <TableHead className="w-32">ส่วนลดปัจจุบัน</TableHead>
-                                          <TableHead className="w-32">ตั้งส่วนลดใหม่</TableHead>
-                                          <TableHead className="w-28">วันที่ซื้อล่าสุด</TableHead>
-                                          <TableHead className="w-20">การดำเนินการ</TableHead>
+                                          <TableHead className="text-center">ชื่อสินค้า</TableHead>
+                                          <TableHead className="w-24 text-center">ราคาล่าสุด</TableHead>
+                                          <TableHead className="w-28 text-center">จำนวนที่ซื้อ</TableHead>
+                                          <TableHead className="w-32 text-center">
+                                            ส่วนลดปัจจุบัน
+                                            <br />
+                                            <span className="text-xs text-muted-foreground">(บาท/หน่วย)</span>
+                                          </TableHead>
+                                          <TableHead className="w-32 text-center">
+                                            ตั้งส่วนลดใหม่
+                                            <br />
+                                            <span className="text-xs text-muted-foreground">(บาท/หน่วย)</span>
+                                          </TableHead>
+                                          <TableHead className="w-28 text-center">วันที่ซื้อล่าสุด</TableHead>
+                                          <TableHead className="w-20 text-center">การดำเนินการ</TableHead>
                                         </TableRow>
                                       </TableHeader>
                                       <TableBody>
@@ -1078,10 +1270,16 @@ const CustomersPage = () => {
                                           const isEditing = editingDiscounts.hasOwnProperty(editKey)
                                           return (
                                             <TableRow key={product.id}>
-                                              <TableCell className="font-medium">{product.name}</TableCell>
-                                              <TableCell>฿{product.lastPrice.toLocaleString()}</TableCell>
-                                              <TableCell>{product.quantity}</TableCell>
-                                              <TableCell>
+                                              <TableCell className="font-medium text-center">{product.name}</TableCell>
+                                              <TableCell className="text-center">
+                                                ฿{product.lastPrice.toLocaleString()}
+                                              </TableCell>
+                                              <TableCell className="text-center">
+                                                <span className="font-medium">
+                                                  {product.quantity} {product.unit}
+                                                </span>
+                                              </TableCell>
+                                              <TableCell className="text-center">
                                                 {product.discount > 0 ? (
                                                   <span className="text-green-600 font-medium">
                                                     ฿{product.discount.toLocaleString()}
@@ -1090,7 +1288,7 @@ const CustomersPage = () => {
                                                   <span className="text-muted-foreground">ไม่มี</span>
                                                 )}
                                               </TableCell>
-                                              <TableCell>
+                                              <TableCell className="text-center">
                                                 <Input
                                                   type="number"
                                                   placeholder="0"
@@ -1106,12 +1304,12 @@ const CustomersPage = () => {
                                                   min="0"
                                                 />
                                               </TableCell>
-                                              <TableCell className="text-xs">
+                                              <TableCell className="text-xs text-center">
                                                 {format(new Date(product.lastPurchaseDate), "dd/MM/yyyy", {
                                                   locale: th,
                                                 })}
                                               </TableCell>
-                                              <TableCell>
+                                              <TableCell className="text-center">
                                                 <Button
                                                   size="sm"
                                                   onClick={() => handleSaveDiscount(customer.id, product.id)}
@@ -1135,13 +1333,13 @@ const CustomersPage = () => {
                               {/* Note */}
                               <div className="p-4 bg-blue-50 rounded-lg">
                                 <p className="text-sm text-blue-800">
-                                  <strong>หมายเหตุ:</strong> เมื่อลูกค้าทำการสั่งซื้อใหม่ ระบบจะดึงข้อมูลส่วนลดล่าสุดมาใช้อัตโนมัติ
+                                  <strong>หมายเหตุ:</strong> ส่วนลดจะคำนวณเป็นบาทต่อหน่วย เมื่อลูกค้าทำการสั่งซื้อใหม่
+                                  ระบบจะดึงข้อมูลส่วนลดล่าสุดมาใช้อัตโนมัติ
                                 </p>
                               </div>
                             </div>
                           </DialogContent>
                         </Dialog>
-
                         <Button variant="outline" size="sm" asChild className="h-8 px-3 text-xs bg-transparent">
                           <Link href={`/customers/${customer.id}/edit`}>
                             <Edit className="h-3 w-3 mr-1" />
@@ -1149,7 +1347,6 @@ const CustomersPage = () => {
                           </Link>
                         </Button>
                       </div>
-
                       <div className="flex items-center gap-1">
                         <Switch
                           checked={customer.isActive}
@@ -1184,7 +1381,6 @@ const CustomersPage = () => {
                   <ChevronLeft className="h-4 w-4" />
                   ก่อนหน้า
                 </Button>
-
                 {/* Page numbers */}
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -1198,7 +1394,6 @@ const CustomersPage = () => {
                     } else {
                       pageNumber = currentPage - 2 + i
                     }
-
                     return (
                       <Button
                         key={pageNumber}
@@ -1212,7 +1407,6 @@ const CustomersPage = () => {
                     )
                   })}
                 </div>
-
                 <Button
                   variant="outline"
                   size="sm"

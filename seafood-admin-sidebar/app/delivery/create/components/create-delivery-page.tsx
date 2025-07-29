@@ -362,7 +362,7 @@ const CreateDeliveryPage = () => {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="customer-name">ชื่อลูกค้า *</Label>
+                    <Label htmlFor="customer-name">ชื่อลูกค้า <span className="text-red-500">*</span></Label>
                     <Input
                       id="customer-name"
                       value={customerName}
@@ -372,7 +372,7 @@ const CreateDeliveryPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="customer-phone">เบอร์โทรศัพท์</Label>
+                    <Label htmlFor="customer-phone">เบอร์โทรศัพท์ <span className="text-red-500">*</span></Label>
                     <Input
                       id="customer-phone"
                       value={customerPhone}
@@ -383,7 +383,7 @@ const CreateDeliveryPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="customer-address">ที่อยู่จัดส่ง *</Label>
+                  <Label htmlFor="customer-address">ที่อยู่จัดส่ง <span className="text-red-500">*</span></Label>
                   <Textarea
                     id="customer-address"
                     value={customerAddress}
@@ -404,7 +404,7 @@ const CreateDeliveryPage = () => {
               <CardContent className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-3">
                   <div>
-                    <Label htmlFor="driver-name">ชื่อคนขับ *</Label>
+                    <Label htmlFor="driver-name">ชื่อคนขับ <span className="text-red-500">*</span></Label>
                     <Input
                       id="driver-name"
                       value={driverName}
@@ -414,7 +414,7 @@ const CreateDeliveryPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="vehicle-plate">ทะเบียนรถ *</Label>
+                    <Label htmlFor="vehicle-plate">ทะเบียนรถ <span className="text-red-500">*</span></Label>
                     <Input
                       id="vehicle-plate"
                       value={vehiclePlate}
@@ -424,7 +424,7 @@ const CreateDeliveryPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="driver-phone">เบอร์โทรคนขับ *</Label>
+                    <Label htmlFor="driver-phone">เบอร์โทรคนขับ <span className="text-red-500">*</span></Label>
                     <Input
                       id="driver-phone"
                       value={driverPhone}
@@ -437,7 +437,7 @@ const CreateDeliveryPage = () => {
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="vehicle-type">ประเภทรถ *</Label>
+                    <Label htmlFor="vehicle-type">ประเภทรถ <span className="text-red-500">*</span></Label>
                     <Select value={vehicleType} onValueChange={setVehicleType} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกประเภทรถ" />
@@ -452,7 +452,7 @@ const CreateDeliveryPage = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="service-provider">ผู้ให้บริการ *</Label>
+                    <Label htmlFor="service-provider">ผู้ให้บริการ <span className="text-red-500">*</span></Label>
                     <Select value={serviceProvider} onValueChange={setServiceProvider} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกผู้ให้บริการ" />
@@ -469,7 +469,7 @@ const CreateDeliveryPage = () => {
                 </div>
 
                 <div>
-                  <Label>วันที่จัดส่ง *</Label>
+                  <Label>วันที่จัดส่ง <span className="text-red-500">*</span></Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button

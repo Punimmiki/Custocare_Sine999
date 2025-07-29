@@ -512,21 +512,21 @@ export function OrdersPage() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>ชื่อสินค้า</TableHead>
-                              <TableHead>จำนวน</TableHead>
-                              <TableHead>หน่วย</TableHead>
-                              <TableHead>ราคาต่อหน่วย</TableHead>
-                              <TableHead>ราคารวม</TableHead>
+                              <TableHead className="text-center">ชื่อสินค้า</TableHead>
+                              <TableHead className="text-center">จำนวน</TableHead>
+                              <TableHead className="text-center">หน่วย</TableHead>
+                              <TableHead className="text-center">ราคาต่อหน่วย</TableHead>
+                              <TableHead className="text-center">ราคารวม</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {selectedOrder.items.map((item: any, index: number) => (
                               <TableRow key={index}>
-                                <TableCell>{item.name}</TableCell>
-                                <TableCell>{item.quantity}</TableCell>
-                                <TableCell>{item.unit}</TableCell>
-                                <TableCell>฿{item.price.toLocaleString()}</TableCell>
-                                <TableCell>฿{item.total.toLocaleString()}</TableCell>
+                                <TableCell className="text-center">{item.name}</TableCell>
+                                <TableCell className="text-center">{item.quantity}</TableCell>
+                                <TableCell className="text-center">{item.unit}</TableCell>
+                                <TableCell className="text-center">฿{item.price.toLocaleString()}</TableCell>
+                                <TableCell className="text-center">฿{item.total.toLocaleString()}</TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
@@ -985,30 +985,34 @@ export function OrdersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>เลขที่คำสั่งซื้อ</TableHead>
-                  <TableHead>ชื่อลูกค้า</TableHead>
-                  <TableHead>ช่องทางการสั่งซื้อ</TableHead>
-                  <TableHead>วันที่สั่งซื้อ</TableHead>
-                  <TableHead>วันที่ต้องการรับสินค้า</TableHead>
-                  <TableHead>สถานะคำสั่งซื้อ</TableHead>
-                  <TableHead>สถานะการชำระเงิน</TableHead>
-                  <TableHead>พิมพ์เอกสาร</TableHead>
-                  <TableHead>เพิ่มเติม</TableHead>
+                  <TableHead className="text-center">เลขที่คำสั่งซื้อ</TableHead>
+                  <TableHead className="text-center">ชื่อลูกค้า</TableHead>
+                  <TableHead className="text-center">ช่องทางการสั่งซื้อ</TableHead>
+                  <TableHead className="text-center">วันที่สั่งซื้อ</TableHead>
+                  <TableHead className="text-center">วันที่ต้องการรับสินค้า</TableHead>
+                  <TableHead className="text-center">สถานะคำสั่งซื้อ</TableHead>
+                  <TableHead className="text-center">สถานะการชำระเงิน</TableHead>
+                  <TableHead className="text-center">พิมพ์เอกสาร</TableHead>
+                  <TableHead className="text-center">เพิ่มเติม</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {currentOrders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>{order.customerName}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-medium text-center">{order.id}</TableCell>
+                    <TableCell className="text-center">{order.customerName}</TableCell>
+                    <TableCell className="text-center">
                       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                         {order.channel}
                       </Badge>
                     </TableCell>
-                    <TableCell>{format(new Date(order.orderDate), "dd/MM/yyyy", { locale: th })}</TableCell>
-                    <TableCell>{format(new Date(order.receiveDate), "dd/MM/yyyy", { locale: th })}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(order.orderDate), "dd/MM/yyyy", { locale: th })}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(order.receiveDate), "dd/MM/yyyy", { locale: th })}
+                    </TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         variant="outline"
                         className={cn("border", orderStatusMap[order.orderStatus as keyof typeof orderStatusMap].color)}
@@ -1016,7 +1020,7 @@ export function OrdersPage() {
                         {orderStatusMap[order.orderStatus as keyof typeof orderStatusMap].label}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         variant="outline"
                         className={cn(
@@ -1027,7 +1031,7 @@ export function OrdersPage() {
                         {paymentStatusMap[order.paymentStatus as keyof typeof paymentStatusMap].label}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <div className="flex flex-col space-y-2">
                         <div className="flex items-center space-x-2">
                           <Checkbox
@@ -1061,7 +1065,7 @@ export function OrdersPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Button
                         variant="outline"
                         size="sm"

@@ -383,7 +383,7 @@ export function CreateOrderPage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="customer-name">ชื่อลูกค้า</Label>
+                  <Label htmlFor="customer-name">ชื่อลูกค้า <span className="text-red-500">*</span></Label>
                   <Input
                     id="customer-name"
                     value={customerName}
@@ -392,7 +392,7 @@ export function CreateOrderPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="customer-phone">เบอร์โทรศัพท์</Label>
+                  <Label htmlFor="customer-phone">เบอร์โทรศัพท์ <span className="text-red-500">*</span></Label>
                   <Input
                     id="customer-phone"
                     value={customerPhone}
@@ -405,7 +405,7 @@ export function CreateOrderPage() {
               {/* Address Selection */}
               {selectedCustomerData && selectedCustomerData.addresses && selectedCustomerData.addresses.length > 1 && (
                 <div>
-                  <Label>เลือกที่อยู่จัดส่ง</Label>
+                  <Label>เลือกที่อยู่จัดส่ง <span className="text-red-500">*</span></Label>
                   <Select value={selectedAddress} onValueChange={handleAddressSelect}>
                     <SelectTrigger>
                       <SelectValue placeholder="เลือกที่อยู่จัดส่ง" />
@@ -423,7 +423,7 @@ export function CreateOrderPage() {
               )}
 
               <div>
-                <Label htmlFor="customer-address">ที่อยู่</Label>
+                <Label htmlFor="customer-address">ที่อยู่ <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="customer-address"
                   value={customerAddress}
@@ -435,7 +435,7 @@ export function CreateOrderPage() {
 
               {/* Contact Channel */}
               <div>
-                <Label>ช่องทางการสั่งซื้อ</Label>
+                <Label>ช่องทางการสั่งซื้อ <span className="text-red-500">*</span></Label>
                 <RadioGroup value={contactChannel} onValueChange={setContactChannel} className="flex gap-6 mt-2">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="Line" id="line" />

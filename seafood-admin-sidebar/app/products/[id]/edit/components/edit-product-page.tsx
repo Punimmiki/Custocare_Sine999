@@ -166,12 +166,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
             แก้ไขข้อมูลสินค้า: {productName} (ID: {productId})
           </p>
         </div>
-        <Button variant="outline" asChild>
-          <Link href="/categories/manage">
-            <Settings className="h-4 w-4 mr-2" />
-            จัดการหมวดหมู่
-          </Link>
-        </Button>
+    
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -187,7 +182,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="product-name">ชื่อสินค้า *</Label>
+                  <Label htmlFor="product-name">ชื่อสินค้า <span className="text-red-500">*</span></Label>
                   <Input
                     id="product-name"
                     value={productName}
@@ -199,7 +194,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="product-price">ราคา (บาท) *</Label>
+                    <Label htmlFor="product-price">ราคา (บาท) <span className="text-red-500">*</span></Label>
                     <Input
                       id="product-price"
                       type="number"
@@ -212,7 +207,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="product-unit">หน่วย *</Label>
+                    <Label htmlFor="product-unit">หน่วย <span className="text-red-500">*</span></Label>
                     <Select value={productUnit} onValueChange={setProductUnit} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกหน่วย" />
@@ -230,7 +225,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="product-category">หมวดหมู่ *</Label>
+                    <Label htmlFor="product-category">หมวดหมู่ <span className="text-red-500">*</span></Label>
                     <Select value={productCategory} onValueChange={setProductCategory} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกหมวดหมู่" />
@@ -245,7 +240,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="product-stock">จำนวนคงเหลือ *</Label>
+                    <Label htmlFor="product-stock">จำนวนคงเหลือ <span className="text-red-500">*</span></Label>
                     <Input
                       id="product-stock"
                       type="number"
