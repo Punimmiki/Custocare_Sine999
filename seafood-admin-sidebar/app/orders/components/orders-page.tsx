@@ -1,7 +1,8 @@
 "use client"
-
 import React from "react"
-import { CalendarIcon, Search, Plus, ChevronLeft, ChevronRight, Eye, CreditCard, Banknote } from "lucide-react"
+import { DialogTrigger } from "@/components/ui/dialog"
+
+import { CalendarIcon, Search, Plus, ChevronLeft, ChevronRight, Eye, CreditCard, Banknote, Edit } from "lucide-react"
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
 import { Badge } from "@/components/ui/badge"
@@ -14,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -44,6 +45,7 @@ const orders = [
     ],
     shippingAddress: "123 ถนนสุขุมวิท แขวงคลองตัน เขตคลองตัน กรุงเทพฯ 10110",
     notes: "ต้องการสินค้าสดใหม่",
+    shippingCost: 50, // Added shipping cost
   },
   {
     id: "ORD-002",
@@ -53,7 +55,7 @@ const orders = [
     receiveDate: "2024-01-22",
     totalPrice: 8900,
     orderStatus: "packing",
-    paymentStatus: "paid",
+    paymentStatus: "unpaid", // Changed to unpaid for testing checkbox functionality
     paymentMethod: "scb",
     printed: true,
     customerType: "ลูกค้าเครดิต",
@@ -69,6 +71,7 @@ const orders = [
     ],
     shippingAddress: "789 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500",
     notes: "สำหรับงานเลี้ยงบริษัท",
+    shippingCost: 100, // Added shipping cost
   },
   {
     id: "ORD-003",
@@ -94,6 +97,7 @@ const orders = [
     ],
     shippingAddress: "456 ถนนพระราม 4 แขวงสุริยวงศ์ เขตบางรัก กรุงเทพฯ 10500",
     notes: "",
+    shippingCost: 40, // Added shipping cost
   },
   {
     id: "ORD-004",
@@ -120,6 +124,7 @@ const orders = [
     ],
     shippingAddress: "321 ถนนเพชรบุรี แขวงมักกะสัน เขตราชเทวี กรุงเทพฯ 10400",
     notes: "สำหรับร้านอาหาร ต้องการคุณภาพดี",
+    shippingCost: 150, // Added shipping cost
   },
   {
     id: "ORD-005",
@@ -145,6 +150,7 @@ const orders = [
     ],
     shippingAddress: "654 ถนนลาดพร้าว แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900",
     notes: "ชำระเงินมัดจำแล้ว 1,500 บาท",
+    shippingCost: 60, // Added shipping cost
   },
   {
     id: "ORD-006",
@@ -154,7 +160,7 @@ const orders = [
     receiveDate: "2024-01-20",
     totalPrice: 25400,
     orderStatus: "packing",
-    paymentStatus: "paid",
+    paymentStatus: "unpaid", // Changed to unpaid for testing checkbox functionality
     paymentMethod: "scb",
     printed: true,
     customerType: "ลูกค้าเครดิต",
@@ -172,6 +178,7 @@ const orders = [
     ],
     shippingAddress: "888 ถนนสุขุมวิท แขวงพระโขนง เขตวัฒนา กรุงเทพฯ 10110",
     notes: "สำหรับบุฟเฟ่ต์โรงแรม ต้องการจัดส่งเช้า 6 โมง",
+    shippingCost: 200, // Added shipping cost
   },
 ]
 
@@ -188,35 +195,10 @@ const paymentStatusMap = {
   paid: { label: "ชำระเงินแล้ว", color: "bg-green-50 text-green-600 border-green-200" },
 } as const
 
-// Mock data สำหรับสินค้า
-const products = [
-  { id: "P001", name: "ปลาทูน่าสด", price: 250, unit: "กิโลกรัม" },
-  { id: "P002", name: "กุ้งขาว", price: 180, unit: "กิโลกรัม" },
-  { id: "P003", name: "ปลาแซลมอน", price: 450, unit: "กิโลกรัม" },
-  { id: "P004", name: "หอยแมลงภู่", price: 120, unit: "กิโลกรัม" },
-]
-
-// Mock data สำหรับลูกค้า
-const customers = [
-  {
-    id: "C001",
-    name: "นายสมชาย ใจดี",
-    type: "cash",
-    addresses: [
-      { id: "A001", address: "123 ถนนสุขุมวิท แขวงคลองตัน เขตคลองตัน กรุงเทพฯ 10110", isDefault: true },
-      { id: "A002", address: "456 ถนนพระราม 4 แขวงสุริยวงศ์ เขตบางรัก กรุงเทพฯ 10500", isDefault: false },
-    ],
-  },
-  {
-    id: "C002",
-    name: "บริษัท อาหารทะเล จำกัด",
-    type: "credit",
-    creditLimit: 50000,
-    creditType: "amount",
-    creditDays: 30,
-    addresses: [{ id: "A003", address: "789 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500", isDefault: true }],
-  },
-]
+const customerTypeMap = {
+  ลูกค้าเงินสด: { color: "bg-green-50 text-green-700 border-green-200" },
+  ลูกค้าเครดิต: { color: "bg-purple-50 text-purple-700 border-purple-200" },
+} as const
 
 const bankMap = {
   cash: { name: "เงินสด", color: "bg-green-100 text-green-800" },
@@ -227,7 +209,7 @@ const bankMap = {
   tmb: { name: "ทหารไทย", color: "bg-yellow-100 text-yellow-800" },
 } as const
 
-export function OrdersPage() {
+export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = React.useState("")
   const [customerTypeFilter, setCustomerTypeFilter] = React.useState("all")
   const [channelFilter, setChannelFilter] = React.useState("all")
@@ -242,6 +224,7 @@ export function OrdersPage() {
   const [summaryDateFrom, setSummaryDateFrom] = React.useState<Date>()
   const [summaryDateTo, setSummaryDateTo] = React.useState<Date>()
   const [activeCardFilter, setActiveCardFilter] = React.useState<string | null>(null)
+  const [selectedOrderIds, setSelectedOrderIds] = React.useState<Set<string>>(new Set()) // New state for selected order IDs
 
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -295,7 +278,6 @@ export function OrdersPage() {
     const matchesChannel = channelFilter === "all" || order.channel === channelFilter
     const matchesOrderStatus = orderStatusFilter === "all" || order.orderStatus === orderStatusFilter
     const matchesPaymentStatus = paymentStatusFilter === "all" || order.paymentStatus === paymentStatusFilter
-
     let printStatusMatch = true
     if (printStatusFilter === "printed") printStatusMatch = order.printed === true
     else if (printStatusFilter === "not_printed") printStatusMatch = order.printed === false
@@ -390,6 +372,44 @@ export function OrdersPage() {
     setShowOrderDetail(true)
   }
 
+  const handleSendBill = () => {
+    const creditOrdersToSendBill = Array.from(selectedOrderIds)
+      .map((id) => orders.find((o) => o.id === id))
+      .filter(Boolean) // Remove undefined if any
+      .filter((order) => order.customerType === "ลูกค้าเครดิต" && order.paymentStatus !== "paid") as typeof orders
+
+    if (creditOrdersToSendBill.length > 0) {
+      console.log(
+        "Sending bills for the following credit orders:",
+        creditOrdersToSendBill.map((o) => o.id),
+      )
+      alert(`ส่งบิลสำหรับคำสั่งซื้อลูกค้าเครดิต: ${creditOrdersToSendBill.map((o) => o.id).join(", ")}`)
+      // In a real application, you would send these order IDs to your backend API
+      // After successful sending, you might want to clear the selection:
+      setSelectedOrderIds(new Set())
+    } else {
+      alert("ไม่มีคำสั่งซื้อลูกค้าเครดิตที่เลือกไว้ หรือคำสั่งซื้อที่เลือกไว้ชำระเงินแล้ว")
+    }
+  }
+
+  // Determine if "Select All" checkbox should be checked
+  const allCreditOrdersOnCurrentPageSelected =
+    currentOrders.filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid").length > 0 &&
+    currentOrders
+      .filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid")
+      .every((order) => selectedOrderIds.has(order.id))
+
+  // Determine if "Select All" checkbox should be indeterminate
+  const isIndeterminate =
+    currentOrders
+      .filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid")
+      .some((order) => selectedOrderIds.has(order.id)) && !allCreditOrdersOnCurrentPageSelected
+
+  const selectedBillCount = Array.from(selectedOrderIds).filter((id) => {
+    const order = orders.find((o) => o.id === id)
+    return order && order.customerType === "ลูกค้าเครดิต" && order.paymentStatus !== "paid"
+  }).length
+
   return (
     <div className="space-y-6">
       {/* Navbar */}
@@ -427,7 +447,14 @@ export function OrdersPage() {
                         </div>
                         <div>
                           <Label className="text-sm font-medium">ประเภทลูกค้า</Label>
-                          <Badge variant="outline" className="ml-2">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "ml-2 border",
+                              customerTypeMap[selectedOrder.customerType as keyof typeof customerTypeMap]?.color ||
+                                "bg-gray-50 text-gray-600 border-gray-200",
+                            )}
+                          >
                             {selectedOrder.customerType}
                           </Badge>
                         </div>
@@ -535,6 +562,11 @@ export function OrdersPage() {
                       <Separator className="my-4" />
                       <div className="flex justify-end">
                         <div className="text-right">
+                          {selectedOrder.shippingCost !== undefined && (
+                            <div className="text-sm font-medium text-gray-700">
+                              ค่าส่ง: ฿{selectedOrder.shippingCost.toLocaleString()}
+                            </div>
+                          )}
                           <div className="text-lg font-semibold">
                             ยอดรวมทั้งสิ้น: ฿{selectedOrder.totalPrice.toLocaleString()}
                           </div>
@@ -672,43 +704,6 @@ export function OrdersPage() {
                   </CardContent>
                 </Card>
 
-                {/* คำสั่งซื้อล่าสุด */}
-                <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
-                  <CardHeader>
-                    <CardTitle className="text-sm">คำสั่งซื้อล่าสุด</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {latestOrders.map((order) => (
-                        <div
-                          key={order.id}
-                          className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm"
-                        >
-                          <div>
-                            <div className="font-medium text-sm">{order.id}</div>
-                            <div className="text-xs text-gray-500">{order.customerName}</div>
-                            <div className="text-xs text-gray-500">
-                              {format(new Date(order.orderDate), "dd/MM/yyyy", { locale: th })}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-sm">฿{order.totalPrice.toLocaleString()}</div>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "text-xs",
-                                paymentStatusMap[order.paymentStatus as keyof typeof paymentStatusMap].color,
-                              )}
-                            >
-                              {paymentStatusMap[order.paymentStatus as keyof typeof paymentStatusMap].label}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* สรุปยอด */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
@@ -741,6 +736,43 @@ export function OrdersPage() {
                             </span>
                           </div>
                           <span className="text-sm font-bold">฿{amount.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* คำสั่งซื้อล่าสุด */}
+                <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+                  <CardHeader>
+                    <CardTitle className="text-sm">คำสั่งซื้อล่าสุด</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {latestOrders.map((order) => (
+                        <div
+                          key={order.id}
+                          className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm"
+                        >
+                          <div>
+                            <div className="font-medium text-sm">{order.id}</div>
+                            <div className="text-xs text-gray-500">{order.customerName}</div>
+                            <div className="text-xs text-gray-500">
+                              {format(new Date(order.orderDate), "dd/MM/yyyy", { locale: th })}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-sm">฿{order.totalPrice.toLocaleString()}</div>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-xs",
+                                paymentStatusMap[order.paymentStatus as keyof typeof paymentStatusMap].color,
+                              )}
+                            >
+                              {paymentStatusMap[order.paymentStatus as keyof typeof paymentStatusMap].label}
+                            </Badge>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -963,6 +995,13 @@ export function OrdersPage() {
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              onClick={handleSendBill}
+              disabled={selectedBillCount === 0}
+              className="rounded-2xl bg-white text-gray-900 border border-gray-200 shadow-sm hover:bg-gray-100 hover:border-gray-300 mr-4"
+            >
+              ส่งบิล {selectedBillCount > 0 ? `(${selectedBillCount})` : ""}
+            </Button>
             <Label htmlFor="itemsPerPage" className="text-sm">
               แสดง:
             </Label>
@@ -985,8 +1024,30 @@ export function OrdersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12 text-center">
+                    <Checkbox
+                      checked={allCreditOrdersOnCurrentPageSelected}
+                      indeterminate={isIndeterminate ? true : undefined}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          const newSelected = new Set(selectedOrderIds)
+                          currentOrders
+                            .filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid")
+                            .forEach((order) => newSelected.add(order.id))
+                          setSelectedOrderIds(newSelected)
+                        } else {
+                          const newSelected = new Set(selectedOrderIds)
+                          currentOrders
+                            .filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid")
+                            .forEach((order) => newSelected.delete(order.id))
+                          setSelectedOrderIds(newSelected)
+                        }
+                      }}
+                    />
+                  </TableHead>
                   <TableHead className="text-center">เลขที่คำสั่งซื้อ</TableHead>
                   <TableHead className="text-center">ชื่อลูกค้า</TableHead>
+                  <TableHead className="text-center">ประเภทลูกค้า</TableHead>
                   <TableHead className="text-center">ช่องทางการสั่งซื้อ</TableHead>
                   <TableHead className="text-center">วันที่สั่งซื้อ</TableHead>
                   <TableHead className="text-center">วันที่ต้องการรับสินค้า</TableHead>
@@ -999,8 +1060,35 @@ export function OrdersPage() {
               <TableBody>
                 {currentOrders.map((order) => (
                   <TableRow key={order.id}>
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={selectedOrderIds.has(order.id)}
+                        onCheckedChange={(checked) => {
+                          const newSelected = new Set(selectedOrderIds)
+                          if (checked) {
+                            newSelected.add(order.id)
+                          } else {
+                            newSelected.delete(order.id)
+                          }
+                          setSelectedOrderIds(newSelected)
+                        }}
+                        disabled={order.customerType !== "ลูกค้าเครดิต" || order.paymentStatus === "paid"}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium text-center">{order.id}</TableCell>
                     <TableCell className="text-center">{order.customerName}</TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "border",
+                          customerTypeMap[order.customerType as keyof typeof customerTypeMap]?.color ||
+                            "bg-gray-50 text-gray-600 border-gray-200",
+                        )}
+                      >
+                        {order.customerType}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-center">
                       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                         {order.channel}
@@ -1074,6 +1162,18 @@ export function OrdersPage() {
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md bg-transparent disabled:opacity-50"
+                        disabled={order.orderStatus !== "pending"}
+                      >
+                        <Link href={`/orders/${order.id}/edit`}>
+                          <Edit className="h-3 w-3 mr-1" />
+                          แก้ไข
+                        </Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -1098,7 +1198,6 @@ export function OrdersPage() {
                   <ChevronLeft className="h-4 w-4" />
                   ก่อนหน้า
                 </Button>
-
                 {/* Page numbers */}
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -1112,7 +1211,6 @@ export function OrdersPage() {
                     } else {
                       pageNumber = currentPage - 2 + i
                     }
-
                     return (
                       <Button
                         key={pageNumber}
@@ -1126,7 +1224,6 @@ export function OrdersPage() {
                     )
                   })}
                 </div>
-
                 <Button
                   variant="outline"
                   size="sm"

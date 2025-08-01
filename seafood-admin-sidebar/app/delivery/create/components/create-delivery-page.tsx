@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { User, ArrowLeft, Upload, X, CalendarIcon } from "lucide-react"
+import { User, ArrowLeft, Upload, X, CalendarIcon, Search } from "lucide-react"
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
@@ -27,58 +27,42 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
-// Sample customer data with multiple addresses
-const customers = [
+// Sample order data
+const initialOrders = [
   {
-    id: "1",
-    name: "นายสมชาย ใจดี",
-    phone: "081-234-5678",
-    addresses: [
-      {
-        id: "1-1",
-        label: "บ้าน",
-        address: "123 ถนนสุขุมวิท แขวงคลองตัน เขตวัฒนา กรุงเทพฯ 10110",
-      },
-      {
-        id: "1-2",
-        label: "ออฟฟิศ",
-        address: "456 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500",
-      },
-    ],
+    orderId: "ORD-001",
+    customerName: "นายสมชาย ใจดี",
+    customerAddress: "123 ถนนสุขุมวิท แขวงคลองตัน เขตวัฒนา กรุงเทพฯ 10110",
+    customerPhone: "081-234-5678",
+    status: "preparing", // รอแพ็ค
   },
   {
-    id: "2",
-    name: "บริษัท อาหารทะเล จำกัด",
-    phone: "02-123-4567",
-    addresses: [
-      {
-        id: "2-1",
-        label: "สำนักงานใหญ่",
-        address: "789 ถนนพหลโยธิน แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900",
-      },
-      {
-        id: "2-2",
-        label: "โรงงาน",
-        address: "321 ถนนรัชดาภิเษก แขวงห้วยขวง เขตห้วยขวง กรุงเทพฯ 10310",
-      },
-      {
-        id: "2-3",
-        label: "คลังสินค้า",
-        address: "654 ถนนเพชรบุรี แขวงมักกะสัน เขตราชเทวี กรุงเทพฯ 10400",
-      },
-    ],
+    orderId: "ORD-002",
+    customerName: "บริษัท อาหารทะเล จำกัด",
+    customerAddress: "456 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500",
+    customerPhone: "02-123-4567",
+    status: "shipped", // รอส่ง
   },
   {
-    id: "3",
-    name: "ร้านอาหารทะเลสด",
-    phone: "089-876-5432",
-    addresses: [
-      {
-        id: "3-1",
-        label: "ร้านหลัก",
-        address: "987 ถนนวิทยุ แขวงลุมพินี เขตปทุมวัน กรุงเทพฯ 10330",
-      },
-    ],
+    orderId: "ORD-003",
+    customerName: "นางสาวมาลี สวยงาม",
+    customerAddress: "789 ถนนพหลโยธิน แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900",
+    customerPhone: "082-555-6666",
+    status: "delivered", // จัดส่งแล้ว - จะไม่แสดงในรายการเลือก
+  },
+  {
+    orderId: "ORD-004",
+    customerName: "ร้านอาหารทะเลสด",
+    customerAddress: "987 ถนนวิทยุ แขวงลุมพินี เขตปทุมวัน กรุงเทพฯ 10330",
+    customerPhone: "089-876-5432",
+    status: "preparing", // รอแพ็ค
+  },
+  {
+    orderId: "ORD-005",
+    customerName: "นายธนาคาร ร่ำรวย",
+    customerAddress: "101 ถนนเพลินจิต แขวงลุมพินี เขตปทุมวัน กรุงเทพฯ 10330",
+    customerPhone: "090-123-4567",
+    status: "completed", // สถานะอื่น - จะไม่แสดงในรายการเลือก
   },
 ]
 
@@ -97,14 +81,17 @@ interface DeliveryImage {
 const CreateDeliveryPage = () => {
   const router = useRouter()
   const { toast } = useToast()
-  const [selectedCustomer, setSelectedCustomer] = React.useState<string>("")
-  const [selectedAddress, setSelectedAddress] = React.useState<string>("")
+
+  const [orderSearchTerm, setOrderSearchTerm] = React.useState<string>("")
+  const [selectedOrder, setSelectedOrder] = React.useState<(typeof initialOrders)[0] | null>(null)
+
   const [customerName, setCustomerName] = React.useState("")
   const [customerPhone, setCustomerPhone] = React.useState("")
   const [customerAddress, setCustomerAddress] = React.useState("")
   const [notes, setNotes] = React.useState("")
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+
   const [driverName, setDriverName] = React.useState("")
   const [vehiclePlate, setVehiclePlate] = React.useState("")
   const [driverPhone, setDriverPhone] = React.useState("")
@@ -113,34 +100,35 @@ const CreateDeliveryPage = () => {
   const [deliveryDate, setDeliveryDate] = React.useState<Date>(new Date())
   const [deliveryImages, setDeliveryImages] = React.useState<DeliveryImage[]>([])
 
-  const selectedCustomerData = customers.find((c) => c.id === selectedCustomer)
-  const availableAddresses = selectedCustomerData?.addresses || []
+  // Filter orders based on search term and status
+  const filteredOrders = React.useMemo(() => {
+    const lowerCaseSearchTerm = orderSearchTerm.toLowerCase()
+    return initialOrders.filter(
+      (order) =>
+        (order.status === "preparing" || order.status === "shipped") &&
+        (order.orderId.toLowerCase().includes(lowerCaseSearchTerm) ||
+          order.customerName.toLowerCase().includes(lowerCaseSearchTerm)),
+    )
+  }, [orderSearchTerm])
 
-  const handleCustomerSelect = (customerId: string) => {
-    const customer = customers.find((c) => c.id === customerId)
-    if (customer) {
-      setSelectedCustomer(customerId)
-      setCustomerName(customer.name)
-      setCustomerPhone(customer.phone)
-
-      // Reset address selection when customer changes
-      setSelectedAddress("")
-      setCustomerAddress("")
-
-      // If customer has only one address, auto-select it
-      if (customer.addresses.length === 1) {
-        setSelectedAddress(customer.addresses[0].id)
-        setCustomerAddress(customer.addresses[0].address)
-      }
+  // Handle order selection from dropdown
+  const handleOrderSelect = (orderId: string) => {
+    const order = filteredOrders.find((o) => o.orderId === orderId)
+    if (order) {
+      setSelectedOrder(order)
+      setCustomerName(order.customerName)
+      setCustomerPhone(order.customerPhone)
+      setCustomerAddress(order.customerAddress)
     }
   }
 
-  const handleAddressSelect = (addressId: string) => {
-    const address = availableAddresses.find((addr) => addr.id === addressId)
-    if (address) {
-      setSelectedAddress(addressId)
-      setCustomerAddress(address.address)
-    }
+  // Clear selected order and reset customer fields
+  const handleClearOrderSelection = () => {
+    setSelectedOrder(null)
+    setOrderSearchTerm("")
+    setCustomerName("")
+    setCustomerPhone("")
+    setCustomerAddress("")
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,25 +158,17 @@ const CreateDeliveryPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validation
-    if (!customerName.trim()) {
+    // Validation: Ensure an order is selected
+    if (!selectedOrder) {
       toast({
         title: "ข้อผิดพลาด",
-        description: "กรุณากรอกชื่อลูกค้า",
+        description: "กรุณาเลือกคำสั่งซื้อ",
         variant: "destructive",
       })
       return
     }
 
-    if (!customerAddress.trim()) {
-      toast({
-        title: "ข้อผิดพลาด",
-        description: "กรุณากรอกที่อยู่จัดส่ง",
-        variant: "destructive",
-      })
-      return
-    }
-
+    // Other validations remain
     if (!driverName.trim()) {
       toast({
         title: "ข้อผิดพลาด",
@@ -197,7 +177,6 @@ const CreateDeliveryPage = () => {
       })
       return
     }
-
     if (!vehiclePlate.trim()) {
       toast({
         title: "ข้อผิดพลาด",
@@ -206,7 +185,6 @@ const CreateDeliveryPage = () => {
       })
       return
     }
-
     if (!driverPhone.trim()) {
       toast({
         title: "ข้อผิดพลาด",
@@ -215,7 +193,6 @@ const CreateDeliveryPage = () => {
       })
       return
     }
-
     if (!vehicleType) {
       toast({
         title: "ข้อผิดพลาด",
@@ -224,7 +201,6 @@ const CreateDeliveryPage = () => {
       })
       return
     }
-
     if (!serviceProvider) {
       toast({
         title: "ข้อผิดพลาด",
@@ -239,17 +215,16 @@ const CreateDeliveryPage = () => {
 
   const confirmSubmit = async () => {
     setIsSubmitting(true)
-
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       // Create delivery data
       const deliveryData = {
-        customerName,
-        customerPhone,
-        customerAddress,
-        selectedAddressLabel: availableAddresses.find((addr) => addr.id === selectedAddress)?.label,
+        orderId: selectedOrder?.orderId, // Use orderId from selectedOrder
+        customerName: selectedOrder?.customerName,
+        customerPhone: selectedOrder?.customerPhone,
+        customerAddress: selectedOrder?.customerAddress,
         notes,
         driverName,
         vehiclePlate,
@@ -258,17 +233,15 @@ const CreateDeliveryPage = () => {
         serviceProvider,
         deliveryDate,
         deliveryImages,
-        status: "preparing",
+        status: "preparing", // Default status for new delivery
         createdAt: new Date(),
       }
-
       console.log("Creating delivery:", deliveryData)
 
       toast({
         title: "สำเร็จ!",
         description: "สร้างการจัดส่งใหม่เรียบร้อยแล้ว",
       })
-
       setIsSubmitDialogOpen(false)
       // Redirect back to delivery page
       router.push("/delivery")
@@ -308,89 +281,93 @@ const CreateDeliveryPage = () => {
                   <User className="h-5 w-5" />
                   ข้อมูลลูกค้า
                 </CardTitle>
-                {selectedCustomer && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedCustomer("")
-                      setSelectedAddress("")
-                      setCustomerName("")
-                      setCustomerPhone("")
-                      setCustomerAddress("")
-                    }}
-                  >
-                    ล้างการกรอง
+                {selectedOrder && (
+                  <Button variant="outline" size="sm" onClick={handleClearOrderSelection}>
+                    ล้างการเลือกคำสั่งซื้อ
                   </Button>
                 )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="customer-select">เลือกลูกค้า (ถ้ามี)</Label>
-                  <Select value={selectedCustomer} onValueChange={handleCustomerSelect}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="เลือกลูกค้าจากรายชื่อ" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {customers.map((customer) => (
-                        <SelectItem key={customer.id} value={customer.id}>
-                          {customer.name} - {customer.phone}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Address Selection - Show only if customer is selected and has multiple addresses */}
-                {selectedCustomer && availableAddresses.length > 1 && (
-                  <div>
-                    <Label htmlFor="address-select">เลือกที่อยู่</Label>
-                    <Select value={selectedAddress} onValueChange={handleAddressSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="เลือกที่อยู่จัดส่ง" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableAddresses.map((address) => (
-                          <SelectItem key={address.id} value={address.id}>
-                            {address.label} - {address.address.substring(0, 50)}...
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="customer-name">ชื่อลูกค้า <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="order-search">ค้นหารหัสคำสั่งซื้อ หรือชื่อลูกค้า</Label>
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="customer-name"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="กรอกชื่อลูกค้า"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="customer-phone">เบอร์โทรศัพท์ <span className="text-red-500">*</span></Label>
-                    <Input
-                      id="customer-phone"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="กรอกเบอร์โทรศัพท์"
+                      id="order-search"
+                      value={orderSearchTerm}
+                      onChange={(e) => setOrderSearchTerm(e.target.value)}
+                      placeholder="ค้นหาด้วยรหัสคำสั่งซื้อ หรือชื่อลูกค้า..."
+                      className="pl-8"
+                      disabled={!!selectedOrder} // ปิดการใช้งานช่องค้นหาเมื่อเลือกคำสั่งซื้อแล้ว
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="customer-address">ที่อยู่จัดส่ง <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="order-select">
+                    เลือกคำสั่งซื้อ <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={selectedOrder?.orderId || ""}
+                    onValueChange={handleOrderSelect}
+                    disabled={!!selectedOrder || filteredOrders.length === 0} // ปิดการใช้งาน Dropdown เมื่อเลือกคำสั่งซื้อแล้ว หรือไม่มีคำสั่งซื้อที่ตรงกัน
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกคำสั่งซื้อจากรายการ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredOrders.length === 0 ? (
+                        <SelectItem value="no-orders" disabled>
+                          ไม่พบคำสั่งซื้อที่ตรงกัน (สถานะรอแพ็ค/รอส่ง)
+                        </SelectItem>
+                      ) : (
+                        filteredOrders.map((order) => (
+                          <SelectItem key={order.orderId} value={order.orderId}>
+                            {order.orderId} - {order.customerName} ({order.status === "preparing" ? "รอแพ็ค" : "รอส่ง"})
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label htmlFor="customer-name">
+                      ชื่อลูกค้า <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="customer-name"
+                      value={customerName}
+                      placeholder="กรอกชื่อลูกค้า"
+                      readOnly={true} // ทำให้เป็นอ่านอย่างเดียว
+                      className="bg-muted" // ทำให้เห็นความแตกต่าง
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="customer-phone">
+                      เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="customer-phone"
+                      value={customerPhone}
+                      placeholder="กรอกเบอร์โทรศัพท์"
+                      readOnly={true} // ทำให้เป็นอ่านอย่างเดียว
+                      className="bg-muted" // ทำให้เห็นความแตกต่าง
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="customer-address">
+                    ที่อยู่จัดส่ง <span className="text-red-500">*</span>
+                  </Label>
                   <Textarea
                     id="customer-address"
                     value={customerAddress}
-                    onChange={(e) => setCustomerAddress(e.target.value)}
                     placeholder="กรอกที่อยู่สำหรับจัดส่ง"
                     rows={3}
-                    required
+                    readOnly={true} // ทำให้เป็นอ่านอย่างเดียว
+                    className="bg-muted" // ทำให้เห็นความแตกต่าง
                   />
                 </div>
               </CardContent>
@@ -404,7 +381,9 @@ const CreateDeliveryPage = () => {
               <CardContent className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-3">
                   <div>
-                    <Label htmlFor="driver-name">ชื่อคนขับ <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="driver-name">
+                      ชื่อคนขับ <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="driver-name"
                       value={driverName}
@@ -414,7 +393,9 @@ const CreateDeliveryPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="vehicle-plate">ทะเบียนรถ <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="vehicle-plate">
+                      ทะเบียนรถ <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="vehicle-plate"
                       value={vehiclePlate}
@@ -424,7 +405,9 @@ const CreateDeliveryPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="driver-phone">เบอร์โทรคนขับ <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="driver-phone">
+                      เบอร์โทรคนขับ <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="driver-phone"
                       value={driverPhone}
@@ -434,10 +417,11 @@ const CreateDeliveryPage = () => {
                     />
                   </div>
                 </div>
-
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="vehicle-type">ประเภทรถ <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="vehicle-type">
+                      ประเภทรถ <span className="text-red-500">*</span>
+                    </Label>
                     <Select value={vehicleType} onValueChange={setVehicleType} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกประเภทรถ" />
@@ -452,7 +436,9 @@ const CreateDeliveryPage = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="service-provider">ผู้ให้บริการ <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="service-provider">
+                      ผู้ให้บริการ <span className="text-red-500">*</span>
+                    </Label>
                     <Select value={serviceProvider} onValueChange={setServiceProvider} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกผู้ให้บริการ" />
@@ -467,9 +453,10 @@ const CreateDeliveryPage = () => {
                     </Select>
                   </div>
                 </div>
-
                 <div>
-                  <Label>วันที่จัดส่ง <span className="text-red-500">*</span></Label>
+                  <Label>
+                    วันที่จัดส่ง <span className="text-red-500">*</span>
+                  </Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -496,7 +483,6 @@ const CreateDeliveryPage = () => {
                     </PopoverContent>
                   </Popover>
                 </div>
-
                 <div>
                   <Label htmlFor="delivery-notes">หมายเหตุการจัดส่ง</Label>
                   <Textarea
@@ -518,8 +504,7 @@ const CreateDeliveryPage = () => {
                     type="submit"
                     className="flex-1"
                     disabled={
-                      !customerName.trim() ||
-                      !customerAddress.trim() ||
+                      !selectedOrder || // ต้องมีคำสั่งซื้อที่เลือก
                       !driverName.trim() ||
                       !vehiclePlate.trim() ||
                       !driverPhone.trim() ||
@@ -538,23 +523,20 @@ const CreateDeliveryPage = () => {
                         <div className="font-medium text-gray-900">รายละเอียดการจัดส่ง:</div>
                         <div className="text-sm space-y-1">
                           <div>
-                            <span className="font-medium">ลูกค้า:</span> {customerName}
+                            <span className="font-medium">รหัสคำสั่งซื้อ:</span> {selectedOrder?.orderId}
                           </div>
-                          {customerPhone && (
+                          <div>
+                            <span className="font-medium">ลูกค้า:</span> {selectedOrder?.customerName}
+                          </div>
+                          {selectedOrder?.customerPhone && (
                             <div>
-                              <span className="font-medium">เบอร์โทร:</span> {customerPhone}
+                              <span className="font-medium">เบอร์โทร:</span> {selectedOrder?.customerPhone}
                             </div>
                           )}
                           <div>
-                            <span className="font-medium">ที่อยู่:</span> {customerAddress.substring(0, 60)}
-                            {customerAddress.length > 60 ? "..." : ""}
+                            <span className="font-medium">ที่อยู่:</span> {selectedOrder?.customerAddress.substring(0, 60)}
+                            {selectedOrder && selectedOrder.customerAddress.length > 60 ? "..." : ""}
                           </div>
-                          {selectedAddress && availableAddresses.find((addr) => addr.id === selectedAddress) && (
-                            <div>
-                              <span className="font-medium">ประเภทที่อยู่:</span>{" "}
-                              {availableAddresses.find((addr) => addr.id === selectedAddress)?.label}
-                            </div>
-                          )}
                           <div>
                             <span className="font-medium">คนขับ:</span> {driverName} ({driverPhone})
                           </div>
@@ -688,8 +670,11 @@ const CreateDeliveryPage = () => {
                   {serviceProvider && <p>ผู้ให้บริการ: {serviceProvider}</p>}
                   {driverPhone && <p>เบอร์โทร: {driverPhone}</p>}
                   <p>วันที่จัดส่ง: {format(deliveryDate, "dd/MM/yyyy", { locale: th })}</p>
-                  {selectedAddress && availableAddresses.find((addr) => addr.id === selectedAddress) && (
-                    <p>ที่อยู่: {availableAddresses.find((addr) => addr.id === selectedAddress)?.label}</p>
+                  {selectedOrder && (
+                    <p>
+                      ที่อยู่: {selectedOrder.customerAddress.substring(0, 30)}
+                      {selectedOrder.customerAddress.length > 30 ? "..." : ""}
+                    </p>
                   )}
                 </div>
               </div>

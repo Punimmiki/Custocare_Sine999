@@ -2,7 +2,18 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowLeft, User, CreditCard, Banknote, MessageCircle, Plus, Edit, Trash2, MapPin, Percent } from "lucide-react"
+import {
+  ArrowLeft,
+  User,
+  CreditCard,
+  Banknote,
+  MessageCircle,
+  Plus,
+  Edit,
+  Trash2,
+  MapPin,
+  CheckCircle,
+} from "lucide-react" // Added CheckCircle icon
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +23,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog" // Added DialogFooter
 
 interface Address {
   id: string
@@ -41,10 +59,11 @@ const CreateCustomerPage = () => {
   const [customerType, setCustomerType] = React.useState<"cash" | "credit">("cash")
   const [primaryBank, setPrimaryBank] = React.useState("")
 
-  // Credit-related fields
+  // Credit-related fields - No initial values for new customers
+  const [creditType, setCreditType] = React.useState<"amount" | "bills" | "days">("amount")
   const [creditLimit, setCreditLimit] = React.useState<number | "">("")
-  const [maxOutstandingBills, setMaxOutstandingBills] = React.useState<number | "">("")
-  const [paymentPeriodDays, setPaymentPeriodDays] = React.useState<number | "">("")
+  const [creditBills, setCreditBills] = React.useState<number | "">("")
+  const [creditDays, setCreditDays] = React.useState<number | "">("")
 
   // Notification settings
   const [notifications, setNotifications] = React.useState<NotificationSettings>({
@@ -54,13 +73,6 @@ const CreateCustomerPage = () => {
     shipping: true,
   })
 
-  // Discount settings
-  const [discount, setDiscount] = React.useState<DiscountSettings>({
-    type: "percentage",
-    value: 0,
-    enabled: false,
-  })
-
   // Address form states
   const [showAddressForm, setShowAddressForm] = React.useState(false)
   const [editingAddressId, setEditingAddressId] = React.useState<string | null>(null)
@@ -68,7 +80,9 @@ const CreateCustomerPage = () => {
   const [addressText, setAddressText] = React.useState("")
   const [isDefaultAddress, setIsDefaultAddress] = React.useState(false)
 
+  // Dialog states
   const [showSaveConfirmation, setShowSaveConfirmation] = React.useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false) // New state for success dialog
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,14 +97,13 @@ const CreateCustomerPage = () => {
       addresses,
       customerType,
       creditLimit,
-      maxOutstandingBills,
-      paymentPeriodDays,
+      creditBills,
+      creditDays,
       primaryBank,
       notifications,
-      discount,
     })
-
     setShowSaveConfirmation(false)
+    setShowSuccessDialog(true) // Show success dialog after confirmation
     // You can add navigation or success message here
     // Example: router.push('/customers')
   }
@@ -101,20 +114,17 @@ const CreateCustomerPage = () => {
 
   const handleAddAddress = () => {
     if (!addressLabel.trim() || !addressText.trim()) return
-
     const newAddress: Address = {
       id: Date.now().toString(),
       label: addressLabel,
       address: addressText,
       isDefault: isDefaultAddress || addresses.length === 0, // First address is default
     }
-
     // If this is set as default, remove default from others
     const updatedAddresses = addresses.map((addr) => ({
       ...addr,
       isDefault: newAddress.isDefault ? false : addr.isDefault,
     }))
-
     setAddresses([...updatedAddresses, newAddress])
     resetAddressForm()
   }
@@ -129,7 +139,6 @@ const CreateCustomerPage = () => {
 
   const handleUpdateAddress = () => {
     if (!addressLabel.trim() || !addressText.trim() || !editingAddressId) return
-
     const updatedAddresses = addresses.map((addr) => {
       if (addr.id === editingAddressId) {
         return {
@@ -145,7 +154,6 @@ const CreateCustomerPage = () => {
         isDefault: isDefaultAddress ? false : addr.isDefault,
       }
     })
-
     setAddresses(updatedAddresses)
     resetAddressForm()
   }
@@ -153,12 +161,10 @@ const CreateCustomerPage = () => {
   const handleDeleteAddress = (id: string) => {
     const addressToDelete = addresses.find((addr) => addr.id === id)
     const remainingAddresses = addresses.filter((addr) => addr.id !== id)
-
     // If we're deleting the default address and there are other addresses, make the first one default
     if (addressToDelete?.isDefault && remainingAddresses.length > 0) {
       remainingAddresses[0].isDefault = true
     }
-
     setAddresses(remainingAddresses)
   }
 
@@ -179,7 +185,9 @@ const CreateCustomerPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/30">
-      <div className="space-y-6">
+      <div className="space-y-6 ">
+        {" "}
+        {/* Adjusted for full-screen responsive */}
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" asChild>
@@ -192,8 +200,9 @@ const CreateCustomerPage = () => {
             <p className="text-muted-foreground">เพิ่มข้อมูลลูกค้าใหม่เข้าสู่ระบบ</p>
           </div>
         </div>
-
-        <div className="max-w-2xl">
+        <div className="w-full">
+          {" "}
+          {/* Removed max-w-2xl */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Customer Information */}
             <Card>
@@ -205,9 +214,9 @@ const CreateCustomerPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                 <Label htmlFor="customer-name">
-                ชื่อลูกค้า <span className="text-red-500">*</span>
-              </Label>
+                  <Label htmlFor="customer-name">
+                    ชื่อลูกค้า <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="customer-name"
                     value={customerName}
@@ -217,7 +226,9 @@ const CreateCustomerPage = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="customer-phone">เบอร์โทรศัพท์ <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="customer-phone">
+                    เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="customer-phone"
                     value={customerPhone}
@@ -227,7 +238,9 @@ const CreateCustomerPage = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="primary-bank">ธนาคารหลักที่ชำระเงิน <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="primary-bank">
+                    ธนาคารหลักที่ชำระเงิน <span className="text-red-500">*</span>
+                  </Label>
                   <Select value={primaryBank} onValueChange={setPrimaryBank} required>
                     <SelectTrigger>
                       <SelectValue placeholder="เลือกธนาคาร" />
@@ -236,19 +249,11 @@ const CreateCustomerPage = () => {
                       <SelectItem value="kbank">ธนาคารกสิกรไทย</SelectItem>
                       <SelectItem value="scb">ธนาคารไทยพาณิชย์</SelectItem>
                       <SelectItem value="bbl">ธนาคารกรุงเทพ</SelectItem>
-                      <SelectItem value="ktb">ธนาคารกรุงไทย</SelectItem>
-                      <SelectItem value="bay">ธนาคารกรุงศรีอยุธยา</SelectItem>
-                      <SelectItem value="tmb">ธนาคารทหารไทย</SelectItem>
-                      <SelectItem value="gsb">ธนาคารออมสิน</SelectItem>
-                      <SelectItem value="baac">ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร</SelectItem>
-                      <SelectItem value="cimb">ธนาคาร ซีไอเอ็มบี ไทย</SelectItem>
-                      <SelectItem value="uob">ธนาคารยูโอบี</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </CardContent>
             </Card>
-
             {/* Addresses */}
             <Card>
               <CardHeader>
@@ -294,13 +299,14 @@ const CreateCustomerPage = () => {
                     ))}
                   </div>
                 )}
-
                 {/* Add Address Form */}
                 {showAddressForm && (
                   <div className="p-4 border rounded-lg bg-muted/50 space-y-3">
                     <h4 className="font-medium text-sm">{editingAddressId ? "แก้ไขที่อยู่" : "เพิ่มที่อยู่ใหม่"}</h4>
                     <div>
-                      <Label htmlFor="address-label">ชื่อที่อยู่ *</Label>
+                      <Label htmlFor="address-label">
+                        ชื่อที่อยู่ <span className="text-red-500">*</span>
+                      </Label>
                       <Input
                         id="address-label"
                         value={addressLabel}
@@ -309,7 +315,9 @@ const CreateCustomerPage = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="address-text">ที่อยู่ *</Label>
+                      <Label htmlFor="address-text">
+                        ที่อยู่ <span className="text-red-500">*</span>
+                      </Label>
                       <Textarea
                         id="address-text"
                         value={addressText}
@@ -336,7 +344,6 @@ const CreateCustomerPage = () => {
                     </div>
                   </div>
                 )}
-
                 {/* Add Address Button */}
                 {!showAddressForm && (
                   <Button type="button" variant="outline" onClick={() => setShowAddressForm(true)} className="w-full">
@@ -344,13 +351,11 @@ const CreateCustomerPage = () => {
                     เพิ่มที่อยู่ใหม่
                   </Button>
                 )}
-
                 {addresses.length === 0 && !showAddressForm && (
                   <p className="text-sm text-muted-foreground text-center py-4">ยังไม่มีที่อยู่จัดส่ง กดปุ่มด้านบนเพื่อเพิ่มที่อยู่</p>
                 )}
               </CardContent>
             </Card>
-
             {/* Customer Type and Credit */}
             <Card>
               <CardHeader>
@@ -365,14 +370,14 @@ const CreateCustomerPage = () => {
                     className="flex gap-6 mt-2"
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="cash" id="cash" />
+                      <RadioGroupItem value="cash" id="cash" className="border-black" /> {/* Added border-black */}
                       <Label htmlFor="cash" className="flex items-center gap-2">
                         <Banknote className="h-4 w-4" />
                         เงินสด
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="credit" id="credit" />
+                      <RadioGroupItem value="credit" id="credit" className="border-black" /> {/* Added border-black */}
                       <Label htmlFor="credit" className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
                         เครดิต
@@ -380,126 +385,72 @@ const CreateCustomerPage = () => {
                     </div>
                   </RadioGroup>
                 </div>
-
                 {customerType === "credit" && (
-                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg border">
-                    <h4 className="font-medium text-sm text-muted-foreground">ข้อมูลเครดิต</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="border-0 shadow-sm rounded-2xl bg-blue-50">
+                    <CardHeader>
+                      <CardTitle className="text-lg">ข้อมูลเครดิต</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                       <div>
-                        <Label htmlFor="credit-limit">วงเงินเครดิต (บาท) *</Label>
-                        <Input
-                          id="credit-limit"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={creditLimit}
-                          onChange={(e) =>
-                            setCreditLimit(e.target.value === "" ? "" : Number.parseFloat(e.target.value) || "")
-                          }
-                          placeholder="กรอกวงเงินเครดิต"
-                          required={customerType === "credit"}
-                        />
+                        <Label>ประเภทเครดิต</Label>
+                        <RadioGroup value={creditType} onValueChange={setCreditType} className="flex gap-6 mt-2">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="amount" id="amount" className="border-black" />{" "}
+                            {/* Added border-black */}
+                            <Label htmlFor="amount">วงเงินเครดิต</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="bills" id="bills" className="border-black" />{" "}
+                            {/* Added border-black */}
+                            <Label htmlFor="bills">จำนวนบิล</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="days" id="days" className="border-black" />{" "}
+                            {/* Added border-black */}
+                            <Label htmlFor="days">จำนวนวัน</Label>
+                          </div>
+                        </RadioGroup>
                       </div>
-                      <div>
-                        <Label htmlFor="max-outstanding-bills">จำนวนบิลค้างได้สูงสุด *</Label>
-                        <Input
-                          id="max-outstanding-bills"
-                          type="number"
-                          min="0"
-                          value={maxOutstandingBills}
-                          onChange={(e) =>
-                            setMaxOutstandingBills(e.target.value === "" ? "" : Number.parseInt(e.target.value) || "")
-                          }
-                          placeholder="กรอกจำนวนบิลค้างได้สูงสุด"
-                          required={customerType === "credit"}
-                        />
+                      <div className="grid grid-cols-3 gap-4">
+                        {creditType === "amount" && (
+                          <div>
+                            <Label>วงเงินเครดิต (บาท)</Label>
+                            <Input
+                              type="number"
+                              value={creditLimit}
+                              onChange={(e) => setCreditLimit(Number(e.target.value))}
+                              placeholder="กรอกวงเงิน"
+                            />
+                          </div>
+                        )}
+                        {creditType === "bills" && (
+                          <div>
+                            <Label>จำนวนบิล</Label>
+                            <Input
+                              type="number"
+                              value={creditBills}
+                              onChange={(e) => setCreditBills(Number(e.target.value))}
+                              placeholder="กรอกจำนวนบิล"
+                            />
+                          </div>
+                        )}
+                        {creditType === "days" && (
+                          <div>
+                            <Label>จำนวนวัน</Label>
+                            <Input
+                              type="number"
+                              value={creditDays}
+                              onChange={(e) => setCreditDays(Number(e.target.value))}
+                              placeholder="กรอกจำนวนวัน"
+                            />
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="payment-period">ระยะเวลาชำระ (วัน) *</Label>
-                      <Input
-                        id="payment-period"
-                        type="number"
-                        min="1"
-                        value={paymentPeriodDays}
-                        onChange={(e) =>
-                          setPaymentPeriodDays(e.target.value === "" ? "" : Number.parseInt(e.target.value) || "")
-                        }
-                        placeholder="เช่น 30"
-                        required={customerType === "credit"}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">จำนวนวันที่ลูกค้าสามารถชำระเงินได้หลังจากออกบิล</p>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 )}
               </CardContent>
             </Card>
-
-            {/* Discount Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Percent className="h-5 w-5" />
-                  ส่วนลดรายสินค้า
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="discount-enabled"
-                    checked={discount.enabled}
-                    onCheckedChange={(checked) => setDiscount((prev) => ({ ...prev, enabled: checked }))}
-                  />
-                  <Label htmlFor="discount-enabled">เปิดใช้งานส่วนลดรายสินค้า</Label>
-                </div>
-
-                {discount.enabled && (
-                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg border">
-                    <div>
-                      <Label>ประเภทส่วนลด</Label>
-                      <RadioGroup
-                        value={discount.type}
-                        onValueChange={(value) =>
-                          setDiscount((prev) => ({ ...prev, type: value as "percentage" | "amount" }))
-                        }
-                        className="flex gap-6 mt-2"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="percentage" id="percentage" />
-                          <Label htmlFor="percentage">เปอร์เซ็นต์ (%)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="amount" id="amount" />
-                          <Label htmlFor="amount">จำนวนเงิน (บาท)</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="discount-value">
-                        {discount.type === "percentage" ? "เปอร์เซ็นต์ส่วนลด" : "จำนวนเงินส่วนลด (บาท)"}
-                      </Label>
-                      <Input
-                        id="discount-value"
-                        type="number"
-                        min="0"
-                        max={discount.type === "percentage" ? "100" : undefined}
-                        step={discount.type === "percentage" ? "0.01" : "0.01"}
-                        value={discount.value === 0 ? "" : discount.value}
-                        onChange={(e) =>
-                          setDiscount((prev) => ({ ...prev, value: Number.parseFloat(e.target.value) || 0 }))
-                        }
-                        placeholder={discount.type === "percentage" ? "กรอกเปอร์เซ็นต์ส่วนลด" : "กรอกจำนวนเงินส่วนลด"}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {discount.type === "percentage" ? "ส่วนลดเป็นเปอร์เซ็นต์ (0-100%)" : "ส่วนลดเป็นจำนวนเงินคงที่"}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
             {/* Notification Settings */}
             <Card>
               <CardHeader>
@@ -510,7 +461,6 @@ const CreateCustomerPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">เลือกประเภทการแจ้งเตือนที่ต้องการส่งให้ลูกค้าผ่าน LINE</p>
-
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
@@ -518,12 +468,13 @@ const CreateCustomerPage = () => {
                       <p className="text-xs text-muted-foreground">แจ้งเตือนเมื่อได้รับคำสั่งซื้อและยืนยันออเดอร์</p>
                     </div>
                     <Switch
-                      id="order-confirmation"
-                      checked={notifications.orderConfirmation}
-                      onCheckedChange={(checked) => handleNotificationChange("orderConfirmation", checked)}
-                    />
-                  </div>
+                    id="order-confirmation"
+                    checked={notifications.orderConfirmation}
+                    onCheckedChange={(checked) => handleNotificationChange("orderConfirmation", checked)}
+                    className="data-[state=checked]:bg-green-500"
+                  />
 
+                  </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <Label htmlFor="payment-reminder">แจ้งเตือนยอดค้างชำระ</Label>
@@ -533,9 +484,9 @@ const CreateCustomerPage = () => {
                       id="payment-reminder"
                       checked={notifications.paymentReminder}
                       onCheckedChange={(checked) => handleNotificationChange("paymentReminder", checked)}
+                      className="data-[state=checked]:bg-green-500"
                     />
                   </div>
-
                   <div className="flex items-center justify-between">
                     <div>
                       <Label htmlFor="packaging">แพ็คสินค้า</Label>
@@ -545,9 +496,9 @@ const CreateCustomerPage = () => {
                       id="packaging"
                       checked={notifications.packaging}
                       onCheckedChange={(checked) => handleNotificationChange("packaging", checked)}
+                      className="data-[state=checked]:bg-green-500"
                     />
                   </div>
-
                   <div className="flex items-center justify-between">
                     <div>
                       <Label htmlFor="shipping">จัดส่ง</Label>
@@ -557,12 +508,12 @@ const CreateCustomerPage = () => {
                       id="shipping"
                       checked={notifications.shipping}
                       onCheckedChange={(checked) => handleNotificationChange("shipping", checked)}
+                      className="data-[state=checked]:bg-green-500"
                     />
                   </div>
                 </div>
               </CardContent>
             </Card>
-
             {/* Submit Button */}
             <div className="flex gap-4">
               <Button type="submit" className="flex-1">
@@ -575,19 +526,36 @@ const CreateCustomerPage = () => {
           </form>
         </div>
       </div>
+
       {/* Save Confirmation Dialog */}
       <Dialog open={showSaveConfirmation} onOpenChange={setShowSaveConfirmation}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>ยืนยันการเพิ่มลูกค้า</DialogTitle>
-            <DialogDescription>คุณต้องการเพิ่มลูกค้าใหม่ "{customerName}" เข้าสู่ระบบหรือไม่?</DialogDescription>
+            <DialogDescription>คุณต้องการเพิ่มลูกค้าใหม่ &quot;{customerName}&quot; เข้าสู่ระบบหรือไม่?</DialogDescription>
           </DialogHeader>
-          <div className="flex justify-end gap-2 mt-4">
+          <DialogFooter className="mt-4">
             <Button variant="outline" onClick={cancelSave}>
               ยกเลิก
             </Button>
             <Button onClick={confirmSave}>ยืนยันการเพิ่ม</Button>
-          </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader className="flex flex-col items-center text-center">
+            <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
+            <DialogTitle className="text-2xl font-bold">เพิ่มลูกค้าใหม่เรียบร้อยแล้ว!</DialogTitle>
+            <DialogDescription>ข้อมูลลูกค้า &quot;{customerName}&quot; ได้ถูกบันทึกเข้าสู่ระบบแล้ว</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button onClick={() => setShowSuccessDialog(false)} className="w-full">
+              ตกลง
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

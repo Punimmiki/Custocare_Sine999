@@ -17,14 +17,13 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
-
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
+import { Switch } from "@/components/ui/switch" // Import Switch component
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Dialog,
@@ -463,19 +462,15 @@ const CustomersPage = () => {
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone.includes(searchTerm) ||
       customer.address.toLowerCase().includes(searchTerm.toLowerCase())
-
     const matchesType = typeFilter === "all" || customer.type === typeFilter
-
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "active" && customer.isActive) ||
       (statusFilter === "inactive" && !customer.isActive)
-
     const matchesLine =
       lineFilter === "all" ||
       (lineFilter === "enabled" && customer.lineNotifications) ||
       (lineFilter === "disabled" && !customer.lineNotifications)
-
     return matchesSearch && matchesType && matchesStatus && matchesLine
   })
 
@@ -524,6 +519,7 @@ const CustomersPage = () => {
           break
         case "line":
           setLineFilter("enabled")
+          setStatusFilter("active") // เพิ่มการกรองเฉพาะลูกค้าที่ใช้งานอยู่
           break
       }
     }
@@ -552,7 +548,6 @@ const CustomersPage = () => {
   const handleSaveDiscount = (customerId: string, productId: string) => {
     const key = `${customerId}-${productId}`
     const newDiscount = editingDiscounts[key]
-
     if (newDiscount !== undefined) {
       setCustomerProducts((prev) => ({
         ...prev,
@@ -561,7 +556,6 @@ const CustomersPage = () => {
             product.id === productId ? { ...product, discount: newDiscount } : product,
           ) || [],
       }))
-
       // Remove from editing state
       setEditingDiscounts((prev) => {
         const newState = { ...prev }
@@ -582,12 +576,10 @@ const CustomersPage = () => {
   const getLatestPurchaseDate = (customerId: string) => {
     const products = getCustomerProducts(customerId)
     if (products.length === 0) return null
-
     const latestDate = products.reduce((latest, product) => {
       const productDate = new Date(product.lastPurchaseDate)
       return productDate > latest ? productDate : latest
     }, new Date(products[0].lastPurchaseDate))
-
     return latestDate
   }
 
@@ -596,7 +588,7 @@ const CustomersPage = () => {
   const inactiveCustomers = customers.filter((c) => !c.isActive).length
   const creditCustomers = customers.filter((c) => c.type === "credit").length
   const cashCustomers = customers.filter((c) => c.type === "cash").length
-  const lineEnabledCustomers = customers.filter((c) => c.lineNotifications).length
+  const lineEnabledCustomers = customers.filter((c) => c.lineNotifications && c.isActive).length // เฉพาะลูกค้าที่ใช้งานอยู่
 
   return (
     <div className="space-y-6 ">
@@ -632,7 +624,6 @@ const CustomersPage = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
             activeCardFilter === "credit" ? "border-primary" : ""
@@ -647,7 +638,6 @@ const CustomersPage = () => {
             <div className="text-xl font-bold sm:text-2xl text-blue-700">{creditCustomers}</div>
           </CardContent>
         </Card>
-
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
             activeCardFilter === "cash" ? "border-primary" : ""
@@ -662,7 +652,6 @@ const CustomersPage = () => {
             <div className="text-xl font-bold sm:text-2xl text-amber-700">{cashCustomers}</div>
           </CardContent>
         </Card>
-
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
             activeCardFilter === "line" ? "border-primary" : ""
@@ -844,9 +833,11 @@ const CustomersPage = () => {
                       <Badge
                         variant="outline"
                         className={`text-xs ${
-                          customer.type === "credit"
-                            ? "border-blue-200 bg-blue-50 text-blue-700"
-                            : "border-amber-200 bg-amber-50 text-amber-700"
+                          !customer.isActive
+                            ? "border-gray-300 bg-gray-100 text-gray-500"
+                            : customer.type === "credit"
+                              ? "border-blue-200 bg-blue-50 text-blue-700"
+                              : "border-amber-200 bg-amber-50 text-amber-700"
                         }`}
                       >
                         <div className="flex items-center gap-1">
@@ -909,8 +900,13 @@ const CustomersPage = () => {
                         <Switch
                           checked={customer.lineNotifications}
                           onCheckedChange={(checked) => handleLineNotificationToggle(customer.id, checked)}
-                          className="scale-75 bg-gray-200 data-[state=checked]:bg-green-500 transition-colors w-11 h-6 rounded-full relative"
-                        ></Switch>
+                          disabled={!customer.isActive} // Disable if customer is inactive
+                          className={`
+                            scale-75
+                            w-11 h-6 rounded-full relative transition-colors
+                            ${!customer.isActive ? "bg-gray-300 cursor-not-allowed" : "bg-gray-200 data-[state=checked]:bg-green-500"}
+                          `}
+                        />
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
@@ -1072,6 +1068,7 @@ const CustomersPage = () => {
                           <Switch
                             checked={customer.isActive}
                             onCheckedChange={(checked) => handleStatusToggle(customer.id, checked)}
+                            // นำ className เดิมกลับมา
                             className="scale-75 data-[state=checked]:bg-green-500 bg-gray-200 rounded-full w-11 h-6 relative transition-colors"
                           ></Switch>
                         </div>
@@ -1102,16 +1099,20 @@ const CustomersPage = () => {
                         <Badge
                           variant="outline"
                           className={`text-xs ${
-                            customer.type === "credit"
-                              ? "border-blue-200 bg-blue-50 text-blue-700"
-                              : "border-amber-200 bg-amber-50 text-amber-700"
+                            !customer.isActive
+                              ? "border-gray-300 bg-gray-100 text-gray-500"
+                              : customer.type === "credit"
+                                ? "border-blue-200 bg-blue-50 text-blue-700"
+                                : "border-amber-200 bg-amber-50 text-amber-700"
                           }`}
                         >
                           {customer.type === "credit" ? "เครดิต" : "เงินสด"}
                         </Badge>
                         <Badge
                           variant={customer.isActive ? "outline" : "secondary"}
-                          className={`text-xs ${customer.isActive ? "border-green-200 bg-green-50 text-green-700" : ""}`}
+                          className={`text-xs ${
+                            customer.isActive ? "border-green-200 bg-green-50 text-green-700" : ""
+                          }`}
                         >
                           {customer.isActive ? "ใช้งาน" : "ไม่ใช้งาน"}
                         </Badge>
@@ -1181,10 +1182,21 @@ const CustomersPage = () => {
                         <Switch
                           checked={customer.lineNotifications}
                           onCheckedChange={(checked) => handleLineNotificationToggle(customer.id, checked)}
-                          className="scale-75"
+                          disabled={!customer.isActive} // Disable if customer is inactive
+                          className={`
+                            scale-75
+                            w-11 h-6 rounded-full relative transition-colors
+                            ${!customer.isActive ? "bg-gray-300 cursor-not-allowed" : "bg-gray-200 data-[state=checked]:bg-green-500"}
+                          `}
                         />
                         <MessageCircle
-                          className={`h-3 w-3 ${customer.lineNotifications ? "text-green-600" : "text-gray-400"}`}
+                          className={`h-3 w-3 ${
+                            !customer.isActive
+                              ? "text-gray-400"
+                              : customer.lineNotifications
+                                ? "text-green-600"
+                                : "text-gray-400"
+                          }`}
                         />
                       </div>
                     </div>
@@ -1351,7 +1363,8 @@ const CustomersPage = () => {
                         <Switch
                           checked={customer.isActive}
                           onCheckedChange={(checked) => handleStatusToggle(customer.id, checked)}
-                          className="scale-75"
+                          // นำ className เดิมกลับมา
+                          className="scale-75 data-[state=checked]:bg-green-500 bg-gray-200 rounded-full w-11 h-6 relative transition-colors"
                         />
                         <span className={`text-xs ${customer.isActive ? "text-green-700" : "text-red-600"}`}>
                           {customer.isActive ? "เปิด" : "ปิด"}

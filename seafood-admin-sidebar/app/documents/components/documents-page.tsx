@@ -33,7 +33,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 // Mock orders data ที่ตรงกับ documents
-const ordersData = [
+export const ordersData = [
   {
     id: "ORD-001",
     customerName: "นายสมชาย ใจดี",
@@ -245,22 +245,97 @@ const ordersData = [
     shippingAddress: "555 ถนนรามคำแหง แขวงหัวหมาก เขตบางกะปิ กรุงเทพฯ 10240",
     notes: "ลูกค้าประจำ",
   },
+  // เพิ่มข้อมูลตัวอย่างเพื่อทดสอบสถานะใหม่
+  {
+    id: "ORD-009",
+    customerName: "ร้านอาหารทะเลใหม่",
+    channel: "Tel",
+    orderDate: "2024-07-29",
+    receiveDate: "2024-08-03",
+    totalPrice: 5000,
+    orderStatus: "pending", // New status
+    paymentStatus: "unpaid", // New status
+    paymentMethod: "kbank",
+    printed: false,
+    customerType: "ลูกค้าเครดิต",
+    deliveryMethod: "ขนส่งเอกชน",
+    documents: {
+      packageLabel: false,
+      packingList: false,
+      pickList: false,
+    },
+    items: [
+      { name: "ปลาหมึกสด", quantity: 5, unit: "กิโลกรัม", price: 200, total: 1000 },
+      { name: "ปูม้า", quantity: 2, unit: "กิโลกรัม", price: 500, total: 1000 },
+    ],
+    shippingAddress: "1000 ถนนลาดพร้าว แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900",
+    notes: "ลูกค้าใหม่",
+  },
+  {
+    id: "ORD-010",
+    customerName: "นางสาวฟ้าใส",
+    channel: "Line",
+    orderDate: "2024-07-29",
+    receiveDate: "2024-08-01",
+    totalPrice: 1500,
+    orderStatus: "packing", // New status
+    paymentStatus: "partially_paid", // New status
+    paymentMethod: "cash",
+    printed: true,
+    customerType: "ลูกค้าเงินสด",
+    deliveryMethod: "ขนส่งไปรษณีย์",
+    documents: {
+      packageLabel: true,
+      packingList: true,
+      pickList: true,
+    },
+    items: [{ name: "กุ้งแช่แข็ง", quantity: 3, unit: "กิโลกรัม", price: 300, total: 900 }],
+    shippingAddress: "222 ถนนพญาไท แขวงพญาไท เขตราชเทวี กรุงเทพฯ 10400",
+    notes: "รีบใช้",
+  },
+  {
+    id: "ORD-011",
+    customerName: "นายแดง",
+    channel: "Facebook",
+    orderDate: "2024-07-30",
+    receiveDate: "2024-08-02",
+    totalPrice: 2000,
+    orderStatus: "delivering", // New status
+    paymentStatus: "paid", // New status
+    paymentMethod: "scb",
+    printed: true,
+    customerType: "ลูกค้าเงินสด",
+    deliveryMethod: "ขนส่งเอกชน",
+    documents: {
+      packageLabel: true,
+      packingList: true,
+      pickList: true,
+    },
+    items: [{ name: "ปลาอินทรี", quantity: 2, unit: "กิโลกรัม", price: 500, total: 1000 }],
+    shippingAddress: "333 ถนนเพชรเกษม แขวงบางแค เขตบางแค กรุงเทพฯ 10160",
+    notes: "จัดส่งด่วน",
+  },
 ]
 
-const orderStatusMapData = {
+export const orderStatusMapData = {
   pending: { label: "รอยืนยันคำสั่งซื้อ", color: "bg-gray-50 text-gray-600 border-gray-200" },
   packing: { label: "รอแพ็คของ", color: "bg-yellow-50 text-yellow-600 border-yellow-200" },
   delivering: { label: "รอจัดส่ง", color: "bg-orange-50 text-orange-600 border-orange-200" },
   completed: { label: "จัดส่งแล้ว", color: "bg-green-50 text-green-600 border-green-200" },
 } as const
 
-const paymentStatusMapData = {
+export const paymentStatusMapData = {
   unpaid: { label: "รอชำระเงิน", color: "bg-red-50 text-red-600 border-red-200" },
   partially_paid: { label: "ชำระบางส่วน", color: "bg-yellow-50 text-yellow-600 border-yellow-200" },
   paid: { label: "ชำระเงินแล้ว", color: "bg-green-50 text-green-600 border-green-200" },
 } as const
 
-const bankMapData = {
+export const customerTypeMapData = {
+  ลูกค้าเงินสด: { color: "bg-green-50 text-green-700 border-green-200" },
+  ลูกค้าเครดิต: { color: "bg-purple-50 text-purple-700 border-purple-200" },
+} as const
+
+export const bankMapData = {
   cash: { name: "เงินสด", color: "bg-green-100 text-green-800" },
   scb: { name: "ไทยพาณิชย์", color: "bg-purple-100 text-purple-800" },
   kbank: { name: "กสิกรไทย", color: "bg-green-100 text-green-800" },
@@ -270,7 +345,7 @@ const bankMapData = {
 } as const
 
 // Sample documents data
-const documentsData = [
+export const documentsData = [
   {
     id: "DOC-001",
     orderId: "ORD-001",
@@ -482,6 +557,51 @@ const documentsData = [
       },
     ],
   },
+  {
+    id: "DOC-009", // Corresponds to ORD-009
+    orderId: "ORD-009",
+    customerName: "ร้านอาหารทะเลใหม่",
+    date: "2024-07-29",
+    paymentSlips: [],
+    deliveryPhotos: [],
+  },
+  {
+    id: "DOC-010", // Corresponds to ORD-010
+    orderId: "ORD-010",
+    customerName: "นางสาวฟ้าใส",
+    date: "2024-07-29",
+    paymentSlips: [
+      {
+        id: "slip-010-1",
+        name: "สลิปโอนเงิน_ORD-010.jpg",
+        url: "/placeholder.svg?height=400&width=300&text=Payment+Slip+10",
+        uploadedAt: "2024-07-29T10:00:00",
+      },
+    ],
+    deliveryPhotos: [],
+  },
+  {
+    id: "DOC-011", // Corresponds to ORD-011
+    orderId: "ORD-011",
+    customerName: "นายแดง",
+    date: "2024-07-30",
+    paymentSlips: [
+      {
+        id: "slip-011-1",
+        name: "สลิปโอนเงิน_ORD-011.jpg",
+        url: "/placeholder.svg?height=400&width=300&text=Payment+Slip+11",
+        uploadedAt: "2024-07-30T11:00:00",
+      },
+    ],
+    deliveryPhotos: [
+      {
+        id: "delivery-011-1",
+        name: "จัดส่ง_ORD-011_1.jpg",
+        url: "/placeholder.svg?height=400&width=300&text=Delivery+Photo+11",
+        uploadedAt: "2024-07-30T15:00:00",
+      },
+    ],
+  },
 ]
 
 // Image viewer component
@@ -499,7 +619,6 @@ const ImageViewer = ({
   onPrev: () => void
 }) => {
   const currentImage = images[currentIndex]
-
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0">
@@ -515,11 +634,11 @@ const ImageViewer = ({
               <span className="text-sm text-muted-foreground">
                 {currentIndex + 1} / {images.length}
               </span>
-              <Button variant="outline" size="sm" onClick={onPrev} disabled={currentIndex === 0}>
-                ก่อนหน้า
-              </Button>
               <Button variant="outline" size="sm" onClick={onNext} disabled={currentIndex === images.length - 1}>
                 ถัดไป
+              </Button>
+              <Button variant="outline" size="sm" onClick={onPrev} disabled={currentIndex === 0}>
+                ก่อนหน้า
               </Button>
             </div>
           </div>
@@ -580,11 +699,12 @@ const GalleryViewer = ({
   )
 }
 
-const DocumentsPage = () => {
+export default function DocumentsPage() {
   const [documents, setDocuments] = React.useState(documentsData)
   const [searchTerm, setSearchTerm] = React.useState("")
   const [dateFilter, setDateFilter] = React.useState<Date | undefined>(undefined)
   const [documentTypeFilter, setDocumentTypeFilter] = React.useState("all")
+  const [customerTypeFilter, setCustomerTypeFilter] = React.useState("all") // New state for customer type filter
   const [viewMode, setViewMode] = React.useState<"table" | "grid">("table")
   const [selectedImages, setSelectedImages] = React.useState<
     Array<{ id: string; name: string; url: string; uploadedAt: string }>
@@ -603,20 +723,20 @@ const DocumentsPage = () => {
   // Filter and flatten documents
   const filteredDocuments = React.useMemo(() => {
     return documents.filter((doc) => {
+      const order = ordersData.find((o) => o.id === doc.orderId) // Find the corresponding order
       const matchesSearch =
         doc.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
         doc.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-
       const matchesDate = !dateFilter || doc.date === format(dateFilter, "yyyy-MM-dd")
-
       const matchesType =
         documentTypeFilter === "all" ||
         (documentTypeFilter === "payment" && doc.paymentSlips.length > 0) ||
         (documentTypeFilter === "delivery" && doc.deliveryPhotos.length > 0)
+      const matchesCustomerType = customerTypeFilter === "all" || (order && order.customerType === customerTypeFilter)
 
-      return matchesSearch && matchesDate && matchesType
+      return matchesSearch && matchesDate && matchesType && matchesCustomerType
     })
-  }, [documents, searchTerm, dateFilter, documentTypeFilter])
+  }, [documents, searchTerm, dateFilter, documentTypeFilter, customerTypeFilter]) // Add customerTypeFilter to dependencies
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage)
@@ -627,7 +747,7 @@ const DocumentsPage = () => {
   // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, dateFilter, documentTypeFilter])
+  }, [searchTerm, dateFilter, documentTypeFilter, customerTypeFilter]) // Add customerTypeFilter to dependencies
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -678,6 +798,7 @@ const DocumentsPage = () => {
     setSearchTerm("")
     setDateFilter(undefined)
     setDocumentTypeFilter("all")
+    setCustomerTypeFilter("all") // Clear customer type filter
   }
 
   const handleViewOrder = (orderId: string) => {
@@ -796,6 +917,20 @@ const DocumentsPage = () => {
                 </SelectContent>
               </Select>
             </div>
+            {/* New Customer Type Filter */}
+            <div className="w-full sm:w-48">
+              <Label>ประเภทลูกค้า</Label>
+              <Select value={customerTypeFilter} onValueChange={setCustomerTypeFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกประเภท" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
+                  <SelectItem value="ลูกค้าเงินสด">ลูกค้าเงินสด</SelectItem>
+                  <SelectItem value="ลูกค้าเครดิต">ลูกค้าเครนดิต</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Button variant="outline" className="w-full sm:w-auto bg-transparent" onClick={handleClearFilters}>
               ล้างตัวกรอง
             </Button>
@@ -864,6 +999,8 @@ const DocumentsPage = () => {
                         <tr>
                           <th className="text-center p-4 font-medium">รหัสคำสั่งซื้อ</th>
                           <th className="text-center p-4 font-medium">ลูกค้า</th>
+                          <th className="text-center p-4 font-medium">สถานะคำสั่งซื้อ</th>
+                          <th className="text-center p-4 font-medium">สถานะการชำระเงิน</th>
                           <th className="text-center p-4 font-medium">สลิปโอนเงิน</th>
                           <th className="text-center p-4 font-medium">รูปการจัดส่ง</th>
                           <th className="text-center p-4 font-medium">การดำเนินการ</th>
@@ -876,7 +1013,7 @@ const DocumentsPage = () => {
                             <React.Fragment key={date}>
                               {/* Date row */}
                               <tr className="bg-gray-50 border-b">
-                                <td colSpan={5} className="p-3">
+                                <td colSpan={7} className="p-3">
                                   <div className="flex items-center justify-between">
                                     <h3 className="font-semibold text-gray-800 flex items-center">
                                       <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -889,81 +1026,116 @@ const DocumentsPage = () => {
                                 </td>
                               </tr>
                               {/* Document rows for this date */}
-                              {docsForDate.map((doc) => (
-                                <tr key={doc.id} className="border-b hover:bg-muted/30 transition-colors">
-                                  <td className="p-4 text-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                      <FileText className="h-4 w-4 text-muted-foreground" />
-                                      <span className="font-medium">{doc.orderId}</span>
-                                    </div>
-                                  </td>
-                                  <td className="p-4 text-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                      <User className="h-4 w-4 text-muted-foreground" />
-                                      <span>{doc.customerName}</span>
-                                    </div>
-                                  </td>
-                                  <td className="p-4 text-center">
-                                    {doc.paymentSlips.length > 0 ? (
-                                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                        <Receipt className="h-3 w-3 mr-1" />
-                                        {doc.paymentSlips.length} รูป
-                                      </Badge>
-                                    ) : (
-                                      <span className="text-muted-foreground text-sm">-</span>
-                                    )}
-                                  </td>
-                                  <td className="p-4 text-center">
-                                    {doc.deliveryPhotos.length > 0 ? (
-                                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                        <Camera className="h-3 w-3 mr-1" />
-                                        {doc.deliveryPhotos.length} รูป
-                                      </Badge>
-                                    ) : (
-                                      <span className="text-muted-foreground text-sm">-</span>
-                                    )}
-                                  </td>
-                                  <td className="p-4 text-center">
-                                    <div className="flex justify-center gap-2">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleViewOrder(doc.orderId)}
-                                        className="h-8 px-2 text-xs bg-transparent mr-2"
-                                      >
-                                        <Eye className="h-3 w-3 mr-1" />
-                                      </Button>
-                                      {doc.paymentSlips.length > 0 && (
+                              {docsForDate.map((doc) => {
+                                const order = ordersData.find((o) => o.id === doc.orderId)
+                                return (
+                                  <tr key={doc.id} className="border-b hover:bg-muted/30 transition-colors">
+                                    <td className="p-4 text-center">
+                                      <div className="flex items-center justify-center gap-2">
+                                        <FileText className="h-4 w-4 text-muted-foreground" />
+                                        <span className="font-medium">{doc.orderId}</span>
+                                      </div>
+                                    </td>
+                                    <td className="p-4 text-center">
+                                      <div className="flex items-center justify-center gap-2">
+                                        <User className="h-4 w-4 text-muted-foreground" />
+                                        <span>{doc.customerName}</span>
+                                      </div>
+                                    </td>
+                                    {/* New Order Status Column */}
+                                    <td className="p-4 text-center">
+                                      {order && (
+                                        <Badge
+                                          variant="outline"
+                                          className={cn(
+                                            "border",
+                                            orderStatusMapData[order.orderStatus as keyof typeof orderStatusMapData]
+                                              ?.color,
+                                          )}
+                                        >
+                                          {
+                                            orderStatusMapData[order.orderStatus as keyof typeof orderStatusMapData]
+                                              ?.label
+                                          }
+                                        </Badge>
+                                      )}
+                                    </td>
+                                    {/* New Payment Status Column */}
+                                    <td className="p-4 text-center">
+                                      {order && (
+                                        <Badge
+                                          variant="outline"
+                                          className={cn(
+                                            "border",
+                                            paymentStatusMapData[
+                                              order.paymentStatus as keyof typeof paymentStatusMapData
+                                            ]?.color,
+                                          )}
+                                        >
+                                          {
+                                            paymentStatusMapData[
+                                              order.paymentStatus as keyof typeof paymentStatusMapData
+                                            ]?.label
+                                          }
+                                        </Badge>
+                                      )}
+                                    </td>
+                                    {/* Payment Slips Button */}
+                                    <td className="p-4 text-center">
+                                      {doc.paymentSlips.length > 0 ? (
                                         <Button
                                           variant="outline"
                                           size="sm"
                                           onClick={() => openGallery(doc.paymentSlips, `สลิปโอนเงิน - ${doc.orderId}`)}
                                           className="h-8 px-2 text-xs bg-transparent"
                                         >
-                                          <Receipt className="h-3 w-3 mr-1" />
+                                          <Receipt className="h-3 w-3" />
+                                          <span className="ml-1">{doc.paymentSlips.length}</span>
                                         </Button>
+                                      ) : (
+                                        <span className="text-muted-foreground text-sm">-</span>
                                       )}
-                                      {doc.deliveryPhotos.length > 0 && (
+                                    </td>
+                                    {/* Delivery Photos Button */}
+                                    <td className="p-4 text-center">
+                                      {doc.deliveryPhotos.length > 0 ? (
                                         <Button
                                           variant="outline"
                                           size="sm"
                                           onClick={() => openGallery(doc.deliveryPhotos, `รูปการจัดส่ง - ${doc.orderId}`)}
                                           className="h-8 px-2 text-xs bg-transparent"
                                         >
-                                          <Camera className="h-3 w-3 mr-1" />
+                                          <Camera className="h-3 w-3" />
+                                          <span className="ml-1">{doc.deliveryPhotos.length}</span>
                                         </Button>
+                                      ) : (
+                                        <span className="text-muted-foreground text-sm">-</span>
                                       )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
+                                    </td>
+                                    {/* Actions Column */}
+                                    <td className="p-4 text-center">
+                                      <div className="flex justify-center gap-2">
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleViewOrder(doc.orderId)}
+                                          className="h-8 px-2 text-xs bg-transparent"
+                                        >
+                                          <Eye className="h-3 w-3 mr-1" />
+                                      
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )
+                              })}
                             </React.Fragment>
                           )
                         })}
                         {/* No data message */}
                         {sortedDates.length === 0 && (
                           <tr>
-                            <td colSpan={5} className="text-center py-8 text-muted-foreground">
+                            <td colSpan={7} className="text-center py-8 text-muted-foreground">
                               ไม่พบเอกสารที่ตรงกับเงื่อนไขการค้นหา
                             </td>
                           </tr>
@@ -992,6 +1164,44 @@ const DocumentsPage = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Order and Payment Status in Grid View */}
+                    {(() => {
+                      const order = ordersData.find((o) => o.id === doc.orderId)
+                      return (
+                        order && (
+                          <div className="flex flex-wrap gap-2">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "border",
+                                orderStatusMapData[order.orderStatus as keyof typeof orderStatusMapData]?.color,
+                              )}
+                            >
+                              {orderStatusMapData[order.orderStatus as keyof typeof orderStatusMapData]?.label}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "border",
+                                paymentStatusMapData[order.paymentStatus as keyof typeof paymentStatusMapData]?.color,
+                              )}
+                            >
+                              {paymentStatusMapData[order.paymentStatus as keyof typeof paymentStatusMapData]?.label}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "border",
+                                customerTypeMapData[order.customerType as keyof typeof customerTypeMapData]?.color,
+                              )}
+                            >
+                              {order.customerType}
+                            </Badge>
+                          </div>
+                        )
+                      )
+                    })()}
+
                     {/* Payment Slips */}
                     {doc.paymentSlips.length > 0 && (
                       <div>
@@ -1030,7 +1240,6 @@ const DocumentsPage = () => {
                         </div>
                       </div>
                     )}
-
                     {/* Delivery Photos */}
                     {doc.deliveryPhotos.length > 0 && (
                       <div>
@@ -1069,7 +1278,6 @@ const DocumentsPage = () => {
                         </div>
                       </div>
                     )}
-
                     {doc.paymentSlips.length === 0 && doc.deliveryPhotos.length === 0 && (
                       <div className="text-center py-4 text-muted-foreground">
                         <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -1081,7 +1289,6 @@ const DocumentsPage = () => {
               ))}
             </div>
           )}
-
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 p-4 border-t">
@@ -1112,7 +1319,6 @@ const DocumentsPage = () => {
                     } else {
                       pageNumber = currentPage - 2 + i
                     }
-
                     return (
                       <Button
                         key={pageNumber}
@@ -1163,7 +1369,13 @@ const DocumentsPage = () => {
                     </div>
                     <div>
                       <Label className="text-sm font-medium">ประเภทลูกค้า</Label>
-                      <Badge variant="outline" className="ml-2">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "ml-2 border",
+                          customerTypeMapData[selectedOrder.customerType as keyof typeof customerTypeMapData]?.color,
+                        )}
+                      >
                         {selectedOrder.customerType}
                       </Badge>
                     </div>

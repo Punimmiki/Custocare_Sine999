@@ -16,7 +16,6 @@ import {
   Wallet,
   BarChart3,
 } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -206,9 +205,15 @@ const categories = [
   {
     id: "shrimp",
     name: "กุ้ง",
-    subtitle: "45 รายการ",
+    subtitle: "45 ราย��าร",
     icon: () => (
-      <svg className="h-8 w-8 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 mx-auto"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M2 12c0-1.5 1-3 2.5-3.5C6 8 8 8.5 10 9c2 .5 4 1 6 1s4-.5 6-1c1.5-.5 2.5-2 2.5-3.5" />
         <path d="M2 12c0 1.5 1 3 2.5 3.5C6 16 8 15.5 10 15c2-.5 4-1 6-1s4 .5 6 1c1.5.5 2.5 2 2.5 3.5" />
         <circle cx="4" cy="12" r="1" />
@@ -233,7 +238,13 @@ const categories = [
     name: "ปู",
     subtitle: "28 รายการ",
     icon: () => (
-      <svg className="h-8 w-8 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 mx-auto"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <ellipse cx="12" cy="12" rx="6" ry="4" />
         <path d="M6 10l-2-2" />
         <path d="M18 10l2-2" />
@@ -256,7 +267,13 @@ const categories = [
     name: "ปลาหมึก",
     subtitle: "41 รายการ",
     icon: () => (
-      <svg className="h-8 w-8 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 mx-auto"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <ellipse cx="12" cy="8" rx="4" ry="6" />
         <path d="M8 14v6" />
         <path d="M10 14v8" />
@@ -320,13 +337,17 @@ export const POSPage = () => {
   const [showSalesHistory, setShowSalesHistory] = React.useState(false)
   const [showSaveOrderDialog, setShowSaveOrderDialog] = React.useState(false)
   const [productQuantities, setProductQuantities] = React.useState<{ [key: string]: number }>({})
+  const [amountReceived, setAmountReceived] = React.useState(0) // New state for amount received
+  const [changeAmount, setChangeAmount] = React.useState(0) // New state for change amount
 
   // Filter products based on search and category
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
-    return matchesSearch && matchesCategory && product.stock > 0
-  })
+  const filteredProducts = products
+    .filter((product) => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
+      return matchesSearch && matchesCategory && product.stock > 0
+    })
+    .sort((a, b) => a.name.localeCompare(b.name)) // Add this line for A-Z sorting
 
   // Add product to cart
   const addToCart = (product: (typeof products)[0]) => {
@@ -396,6 +417,8 @@ export const POSPage = () => {
     setDiscount(0)
     setDiscountType("amount")
     setProductQuantities({})
+    setAmountReceived(0) // Reset amount received
+    setChangeAmount(0) // Reset change amount
   }
 
   // Save current order
@@ -440,6 +463,11 @@ export const POSPage = () => {
   // Handle sale confirmation
   const handleConfirmSale = () => {
     if (cartItems.length === 0) return
+    // Removed the validation for amountReceived < total for cash payments
+    // if (paymentMethod === "cash" && amountReceived < total) {
+    //   alert("จำนวนเงินที่รับไม่เพียงพอ") // Or use a more sophisticated toast/dialog
+    //   return
+    // }
 
     const saleRecord: SaleRecord = {
       id: `SALE-${Date.now()}`,
@@ -464,11 +492,16 @@ export const POSPage = () => {
     setShowReceiptPreview(false)
   }
 
+  // Calculate change amount
+  React.useEffect(() => {
+    setChangeAmount(amountReceived - total)
+  }, [amountReceived, total])
+
   return (
     <div className="bg-slate-50 min-h-full">
       {/* Header - แบ่งเป็น 2 column */}
       <div className="bg-white shadow-sm border-b border-slate-200">
-        <div className="flex">
+        <div className="flex flex-col md:flex-row">
           {/* Left side - Search bar เต็มพื้นที่ (สำหรับฝั่งสินค้า) */}
           <div className="flex-1 p-3 md:p-4 lg:p-6">
             <div className="relative">
@@ -477,13 +510,13 @@ export const POSPage = () => {
                 placeholder="ค้นหาสินค้าทะเล..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 h-10 md:h-11 text-sm rounded-full border-slate-200 bg-slate-50  transition-colors w-full"
+                className="pl-12 h-10 md:h-11 text-sm rounded-full border-slate-200 bg-slate-50 focus:bg-white transition-colors w-full"
               />
             </div>
           </div>
 
           {/* Right side - ปุ่มสำหรับฝั่ง cart */}
-          <div className="w-72 md:w-80 xl:w-96 p-3 md:p-4 lg:p-6 flex items-center justify-end gap-2">
+          <div className="w-full md:w-72 lg:w-80 xl:w-96 p-3 md:p-4 lg:p-6 flex items-center justify-end gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -491,7 +524,7 @@ export const POSPage = () => {
               onClick={() => setShowSavedOrders(true)}
             >
               <Save className="w-4 h-4 mr-2" />
-              รายการพักซื้อ
+              รายการพักซื้อ {savedOrders.length > 0 && `(${savedOrders.length})`}
             </Button>
             <Button
               variant="outline"
@@ -506,12 +539,12 @@ export const POSPage = () => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] md:min-h-[calc(100vh-80px)]">
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-70px)] md:min-h-[calc(100vh-80px)]">
         {/* Left Panel - Products */}
-        <div className="flex-1 p-3 md:p-4 lg:p-6" style={{ overflow: "visible", position: "relative", zIndex: 1 }}>
+        <div className="flex-1 p-3 md:p-4 lg:p-6">
           {/* Category Section */}
           <div className="mb-4 md:mb-6">
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 lg:gap-4 mb-4 md:mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 lg:gap-4 mb-4 md:mb-6">
               {categories.map((category) => {
                 const IconComponent = category.icon
                 return (
@@ -519,15 +552,17 @@ export const POSPage = () => {
                     key={category.id}
                     className={`cursor-pointer transition-all duration-200 hover:shadow-md border-0 shadow-sm ${
                       selectedCategory === category.id ? "ring-2 ring-blue-200" : "hover:bg-slate-50"
-                    } bg-white`}
+                    } bg-white overflow-hidden`}
                     onClick={() => setSelectedCategory(category.id)}
                   >
-                    <CardContent className="p-2 md:p-3 lg:p-4 text-center">
+                    <CardContent className="p-2 md:p-3 lg:p-4 text-center h-full flex flex-col justify-center">
                       <div className={`mb-1 md:mb-2 lg:mb-3 flex justify-center text-blue-500`}>
-                        <IconComponent className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8" />
+                        <IconComponent />
                       </div>
-                      <h3 className={`font-semibold mb-1 text-xs md:text-sm text-slate-700`}>{category.name}</h3>
-                      <p className="text-xs text-slate-500 hidden md:block">{category.subtitle}</p>
+                      <h3 className={`font-semibold mb-1 text-xs md:text-sm text-slate-700 truncate`}>
+                        {category.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 hidden md:block truncate">{category.subtitle}</p>
                     </CardContent>
                   </Card>
                 )
@@ -536,35 +571,18 @@ export const POSPage = () => {
           </div>
 
           {/* Product Grid */}
-          <ScrollArea
-            className="h-[calc(100vh-240px)] md:h-[calc(100vh-280px)] lg:h-[calc(100vh-320px)]"
-            style={{
-              overflow: "visible",
-              position: "relative",
-              zIndex: 10,
-            }}
-          >
-            <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 p-2 md:p-4 pt-4 md:pt-8 pb-4 md:pb-8 relative"
-              style={{ overflow: "visible" }}
-            >
+          <ScrollArea className="h-[calc(100vh-180px)] md:h-[calc(100vh-220px)] lg:h-[calc(100vh-260px)]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-4 lg:gap-6 p-2 md:p-4 pt-4 md:pt-8 pb-4 md:pb-8">
               {filteredProducts.map((product) => (
                 <Card
                   key={product.id}
-                  className="group hover:shadow-xl hover:scale-[1.02] hover:border-2 hover:border-blue-200 hover:z-50 transition-all duration-300 border-2 border-transparent shadow-md overflow-hidden bg-white rounded-2xl relative"
-                  style={{ zIndex: "auto" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.zIndex = "50"
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.zIndex = "auto"
-                  }}
+                  className="group hover:shadow-xl hover:scale-[1.02] hover:border-2 hover:border-blue-200 transition-all duration-300 border-2 border-transparent shadow-md bg-white rounded-2xl overflow-hidden"
                 >
-                  <div className="relative">
+                  <div className="relative overflow-hidden">
                     <img
                       src={product.image || "/placeholder.svg"}
                       alt={product.name}
-                      className="w-full h-32 md:h-40 lg:h-48 object-cover rounded-t-2xl"
+                      className="w-full h-32 md:h-40 lg:h-48 object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
                         target.src = "/placeholder.svg?height=192&width=320"
@@ -572,25 +590,27 @@ export const POSPage = () => {
                     />
                   </div>
                   <CardContent className="p-3 md:p-4 lg:p-6">
-                    <h3 className="font-semibold text-sm md:text-base mb-2 md:mb-3 text-slate-800 leading-tight">
+                    <h3 className="font-semibold text-sm md:text-base mb-2 md:mb-3 text-slate-800 leading-tight line-clamp-2 min-h-[2.5rem] md:min-h-[3rem]">
                       {product.name}
                     </h3>
-                    <div className="flex items-center justify-between mb-3 md:mb-4">
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-col mb-3 md:mb-4">
+                      {" "}
+                      {/* Changed to flex-col */}
+                      <div className="flex items-baseline gap-1">
+                        {" "}
+                        {/* Group price and unit */}
                         <span className="text-base md:text-lg lg:text-xl font-bold text-slate-800">
                           ฿{product.price}
                         </span>
-                        {product.originalPrice && (
-                          <span className="text-xs md:text-sm text-slate-400 line-through">
-                            ฿{product.originalPrice}
-                          </span>
-                        )}
+                        <span className="text-xs md:text-sm text-slate-500">/{product.unit}</span>
                       </div>
-                      <span className="text-xs md:text-sm text-slate-500">/{product.unit}</span>
+                      {product.originalPrice && (
+                        <span className="text-xs md:text-sm text-slate-400 line-through">฿{product.originalPrice}</span>
+                      )}
                     </div>
                     <Button
                       onClick={() => addToCart(product)}
-                      className="w-full bg-[#eff7ff] text-[#378afa] hover:bg-blue-100 hover:text-blue-700  hover:border-blue-300 rounded-2xl py-2 md:py-3 text-xs md:text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+                      className="w-full bg-[#eff7ff] text-[#378afa] hover:bg-blue-100 hover:text-blue-700 hover:border-blue-300 rounded-2xl py-2 md:py-3 text-xs md:text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
                     >
                       เพิ่มลงตะกร้า
                     </Button>
@@ -602,8 +622,8 @@ export const POSPage = () => {
         </div>
 
         {/* Right Panel - Cart */}
-        <div className="w-full md:w-72 lg:w-80 xl:w-96 bg-white shadow-lg border-t md:border-t-0 md:border-l border-slate-200 min-h-[50vh] md:min-h-full flex-shrink-0">
-          <div className="p-3 md:p-4 lg:p-6 h-full flex flex-col bg-white relative z-10">
+        <div className="w-full lg:w-72 xl:w-80 2xl:w-96 bg-white shadow-lg border-t lg:border-t-0 lg:border-l border-slate-200 min-h-[50vh] lg:min-h-full flex-shrink-0">
+          <div className="p-3 md:p-4 lg:p-6 h-full flex flex-col bg-white">
             {/* Cart Header */}
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <h2 className="text-base md:text-lg font-semibold text-slate-800">ตะกร้าสินค้า</h2>
@@ -611,9 +631,6 @@ export const POSPage = () => {
                 {cartItems.length} รายการ
               </div>
             </div>
-
-            {/* Background overlay to ensure white background */}
-            <div className="absolute inset-0 bg-white -z-10"></div>
 
             {/* Cart Items */}
             <div className="flex-1 mb-4 md:mb-6">
@@ -639,7 +656,7 @@ export const POSPage = () => {
                           }}
                         />
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-xs md:text-sm text-slate-800 leading-tight mb-1">
+                          <h4 className="font-medium text-xs md:text-sm text-slate-800 leading-tight mb-1 line-clamp-2">
                             {item.name}
                           </h4>
                           <div className="flex items-center justify-between mb-2">
@@ -674,7 +691,7 @@ export const POSPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-5 w-5 md:h-6 md:w-6 text-red-500 hover:bg-red-50"
+                          className="h-5 w-5 md:h-6 md:w-6 text-red-500 hover:bg-red-50 flex-shrink-0"
                           onClick={() => removeFromCart(item.id)}
                         >
                           <X className="h-2 w-2 md:h-3 md:w-3" />
@@ -725,8 +742,12 @@ export const POSPage = () => {
                       type="number"
                       placeholder={discountType === "percent" ? "ใส่เปอร์เซ็นต์ (0-100)" : "ใส่จำนวนเงิน"}
                       value={discount || ""}
-                      onChange={(e) => setDiscount(Number(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const value = Number(e.target.value)
+                        setDiscount(value < 0 ? 0 : value) // Ensure value is not negative
+                      }}
                       className="h-8 text-xs pr-12"
+                      min="0" // Add min attribute
                       max={discountType === "percent" ? 100 : undefined}
                     />
                     <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-slate-500 font-medium">
@@ -765,10 +786,13 @@ export const POSPage = () => {
                       ? "bg-[#eff7ff] text-[#378afa] hover:bg-blue-200"
                       : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                   }`}
-                  onClick={() => setPaymentMethod("cash")}
+                  onClick={() => {
+                    setPaymentMethod("cash")
+                    setAmountReceived(0) // Reset amount received when switching to cash
+                  }}
                 >
                   <Wallet className="h-4 w-4 md:h-5 md:w-5" />
-                  <span>เงินสด</span>
+                  <span className="truncate">เงินสด</span>
                 </Button>
                 <Button
                   variant={paymentMethod === "card" ? "default" : "outline"}
@@ -777,10 +801,13 @@ export const POSPage = () => {
                       ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
                       : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                   }`}
-                  onClick={() => setPaymentMethod("card")}
+                  onClick={() => {
+                    setPaymentMethod("card")
+                    setAmountReceived(0) // Reset amount received when switching from cash
+                  }}
                 >
                   <CreditCard className="h-4 w-4 md:h-5 md:w-5" />
-                  <span>บัตรเครดิต</span>
+                  <span className="truncate">บัตรเครดิต</span>
                 </Button>
                 <Button
                   variant={paymentMethod === "qr" ? "default" : "outline"}
@@ -789,12 +816,62 @@ export const POSPage = () => {
                       ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
                       : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                   }`}
-                  onClick={() => setPaymentMethod("qr")}
+                  onClick={() => {
+                    setPaymentMethod("qr")
+                    setAmountReceived(0) // Reset amount received when switching from cash
+                  }}
                 >
                   <QrCode className="h-4 w-4 md:h-5 md:w-5" />
-                  <span>QR Code</span>
+                  <span className="truncate">QR Code</span>
                 </Button>
               </div>
+
+              {paymentMethod === "cash" && (
+                <div className="mt-4 space-y-3">
+                  <div className="text-xs md:text-sm font-medium text-slate-700">รับเงิน:</div>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      placeholder="จำนวนเงินที่รับ"
+                      value={amountReceived === 0 ? "" : amountReceived}
+                      onChange={(e) => {
+                        const value = Number(e.target.value)
+                        setAmountReceived(value < 0 ? 0 : value)
+                      }}
+                      className="h-10 text-sm pr-12"
+                      min="0"
+                    />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-slate-500 font-medium">
+                      ฿
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[100, 500, 1000, 2000, 5000].map((amount) => (
+                      <Button
+                        key={amount}
+                        variant="outline"
+                        className="h-10 rounded-lg border-slate-200 hover:bg-slate-50 bg-white text-xs md:text-sm"
+                        onClick={() => setAmountReceived((prev) => prev + amount)}
+                      >
+                        ฿{amount.toLocaleString()}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full h-10 rounded-lg border-slate-200 hover:bg-slate-50 bg-white text-sm font-semibold"
+                    onClick={() => setAmountReceived(total)}
+                  >
+                    จ่ายพอดี ฿{total.toFixed(2)}
+                  </Button>
+                  <div className="flex justify-between text-sm md:text-base font-bold pt-2 border-t border-dashed border-slate-300">
+                    <span className="text-slate-800">เงินทอน</span>
+                    <span className={`text-blue-600 ${changeAmount < 0 ? "text-red-600" : ""}`}>
+                      ฿{changeAmount.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -815,7 +892,7 @@ export const POSPage = () => {
                       disabled={cartItems.length === 0}
                     >
                       <Save className="w-2 h-2 md:w-3 md:h-3 mr-1" />
-                      พักคำสั่งซื้อ
+                      <span className="truncate">พักคำสั่งซื้อ</span>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="rounded-3xl">
@@ -840,7 +917,7 @@ export const POSPage = () => {
                   disabled={cartItems.length === 0}
                 >
                   <X className="w-2 h-2 md:w-3 md:h-3 mr-1" />
-                  ล้างตะกร้า
+                  <span className="truncate">ล้างตะกร้า</span>
                 </Button>
               </div>
             </div>
@@ -866,11 +943,11 @@ export const POSPage = () => {
                   <Card key={order.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="font-semibold text-slate-800">{order.id}</h3>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-slate-800 truncate">{order.id}</h3>
                           <p className="text-sm text-slate-500">{order.timestamp.toLocaleString("th-TH")}</p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right ml-4">
                           <p className="font-bold text-blue-600">
                             ฿{order.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
                           </p>
@@ -880,8 +957,8 @@ export const POSPage = () => {
                       <div className="space-y-1 mb-3">
                         {order.items.slice(0, 3).map((item) => (
                           <div key={item.id} className="flex justify-between text-sm">
-                            <span className="text-slate-600">{item.name}</span>
-                            <span className="text-slate-800">{item.quantity}x</span>
+                            <span className="text-slate-600 truncate flex-1 mr-2">{item.name}</span>
+                            <span className="text-slate-800 whitespace-nowrap">{item.quantity}x</span>
                           </div>
                         ))}
                         {order.items.length > 3 && (
@@ -961,8 +1038,8 @@ export const POSPage = () => {
                     <Card key={sale.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h3 className="font-semibold text-slate-800">{sale.id}</h3>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-slate-800 truncate">{sale.id}</h3>
                             <p className="text-sm text-slate-500">{sale.timestamp.toLocaleString("th-TH")}</p>
                             <p className="text-xs text-slate-500">
                               {sale.paymentMethod === "cash"
@@ -972,7 +1049,7 @@ export const POSPage = () => {
                                   : "QR Code"}
                             </p>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right ml-4">
                             <p className="font-bold text-green-600">฿{sale.total.toFixed(2)}</p>
                             <p className="text-xs text-slate-500">{sale.items.length} รายการ</p>
                             {sale.discount > 0 && (
@@ -982,11 +1059,11 @@ export const POSPage = () => {
                             )}
                           </div>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           {sale.items.map((item) => (
                             <div key={item.id} className="flex justify-between text-sm">
-                              <span className="text-slate-600">{item.name}</span>
-                              <span className="text-slate-800">
+                              <span className="text-slate-600 truncate flex-1 mr-2">{item.name}</span>
+                              <span className="text-slate-800 whitespace-nowrap">
                                 {item.quantity} {item.unit} ฿{item.total.toFixed(2)}
                               </span>
                             </div>
@@ -1025,18 +1102,30 @@ export const POSPage = () => {
                   {paymentMethod === "cash" ? "เงินสด" : paymentMethod === "card" ? "บัตรเครดิต" : "QR Code"}
                 </span>
               </div>
+              {paymentMethod === "cash" && amountReceived > 0 && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">รับเงิน:</span>
+                    <span className="text-slate-800">฿{amountReceived.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">เงินทอน:</span>
+                    <span className="text-slate-800">฿{changeAmount.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
             </div>
             <Separator />
             <div className="space-y-2">
               {cartItems.map((item) => (
                 <div key={item.id} className="flex justify-between text-sm">
-                  <div>
-                    <div className="text-slate-800">{item.name}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-slate-800 truncate">{item.name}</div>
                     <div className="text-slate-500">
                       {item.quantity} {item.unit} x ฿{item.price}
                     </div>
                   </div>
-                  <div className="text-slate-800 font-medium">฿{item.total.toFixed(2)}</div>
+                  <div className="text-slate-800 font-medium ml-2">฿{item.total.toFixed(2)}</div>
                 </div>
               ))}
             </div>
@@ -1048,7 +1137,10 @@ export const POSPage = () => {
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-red-600">
-                  <span>ส่วนลด:</span>
+                  <span>
+                    ส่วนลด:
+                    {discountType === "percent" && discount > 0 ? ` (${discount}%)` : ""}
+                  </span>
                   <span>-฿{discountAmount.toFixed(2)}</span>
                 </div>
               )}

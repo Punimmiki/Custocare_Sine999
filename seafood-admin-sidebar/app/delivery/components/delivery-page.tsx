@@ -1,10 +1,23 @@
 "use client"
 
 import * as React from "react"
+import { useState, useEffect } from "react" // Import useState and useEffect for the useMobile logic
 import Link from "next/link"
-import { format, addDays, parseISO } from "date-fns"
+import { format, parseISO } from "date-fns"
 import { th } from "date-fns/locale" // Import Thai locale for date-fns
-import { Truck, Plus, Search, Phone, User, Printer, Eye, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  Truck,
+  Plus,
+  Search,
+  Phone,
+  User,
+  Printer,
+  Eye,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Upload,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -18,6 +31,14 @@ import { CalendarIcon } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { useToast } from "@/hooks/use-toast"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Sample delivery data
 const initialDeliveries = [
@@ -25,7 +46,7 @@ const initialDeliveries = [
     id: "DEL-001",
     orderId: "ORD-001",
     customerName: "นายสมชาย ใจดี",
-    customerAddress: "123 ถนนสุขุมวิท แขวงคลองตัน เขตวัฒนา กรุงเทพฯ 10110",
+    customerAddress: "123 ถนนสุขุมทุม แขวงคลองตัน เขตวัฒนา กรุงเทพฯ 10110",
     driverName: "นายสมศักดิ์ ขับรถ",
     vehiclePlate: "กข-1234",
     vehicleType: "รถกระบะ",
@@ -39,6 +60,7 @@ const initialDeliveries = [
       { name: "กุ้งขาว", quantity: 2, unit: "กิโลกรัม", price: 400, total: 800 },
       { name: "หอยแมลงภู่", quantity: 3, unit: "กิโลกรัม", price: 180, total: 540 },
     ],
+    images: ["/placeholder.svg?height=80&width=80&text=Image+1", "/placeholder.svg?height=80&width=80&text=Image+2"],
   },
   {
     id: "DEL-002",
@@ -58,6 +80,7 @@ const initialDeliveries = [
       { name: "ปูม้า", quantity: 4, unit: "ตัว", price: 300, total: 1200 },
       { name: "หอยเชลล์", quantity: 2, unit: "กิโลกรัม", price: 220, total: 440 },
     ],
+    images: ["/placeholder.svg?height=80&width=80&text=Image+A"],
   },
   {
     id: "DEL-003",
@@ -76,6 +99,7 @@ const initialDeliveries = [
       { name: "ปลาทับทิมแดง", quantity: 3, unit: "กิโลกรัม", price: 320, total: 960 },
       { name: "กุ้งแชบ๊วย", quantity: 1, unit: "กิโลกรัม", price: 500, total: 500 },
     ],
+    images: [],
   },
 ]
 
@@ -105,144 +129,205 @@ const DeliveryPage = () => {
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
   const { toast } = useToast()
 
-  const today = format(new Date(), "yyyy-MM-dd")
-  const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd")
+  // useMobile hook logic integrated directly
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768) // Adjust breakpoint as needed
+    }
+    handleResize() // Set initial value
+    window.addEventListener("resize", handleResize) // Listen for window resize events
+    return () => {
+      window.removeEventListener("resize", handleResize)
+    } // Clean up event listener on unmount
+  }, [])
 
-  // Print function - เหลือแค่ฟังก์ชันเดียว
-  const handlePrintOrder = (delivery: any) => {
-    toast({
-      title: "กำลังพิมพ์ใบคำสั่งซื้อ",
-      description: `พิมพ์ใบคำสั่งซื้อสำหรับ ${delivery.orderId} - ${delivery.customerName}`,
-    })
+  // State for managing images in the dialog
+  const [dialogImages, setDialogImages] = React.useState<string[]>([])
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
-    // คำนวณยอดรวม
+  const handleImageUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      // In a real application, you would upload this file to a server
+      // and get a URL back. For this demo, we'll use a placeholder.
+      const newImage = `/placeholder.svg?height=80&width=80&text=New+Image+${dialogImages.length + 1}`
+      setDialogImages((prevImages) => [...prevImages, newImage])
+      toast({
+        title: "อัปโหลดรูปภาพสำเร็จ",
+        description: "รูปภาพถูกเพิ่มเข้าสู่รายการแล้ว (จำลอง)",
+      })
+      // Clear the input so the same file can be selected again if needed
+      event.target.value = ""
+    }
+  }
+
+  // Print functions
+  const generatePrintContent = (delivery: any, type: "shippingLabel" | "packingList" | "pickList") => {
     const subtotal = delivery.items?.reduce((sum: number, item: any) => sum + item.total, 0) || 0
     const vat = subtotal * 0.07 // VAT 7%
     const grandTotal = subtotal + vat
+    let title = ""
+    let content = ""
 
-    const printContent = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="margin: 0; font-size: 24px;">ใบคำสั่งซื้อ</h1>
-        <p style="margin: 5px 0; color: #666;">Purchase Order</p>
-      </div>
+    switch (type) {
+      case "shippingLabel":
+        title = "ใบปะหน้าพัสดุ"
+        content = `
+          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ccc;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h2 style="margin: 0;">${title}</h2>
+              <p style="margin: 5px 0; color: #666;">Shipping Label</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <strong>จาก:</strong><br>
+              ชื่อผู้ส่ง: ร้านค้าของคุณ<br>
+              ที่อยู่: 123 ถนนตัวอย่าง, กรุงเทพฯ 10000<br>
+              โทร: 099-999-9999<br>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <strong>ถึง:</strong><br>
+              ชื่อลูกค้า: ${delivery.customerName}<br>
+              ที่อยู่จัดส่ง: ${delivery.customerAddress}<br>
+              โทร: ${delivery.driverPhone || "N/A"}<br>
+            </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+              <img src="https://barcode.tec-it.com/barcode.ashx?data=${delivery.id}&code=Code128&dpi=96" alt="Barcode" style="width: 80%; height: auto; margin-bottom: 10px;">
+              <p style="font-size: 18px; font-weight: bold;">${delivery.id}</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666;">
+              <span>ผู้ให้บริการ: ${delivery.serviceProvider}</span>
+              <span>วันที่: ${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}</span>
+            </div>
+          </div>`
+        break
+      case "packingList":
+        title = "Packing List"
+        content = `
+          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="margin: 0; font-size: 24px;">${title}</h1>
+              <p style="margin: 5px 0; color: #666;">รายการสินค้าที่บรรจุ</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+              <div>
+                <strong>รหัสคำสั่งซื้อ:</strong> ${delivery.orderId}<br>
+                <strong>วันที่จัดส่ง:</strong> ${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}<br>
+              </div>
+              <div style="text-align: right;">
+                <strong>สถานะ:</strong> ${statusMap[delivery.status as keyof typeof statusMap]?.label}<br>
+              </div>
+            </div>
+            <div style="margin-bottom: 30px;">
+              <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">ข้อมูลลูกค้า</h3>
+              <div style="padding-left: 10px;">
+                <strong>ชื่อลูกค้า:</strong> ${delivery.customerName}<br>
+                <strong>ที่อยู่จัดส่ง:</strong> ${delivery.customerAddress}<br>
+              </div>
+            </div>
+            <div style="margin-bottom: 30px;">
+              <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">รายการสินค้า</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                  <tr style="background-color: #f8f9fa;">
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">รายการ</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">จำนวน</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">หน่วย</th>
+                  </tr>
+                </thead>
+                <tbody>${
+                  delivery.items
+                    ?.map(
+                      (item: any) => `
+                    <tr>
+                      <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.quantity}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.unit}</td>
+                    </tr>`,
+                    )
+                    .join("") ||
+                  '<tr><td colspan="3" style="border: 1px solid #ddd; padding: 8px; text-align: center;">ไม่มีรายการสินค้า</td></tr>'
+                }
+                </tbody>
+              </table>
+            </div>
+            <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 15px;">
+              พิมพ์เมื่อ: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: th })}
+            </div>
+          </div>`
+        break
+      case "pickList":
+        title = "Pick List"
+        content = `
+          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="margin: 0; font-size: 24px;">${title}</h1>
+              <p style="margin: 5px 0; color: #666;">รายการสินค้าสำหรับจัดเตรียม</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+              <div>
+                <strong>รหัสคำสั่งซื้อ:</strong> ${delivery.orderId}<br>
+                <strong>วันที่จัดส่ง:</strong> ${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}<br>
+              </div>
+            </div>
+            <div style="margin-bottom: 30px;">
+              <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">รายการสินค้าที่ต้องหยิบ</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                  <tr style="background-color: #f8f9fa;">
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">รายการ</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">จำนวน</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">หน่วย</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">สถานะการหยิบ</th>
+                  </tr>
+                </thead>
+                <tbody>${
+                  delivery.items
+                    ?.map(
+                      (item: any) => `
+                    <tr>
+                      <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.quantity}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.unit}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">[ ]</td>
+                    </tr>`,
+                    )
+                    .join("") ||
+                  '<tr><td colspan="4" style="border: 1px solid #ddd; padding: 8px; text-align: center;">ไม่มีรายการสินค้า</td></tr>'
+                }
+                </tbody>
+              </table>
+            </div>
+            <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 15px;">
+              พิมพ์เมื่อ: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: th })}
+            </div>
+          </div>`
+        break
+    }
+    return content
+  }
 
-      <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-        <div>
-          <strong>รหัสคำสั่งซื้อ:</strong> ${delivery.orderId}<br>
-          <strong>วันที่สั่งซื้อ:</strong> ${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}<br>
-        </div>
-        <div style="text-align: right;">
-          <strong>สถานะ:</strong> ${statusMap[delivery.status as keyof typeof statusMap]?.label}<br>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 30px;">
-        <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">ข้อมูลลูกค้า</h3>
-        <div style="padding-left: 10px;">
-          <strong>ชื่อลูกค้า:</strong> ${delivery.customerName}<br>
-          <strong>ที่อยู่จัดส่ง:</strong> ${delivery.customerAddress}<br>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 30px;">
-        <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">รายการสินค้า</h3>
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-          <thead>
-            <tr style="background-color: #f8f9fa;">
-              <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">รายการ</th>
-              <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">จำนวน</th>
-              <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">หน่วย</th>
-              <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">ราคา/หน่วย</th>
-              <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">รวม</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${
-              delivery.items
-                ?.map(
-                  (item: any) => `
-              <tr>
-                <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.quantity}</td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.unit}</td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${item.price.toLocaleString()} บาท</td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${item.total.toLocaleString()} บาท</td>
-              </tr>
-            `,
-                )
-                .join("") ||
-              '<tr><td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: center;">ไม่มีรายการสินค้า</td></tr>'
-            }
-          </tbody>
-        </table>
-
-        <div style="text-align: right; margin-top: 20px;">
-          <table style="margin-left: auto; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 5px 15px; text-align: right;"><strong>ยอดรวม:</strong></td>
-              <td style="padding: 5px 15px; text-align: right; border-bottom: 1px solid #ddd;">${subtotal.toLocaleString()} บาท</td>
-            </tr>
-            <tr>
-              <td style="padding: 5px 15px; text-align: right;"><strong>ภาษีมูลค่าเพิ่ม 7%:</strong></td>
-              <td style="padding: 5px 15px; text-align: right; border-bottom: 1px solid #ddd;">${vat.toLocaleString()} บาท</td>
-            </tr>
-            <tr>
-              <td style="padding: 5px 15px; text-align: right; font-size: 18px;"><strong>ยอดรวมทั้งสิ้น:</strong></td>
-              <td style="padding: 5px 15px; text-align: right; font-size: 18px; font-weight: bold; border-bottom: 2px solid #000;">${grandTotal.toLocaleString()} บาท</td>
-            </tr>
-          </table>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 30px;">
-        <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">ข้อมูลการจัดส่ง</h3>
-        <div style="padding-left: 10px;">
-          <strong>คนขับ:</strong> ${delivery.driverName}<br>
-          <strong>เบอร์โทรศัพท์:</strong> ${delivery.driverPhone}<br>
-          <strong>ทะเบียนรถ:</strong> ${delivery.vehiclePlate}<br>
-          <strong>ประเภทรถ:</strong> ${delivery.vehicleType}<br>
-          <strong>ผู้ให้บริการ:</strong> ${delivery.serviceProvider}<br>
-        </div>
-      </div>
-
-      ${
-        delivery.notes
-          ? `
-      <div style="margin-bottom: 30px;">
-        <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">หมายเหตุ</h3>
-        <div style="padding-left: 10px;">
-          ${delivery.notes}
-        </div>
-      </div>
-      `
-          : ""
-      }
-
-      <div style="margin-top: 50px; display: flex; justify-content: space-between;">
-        <div style="text-align: center; width: 200px;">
-          <div style="border-top: 1px solid #000; padding-top: 5px;">
-            ลายเซ็นผู้สั่งซื้อ
-          </div>
-          <div style="margin-top: 20px;">
-            วันที่: _______________
-          </div>
-        </div>
-        <div style="text-align: center; width: 200px;">
-          <div style="border-top: 1px solid #000; padding-top: 5px;">
-            ลายเซ็นผู้รับ
-          </div>
-          <div style="margin-top: 20px;">
-            วันที่: _______________
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 15px;">
-        พิมพ์เมื่อ: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: th })}
-      </div>
-    </div>`
-
+  const handlePrintDocument = (delivery: any, type: "shippingLabel" | "packingList" | "pickList") => {
+    let docName = ""
+    switch (type) {
+      case "shippingLabel":
+        docName = "ใบปะหน้าพัสดุ"
+        break
+      case "packingList":
+        docName = "Packing List"
+        break
+      case "pickList":
+        docName = "Pick List"
+        break
+    }
+    toast({
+      title: `กำลังพิมพ์${docName}`,
+      description: `พิมพ์${docName} สำหรับ ${delivery.orderId} - ${delivery.customerName}`,
+    })
+    const printContent = generatePrintContent(delivery, type)
     const printWindow = window.open("", "_blank")
     if (printWindow) {
       printWindow.document.write(printContent)
@@ -258,19 +343,16 @@ const DeliveryPage = () => {
         delivery.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         delivery.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         delivery.vehiclePlate.toLowerCase().includes(searchTerm.toLowerCase())
-
       const matchesStatus = statusFilter === "all" || delivery.status === statusFilter
       const matchesVehicleType = vehicleTypeFilter === "all" || delivery.vehicleType === vehicleTypeFilter
       const matchesServiceProvider =
         serviceProviderFilter === "all" || delivery.serviceProvider === serviceProviderFilter
-
       let matchesDate = true
       if (deliveryDateFilter) {
         const deliveryDate = parseISO(delivery.deliveryDate)
         const filterDate = parseISO(deliveryDateFilter)
         matchesDate = format(deliveryDate, "yyyy-MM-dd") === format(filterDate, "yyyy-MM-dd")
       }
-
       return matchesSearch && matchesStatus && matchesVehicleType && matchesServiceProvider && matchesDate
     })
   }, [deliveries, searchTerm, statusFilter, vehicleTypeFilter, serviceProviderFilter, deliveryDateFilter])
@@ -312,15 +394,15 @@ const DeliveryPage = () => {
   }
 
   return (
-    <div className="space-y-4 max-w-full overflow-hidden">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">การจัดส่ง</h1>
           <p className="text-muted-foreground">จัดการการจัดส่งและติดตามสถานะ</p>
         </div>
         <Link href="/delivery/create">
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             เพิ่มการจัดส่งใหม่
           </Button>
@@ -328,7 +410,7 @@ const DeliveryPage = () => {
       </div>
 
       {/* Stats Cards (Clickable for filtering) */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card
           className={cn(
             "cursor-pointer hover:bg-muted/50 transition-colors",
@@ -344,7 +426,6 @@ const DeliveryPage = () => {
             <div className="text-2xl font-bold">{totalDeliveries}</div>
           </CardContent>
         </Card>
-
         <Card
           className={cn(
             "cursor-pointer hover:bg-muted/50 transition-colors",
@@ -359,7 +440,6 @@ const DeliveryPage = () => {
             <div className="text-2xl font-bold text-yellow-600">{preparingCount}</div>
           </CardContent>
         </Card>
-
         <Card
           className={cn(
             "cursor-pointer hover:bg-muted/50 transition-colors",
@@ -374,7 +454,6 @@ const DeliveryPage = () => {
             <div className="text-2xl font-bold text-blue-600">{shippedCount}</div>
           </CardContent>
         </Card>
-
         <Card
           className={cn(
             "cursor-pointer hover:bg-muted/50 transition-colors",
@@ -393,16 +472,16 @@ const DeliveryPage = () => {
 
       {/* Filters */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <CardTitle>ค้นหาและกรองข้อมูล</CardTitle>
           </div>
-          <Button variant="outline" onClick={handleClearFilters}>
+          <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto bg-transparent">
             ล้างตัวกรอง
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <div className="col-span-full">
               <Label htmlFor="search">ค้นหา</Label>
               <div className="relative">
@@ -416,7 +495,6 @@ const DeliveryPage = () => {
                 />
               </div>
             </div>
-
             <div>
               <Label>สถานะการจัดส่ง</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -431,7 +509,6 @@ const DeliveryPage = () => {
                 </SelectContent>
               </Select>
             </div>
-
             <div>
               <Label>ประเภทรถ</Label>
               <Select value={vehicleTypeFilter} onValueChange={setVehicleTypeFilter}>
@@ -448,7 +525,6 @@ const DeliveryPage = () => {
                 </SelectContent>
               </Select>
             </div>
-
             <div>
               <Label>ผู้ให้บริการ</Label>
               <Select value={serviceProviderFilter} onValueChange={setServiceProviderFilter}>
@@ -465,7 +541,6 @@ const DeliveryPage = () => {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="mb-4">
               <Label>วันที่ส่ง</Label>
               <Popover>
@@ -499,10 +574,10 @@ const DeliveryPage = () => {
         </CardContent>
       </Card>
 
-      {/* Deliveries Table */}
+      {/* Deliveries List (Conditional Rendering) */}
       <Card className="overflow-hidden">
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <CardTitle>รายการจัดส่ง</CardTitle>
               <CardDescription>
@@ -530,252 +605,446 @@ const DeliveryPage = () => {
           </div>
         </CardHeader>
         <CardContent className="p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <div className="min-w-[900px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[80px] text-center">รหัส</TableHead>
-                    <TableHead className="min-w-[120px] text-center">ลูกค้า</TableHead>
-                    <TableHead className="min-w-[120px] text-center">คนขับ</TableHead>
-                    <TableHead className="min-w-[100px] text-center">ทะเบียน</TableHead>
-                    <TableHead className="min-w-[120px] text-center">เบอร์โทร</TableHead>
-                    <TableHead className="min-w-[100px] text-center">ประเภทรถ</TableHead>
-                    <TableHead className="min-w-[130px] text-center">ผู้ให้บริการ</TableHead>
-                    <TableHead className="min-w-[120px] text-center">วันที่จัดส่ง</TableHead>
-                    <TableHead className="min-w-[100px] text-center">สถานะ</TableHead>
-                    <TableHead className="min-w-[140px] text-center">การดำเนินการ</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentDeliveries.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
-                        ไม่พบการจัดส่งที่ตรงกับเงื่อนไขการค้นหา
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    currentDeliveries.map((delivery) => (
-                      <TableRow key={delivery.id}>
-                        <TableCell className="font-medium text-sm truncate text-center">{delivery.orderId}</TableCell>
-                        <TableCell className="text-center">
-                          <div>
-                            <p className="font-medium text-sm truncate" title={delivery.customerName}>
-                              {delivery.customerName}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                            <span className="text-sm truncate" title={delivery.driverName}>
-                              {delivery.driverName}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <Truck className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                            <span className="text-sm truncate">{delivery.vehiclePlate}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                            <span className="text-sm truncate">{delivery.driverPhone}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm truncate text-center" title={delivery.vehicleType}>
-                          {delivery.vehicleType}
-                        </TableCell>
-                        <TableCell className="text-sm truncate text-center" title={delivery.serviceProvider}>
-                          {delivery.serviceProvider}
-                        </TableCell>
-                        <TableCell className="text-sm text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <CalendarDays className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                            <span className="truncate">
-                              {format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge className={statusMap[delivery.status as keyof typeof statusMap]?.className}>
-                            {statusMap[delivery.status as keyof typeof statusMap]?.label || delivery.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex justify-center gap-1">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-8 px-2 text-xs bg-transparent">
-                                  <Eye className="h-3 w-3 mr-1" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-md">
-                                <DialogHeader>
-                                  <DialogTitle className="text-center">รายละเอียดการจัดส่ง</DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  {/* Delivery Images */}
-                                  <div className="grid grid-cols-3 gap-2">
-                                    <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                                      <img
-                                        src="/placeholder.svg?height=80&width=80"
-                                        alt="Delivery image 1"
-                                        className="w-full h-full object-cover rounded-lg"
-                                      />
-                                    </div>
-                                    <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                                      <img
-                                        src="/placeholder.svg?height=80&width=80"
-                                        alt="Delivery image 2"
-                                        className="w-full h-full object-cover rounded-lg"
-                                      />
-                                    </div>
-                                    <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                                      <img
-                                        src="/placeholder.svg?height=80&width=80"
-                                        alt="Delivery image 3"
-                                        className="w-full h-full object-cover rounded-lg"
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {/* Delivery Details */}
-                                  <div className="space-y-3 text-sm">
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">รหัส:</span>
-                                      <span className="font-medium">{delivery.orderId}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">ลูกค้า:</span>
-                                      <span className="font-medium">{delivery.customerName}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">คนขับ:</span>
-                                      <span className="font-medium">{delivery.driverName}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">เบอร์โทร:</span>
-                                      <span className="font-medium">{delivery.driverPhone}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">ทะเบียนรถ:</span>
-                                      <span className="font-medium">{delivery.vehiclePlate}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">ประเภทรถ:</span>
-                                      <span className="font-medium">{delivery.vehicleType}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">ผู้ให้บริการ:</span>
-                                      <span className="font-medium">{delivery.serviceProvider}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">วันที่จัดส่ง:</span>
-                                      <span className="font-medium">
-                                        {format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">สถานะ:</span>
-                                      <Badge
-                                        className={statusMap[delivery.status as keyof typeof statusMap]?.className}
+          {isMobile ? (
+            // Mobile View: Cards
+            <div className="grid gap-4 p-4">
+              {currentDeliveries.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">ไม่พบการจัดส่งที่ตรงกับเงื่อนไขการค้นหา</div>
+              ) : (
+                currentDeliveries.map((delivery) => (
+                  <Card key={delivery.id}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex justify-between items-center">
+                        <span>{delivery.orderId}</span>
+                        <Badge className={statusMap[delivery.status as keyof typeof statusMap]?.className}>
+                          {statusMap[delivery.status as keyof typeof statusMap]?.label || delivery.status}
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription className="text-sm">{delivery.customerName}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span>{delivery.driverName}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span>{delivery.driverPhone}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                        <span>{format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}</span>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-2 border-t">
+                        <Dialog
+                          onOpenChange={(open) => {
+                            if (open) {
+                              setDialogImages(delivery.images || [])
+                            }
+                          }}
+                        >
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-8 px-2 text-xs bg-transparent">
+                              <Eye className="h-3 w-3 mr-1" /> ดูรายละเอียด
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-[90vw] sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle className="text-center">รายละเอียดการจัดส่ง</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              {/* Delivery Images */}
+                              <div>
+                                <h4 className="text-sm font-medium mb-2">รูปภาพการจัดส่ง</h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                  {(dialogImages.length > 0 ? dialogImages : delivery.images || []).map(
+                                    (imgSrc, index) => (
+                                      <div
+                                        key={index}
+                                        className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden"
                                       >
-                                        {statusMap[delivery.status as keyof typeof statusMap]?.label || delivery.status}
-                                      </Badge>
-                                    </div>
-                                    {delivery.notes && (
-                                      <div className="pt-2 border-t">
-                                        <span className="text-muted-foreground text-xs">หมายเหตุ:</span>
-                                        <div className="mt-1 text-sm">{delivery.notes}</div>
+                                        <img
+                                          src={imgSrc || "/placeholder.svg"}
+                                          alt={`Delivery image ${index + 1}`}
+                                          className="w-full h-full object-cover rounded-lg"
+                                        />
                                       </div>
-                                    )}
+                                    ),
+                                  )}
+                                  <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                                    <input
+                                      type="file"
+                                      ref={fileInputRef}
+                                      onChange={handleFileChange}
+                                      className="hidden"
+                                      accept="image/*"
+                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="w-full h-full rounded-lg border-dashed flex flex-col items-center justify-center text-muted-foreground bg-transparent"
+                                      onClick={handleImageUploadClick}
+                                    >
+                                      <Upload className="h-6 w-6" />
+                                      <span className="text-xs mt-1">เพิ่มรูป</span>
+                                    </Button>
                                   </div>
                                 </div>
-                              </DialogContent>
-                            </Dialog>
-
-                            {/* เปลี่ยนจาก DropdownMenu เป็น Button ธรรมดา */}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 px-2 text-xs bg-transparent"
-                              onClick={() => handlePrintOrder(delivery)}
-                            >
-                              <Printer className="h-3 w-3 mr-1" />
+                              </div>
+                              {/* Delivery Details */}
+                              <div className="space-y-3 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">รหัส:</span>
+                                  <span className="font-medium">{delivery.orderId}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">ลูกค้า:</span>
+                                  <span className="font-medium">{delivery.customerName}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">คนขับ:</span>
+                                  <span className="font-medium">{delivery.driverName}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">เบอร์โทร:</span>
+                                  <span className="font-medium">{delivery.driverPhone}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">ทะเบียนรถ:</span>
+                                  <span className="font-medium">{delivery.vehiclePlate}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">ประเภทรถ:</span>
+                                  <span className="font-medium">{delivery.vehicleType}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">ผู้ให้บริการ:</span>
+                                  <span className="font-medium">{delivery.serviceProvider}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">วันที่จัดส่ง:</span>
+                                  <span className="font-medium">
+                                    {format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">สถานะ:</span>
+                                  <Badge className={statusMap[delivery.status as keyof typeof statusMap]?.className}>
+                                    {statusMap[delivery.status as keyof typeof statusMap]?.label || delivery.status}
+                                  </Badge>
+                                </div>
+                                {delivery.notes && (
+                                  <div className="pt-2 border-t">
+                                    <span className="text-muted-foreground text-xs">หมายเหตุ:</span>
+                                    <div className="mt-1 text-sm">{delivery.notes}</div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-8 px-2 text-xs bg-transparent">
+                              <Printer className="h-3 w-3 mr-1" /> พิมพ์
                             </Button>
-                          </div>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>พิมพ์เอกสาร</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handlePrintDocument(delivery, "shippingLabel")}>
+                              ใบปะหน้าพัสดุ
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handlePrintDocument(delivery, "packingList")}>
+                              Packing List
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handlePrintDocument(delivery, "pickList")}>
+                              Pick List
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          ) : (
+            // Desktop View: Table
+            <div className="overflow-x-auto">
+              <div className="min-w-[900px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[80px] text-center">รหัส</TableHead>
+                      <TableHead className="min-w-[120px] text-center">ลูกค้า</TableHead>
+                      <TableHead className="min-w-[120px] text-center">คนขับ</TableHead>
+                      <TableHead className="min-w-[100px] text-center">ทะเบียน</TableHead>
+                      <TableHead className="min-w-[120px] text-center">เบอร์โทร</TableHead>
+                      <TableHead className="min-w-[100px] text-center">ประเภทรถ</TableHead>
+                      <TableHead className="min-w-[130px] text-center">ผู้ให้บริการ</TableHead>
+                      <TableHead className="min-w-[120px] text-center">วันที่จัดส่ง</TableHead>
+                      <TableHead className="min-w-[100px] text-center">สถานะ</TableHead>
+                      <TableHead className="min-w-[140px] text-center">การดำเนินการ</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentDeliveries.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                          ไม่พบการจัดส่งที่ตรงกับเงื่อนไขการค้นหา
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4 px-6 pb-4">
-              <div className="text-sm text-muted-foreground">
-                หน้า {currentPage} จาก {totalPages}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="h-8 px-2"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  ก่อนหน้า
-                </Button>
-
-                {/* Page numbers */}
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNumber
-                    if (totalPages <= 5) {
-                      pageNumber = i + 1
-                    } else if (currentPage <= 3) {
-                      pageNumber = i + 1
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNumber = totalPages - 4 + i
-                    } else {
-                      pageNumber = currentPage - 2 + i
-                    }
-
-                    return (
-                      <Button
-                        key={pageNumber}
-                        variant={currentPage === pageNumber ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(pageNumber)}
-                        className="h-8 w-8 p-0"
-                      >
-                        {pageNumber}
-                      </Button>
-                    )
-                  })}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="h-8 px-2"
-                >
-                  ถัดไป
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                    ) : (
+                      currentDeliveries.map((delivery) => (
+                        <TableRow key={delivery.id}>
+                          <TableCell className="font-medium text-sm truncate text-center">{delivery.orderId}</TableCell>
+                          <TableCell className="text-center">
+                            <div>
+                              <p className="font-medium text-sm truncate" title={delivery.customerName}>
+                                {delivery.customerName}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                              <span className="text-sm truncate" title={delivery.driverName}>
+                                {delivery.driverName}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Truck className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                              <span className="text-sm truncate">{delivery.vehiclePlate}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                              <span className="text-sm truncate">{delivery.driverPhone}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm truncate text-center" title={delivery.vehicleType}>
+                            {delivery.vehicleType}
+                          </TableCell>
+                          <TableCell className="text-sm truncate text-center" title={delivery.serviceProvider}>
+                            {delivery.serviceProvider}
+                          </TableCell>
+                          <TableCell className="text-sm text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <CalendarDays className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                              <span className="truncate">
+                                {format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge className={statusMap[delivery.status as keyof typeof statusMap]?.className}>
+                              {statusMap[delivery.status as keyof typeof statusMap]?.label || delivery.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex justify-center gap-1">
+                              <Dialog
+                                onOpenChange={(open) => {
+                                  if (open) {
+                                    setDialogImages(delivery.images || [])
+                                  }
+                                }}
+                              >
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="h-8 px-2 text-xs bg-transparent">
+                                    <Eye className="h-3 w-3 mr-1" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-[90vw] sm:max-w-md">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-center">รายละเอียดการจัดส่ง</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    {/* Delivery Images */}
+                                    <div>
+                                      <h4 className="text-sm font-medium mb-2">รูปภาพการจัดส่ง</h4>
+                                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        {(dialogImages.length > 0 ? dialogImages : delivery.images || []).map(
+                                          (imgSrc, index) => (
+                                            <div
+                                              key={index}
+                                              className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden"
+                                            >
+                                              <img
+                                                src={imgSrc || "/placeholder.svg"}
+                                                alt={`Delivery image ${index + 1}`}
+                                                className="w-full h-full object-cover rounded-lg"
+                                              />
+                                            </div>
+                                          ),
+                                        )}
+                                        <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                                          <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                            accept="image/*"
+                                          />
+                                          <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="w-full h-full rounded-lg border-dashed flex flex-col items-center justify-center text-muted-foreground bg-transparent"
+                                            onClick={handleImageUploadClick}
+                                          >
+                                            <Upload className="h-6 w-6" />
+                                            <span className="text-xs mt-1">เพิ่มรูป</span>
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {/* Delivery Details */}
+                                    <div className="space-y-3 text-sm">
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">รหัส:</span>
+                                        <span className="font-medium">{delivery.orderId}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">ลูกค้า:</span>
+                                        <span className="font-medium">{delivery.customerName}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">คนขับ:</span>
+                                        <span className="font-medium">{delivery.driverName}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">เบอร์โทร:</span>
+                                        <span className="font-medium">{delivery.driverPhone}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">ทะเบียนรถ:</span>
+                                        <span className="font-medium">{delivery.vehiclePlate}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">ประเภทรถ:</span>
+                                        <span className="font-medium">{delivery.vehicleType}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">ผู้ให้บริการ:</span>
+                                        <span className="font-medium">{delivery.serviceProvider}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">วันที่จัดส่ง:</span>
+                                        <span className="font-medium">
+                                          {format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">สถานะ:</span>
+                                        <Badge
+                                          className={statusMap[delivery.status as keyof typeof statusMap]?.className}
+                                        >
+                                          {statusMap[delivery.status as keyof typeof statusMap]?.label ||
+                                            delivery.status}
+                                        </Badge>
+                                      </div>
+                                      {delivery.notes && (
+                                        <div className="pt-2 border-t">
+                                          <span className="text-muted-foreground text-xs">หมายเหตุ:</span>
+                                          <div className="mt-1 text-sm">{delivery.notes}</div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm" className="h-8 px-2 text-xs bg-transparent">
+                                    <Printer className="h-3 w-3 mr-1" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>พิมพ์เอกสาร</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handlePrintDocument(delivery, "shippingLabel")}>
+                                    ใบปะหน้าพัสดุ
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handlePrintDocument(delivery, "packingList")}>
+                                    Packing List
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handlePrintDocument(delivery, "pickList")}>
+                                    Pick List
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </div>
           )}
         </CardContent>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-4 px-6 pb-4 gap-4">
+            <div className="text-sm text-muted-foreground">
+              หน้า {currentPage} จาก {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="h-8 px-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                ก่อนหน้า
+              </Button>
+              {/* Page numbers */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNumber
+                  if (totalPages <= 5) {
+                    pageNumber = i + 1
+                  } else if (currentPage <= 3) {
+                    pageNumber = i + 1
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNumber = totalPages - 4 + i
+                  } else {
+                    pageNumber = currentPage - 2 + i
+                  }
+                  return (
+                    <Button
+                      key={pageNumber}
+                      variant={currentPage === pageNumber ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handlePageChange(pageNumber)}
+                      className="h-8 w-8 p-0"
+                    >
+                      {pageNumber}
+                    </Button>
+                  )
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="h-8 px-2"
+              >
+                ถัดไป
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   )

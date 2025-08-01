@@ -338,50 +338,7 @@ export function SalesChannelsTab() {
                 rows={3}
               />
             </div>
-            <div className="space-y-3">
-              <Label className="text-base font-medium">การตั้งค่า</Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="allow-discount"
-                    checked={formData.settings.allowDiscount}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        settings: { ...prev.settings, allowDiscount: checked },
-                      }))
-                    }
-                  />
-                  <Label htmlFor="allow-discount">อนุญาตให้ลดราคา</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="require-customer"
-                    checked={formData.settings.requireCustomer}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        settings: { ...prev.settings, requireCustomer: checked },
-                      }))
-                    }
-                  />
-                  <Label htmlFor="require-customer">บังคับใส่ข้อมูลลูกค้า</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="print-receipt"
-                    checked={formData.settings.printReceipt}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        settings: { ...prev.settings, printReceipt: checked },
-                      }))
-                    }
-                  />
-                  <Label htmlFor="print-receipt">พิมพ์ใบเสร็จอัตโนมัติ</Label>
-                </div>
-              </div>
-            </div>
+    
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Switch

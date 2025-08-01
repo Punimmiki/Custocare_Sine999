@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Globe, Save, ImageIcon, Youtube, Truck } from "lucide-react"
+import { Globe, Save, ImageIcon, Youtube, Truck, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 export function WebsiteTab() {
   const [websiteData, setWebsiteData] = React.useState({
+    logo: "",
     headerPicture: "",
     headerText: `ยินดีต้อนรับสู่ ซีฟู้ด เฟรช
 
@@ -55,9 +56,6 @@ TikTok: @seafoodfresh`,
 
   const handleFileUpload = (field: string, file: File | null) => {
     if (file) {
-      // Handle file upload logic here
-      console.log(`Uploading ${field}:`, file)
-      // For demo purposes, we'll just set a placeholder URL
       setWebsiteData((prev) => ({
         ...prev,
         [field]: URL.createObjectURL(file),
@@ -66,20 +64,50 @@ TikTok: @seafoodfresh`,
   }
 
   const handleSave = () => {
-    // Save website settings logic here
     console.log("Saving website settings:", websiteData)
-    // Show success message
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-2xl font-bold">ตั้งค่าเว็บไซต์</h2>
         <p className="text-muted-foreground">จัดการเนื้อหาและรูปภาพสำหรับเว็บไซต์</p>
       </div>
 
-      {/* Header Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Store className="h-5 w-5" />
+            โลโก้ร้านค้า
+          </CardTitle>
+          <CardDescription>อัปโหลดโลโก้ร้านของคุณ</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <Label htmlFor="logo-upload">อัปโหลดโลโก้</Label>
+            <Input
+              id="logo-upload"
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileUpload("logo", e.target.files?.[0] || null)}
+              className="mb-2"
+            />
+            {websiteData.logo && (
+              <div className="mt-2">
+                <img
+                  src={websiteData.logo}
+                  alt="Store Logo Preview"
+                  className="max-w-[150px] h-auto object-contain rounded-md border shadow"
+                />
+              </div>
+            )}
+            <p className="text-sm text-muted-foreground mt-1">
+              แนะนำขนาดโลโก้ 500x500 พิกเซล (รูปแบบ PNG พื้นหลังโปร่งใส)
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -101,13 +129,15 @@ TikTok: @seafoodfresh`,
             {websiteData.headerPicture && (
               <div className="mt-2">
                 <img
-                  src={websiteData.headerPicture || "/placeholder.svg"}
+                  src={websiteData.headerPicture}
                   alt="Header Preview"
                   className="max-w-xs h-32 object-cover rounded-lg border"
                 />
               </div>
             )}
-            <p className="text-sm text-muted-foreground">แนะนำขนาด 1920x600 พิกเซล (รูปแบบ JPG, PNG)</p>
+            <p className="text-sm text-muted-foreground">
+              แนะนำขนาด 1920x600 พิกเซล (รูปแบบ JPG, PNG)
+            </p>
           </div>
           <div>
             <Label htmlFor="header-text">เนื้อหาส่วนหัว (Header Text)</Label>
@@ -118,7 +148,9 @@ TikTok: @seafoodfresh`,
               placeholder="เนื้อหาที่จะแสดงในส่วนหัวของเว็บไซต์"
               rows={6}
             />
-            <p className="text-sm text-muted-foreground mt-1">สามารถใส่รูปภาพและลิงก์ YouTube ได้</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              สามารถใส่รูปภาพและลิงก์ YouTube ได้
+            </p>
           </div>
           <div>
             <Label htmlFor="youtube-link" className="flex items-center gap-2">
@@ -132,12 +164,13 @@ TikTok: @seafoodfresh`,
               onChange={(e) => handleInputChange("headerYoutubeLink", e.target.value)}
               placeholder="https://youtube.com/watch?v=..."
             />
-            <p className="text-sm text-muted-foreground mt-1">ลิงก์วิดีโอ YouTube ที่จะแสดงในส่วนหัว</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              ลิงก์วิดีโอ YouTube ที่จะแสดงในส่วนหัว
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Shipping Information */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -156,12 +189,13 @@ TikTok: @seafoodfresh`,
               placeholder="ข้อมูลค่าจัดส่งและเงื่อนไข"
               rows={10}
             />
-            <p className="text-sm text-muted-foreground mt-1">ข้อมูลค่าจัดส่ง เงื่อนไข และรายละเอียดการจัดส่ง</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              ข้อมูลค่าจัดส่ง เงื่อนไข และรายละเอียดการจัดส่ง
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Footer Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -180,7 +214,9 @@ TikTok: @seafoodfresh`,
               placeholder="ข้อมูลติดต่อ ที่อยู่ และข้อมูลบริษัท"
               rows={12}
             />
-            <p className="text-sm text-muted-foreground mt-1">ข้อมูลติดต่อ ที่อยู่ เวลาทำการ และช่องทางการติดต่อ</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              ข้อมูลติดต่อ ที่อยู่ เวลาทำการ และช่องทางการติดต่อ
+            </p>
           </div>
           <div>
             <Label htmlFor="footer-image">รูปภาพส่วนท้าย</Label>
@@ -194,18 +230,19 @@ TikTok: @seafoodfresh`,
             {websiteData.footerImage && (
               <div className="mt-2">
                 <img
-                  src={websiteData.footerImage || "/placeholder.svg"}
+                  src={websiteData.footerImage}
                   alt="Footer Preview"
                   className="max-w-xs h-32 object-cover rounded-lg border"
                 />
               </div>
             )}
-            <p className="text-sm text-muted-foreground">รูปภาพเพิ่มเติมสำหรับส่วนท้าย เช่น โลโก้ หรือรูปภาพประกอบ</p>
+            <p className="text-sm text-muted-foreground">
+              รูปภาพเพิ่มเติมสำหรับส่วนท้าย เช่น โลโก้ หรือรูปภาพประกอบ
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Preview Section */}
       <Card>
         <CardHeader>
           <CardTitle>ตัวอย่างการแสดงผล</CardTitle>
@@ -239,7 +276,6 @@ TikTok: @seafoodfresh`,
         </CardContent>
       </Card>
 
-      {/* Save Button */}
       <div className="flex justify-end">
         <Button onClick={handleSave} size="lg">
           <Save className="h-4 w-4 mr-2" />

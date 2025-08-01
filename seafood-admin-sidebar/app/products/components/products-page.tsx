@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image" // Import Image component
 import Link from "next/link"
 import {
   Edit,
@@ -207,7 +208,7 @@ const initialProducts: Product[] = [
     category: "กุ้ง",
     status: "low_stock",
     isActive: true,
-    description: "กุ้งแม่น้ำสดใหม่ เนื้อหวานกรอบ เหมาะสำหรับทำต้มยำและผัด",
+    description: "กุ้งแม่น้ำสดใหม่ เนื้อหวานกรอบ เหมาะสำหรับทำต้มยำ���ละผัด",
     stock: 7,
     createdAt: "2024-01-25",
     updatedAt: "2024-01-30",
@@ -383,7 +384,6 @@ const ProductDetailDialog = ({
                   />
                 </div>
               </div>
-
               {/* Product Title & Key Info */}
               <div className="flex-1 min-w-0">
                 <div className="mb-2">
@@ -429,7 +429,6 @@ const ProductDetailDialog = ({
               </div>
             </div>
           </div>
-
           {/* Content Section */}
           <div className="p-8">
             {/* Description */}
@@ -441,7 +440,6 @@ const ProductDetailDialog = ({
                 </div>
               </div>
             )}
-
             {/* Additional Info Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {/* Product Details Card */}
@@ -465,7 +463,6 @@ const ProductDetailDialog = ({
                   </div>
                 </div>
               </div>
-
               {/* System Info Card */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -495,7 +492,6 @@ const ProductDetailDialog = ({
                 </div>
               </div>
             </div>
-
             {/* Action Buttons */}
             <div className="flex justify-center pt-6 border-t border-gray-200">
               <Button variant="outline" onClick={() => onOpenChange(false)} className="px-8 h-12 text-base">
@@ -522,7 +518,6 @@ const ProductsPage = () => {
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = React.useState(false)
   const [activeCardFilter, setActiveCardFilter] = React.useState<string | null>(null)
-
   const { toast } = useToast()
 
   const filteredProducts = React.useMemo(() => {
@@ -538,7 +533,6 @@ const ProductsPage = () => {
         (statusFilter === "พร้อมจำหน่าย" && product.status === "active") ||
         (statusFilter === "สต็อกต่ำ" && product.status === "low_stock") ||
         (statusFilter === "หมด" && product.status === "out_of_stock")
-
       return matchesSearch && matchesCategory && matchesActive && matchesStatus
     })
   }, [products, searchTerm, categoryFilter, activeFilter, statusFilter])
@@ -559,13 +553,11 @@ const ProductsPage = () => {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
-
       setProducts((prevProducts) =>
         prevProducts.map((product) =>
           product.id === productId ? { ...product, isActive: !product.isActive } : product,
         ),
       )
-
       const product = products.find((p) => p.id === productId)
       toast({
         title: "อัปเดตสำเร็จ",
@@ -635,7 +627,6 @@ const ProductsPage = () => {
     const activeProducts = products.filter((p) => p.status === "active").length
     const lowStockProducts = products.filter((p) => p.status === "low_stock").length
     const outOfStockProducts = products.filter((p) => p.status === "out_of_stock").length
-
     return { totalProducts, activeProducts, lowStockProducts, outOfStockProducts }
   }, [products])
 
@@ -649,7 +640,6 @@ const ProductsPage = () => {
           </div>
           <Skeleton className="h-10 w-32" />
         </div>
-
         <div className="grid gap-4 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
@@ -663,7 +653,6 @@ const ProductsPage = () => {
             </Card>
           ))}
         </div>
-
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-48" />
@@ -718,7 +707,6 @@ const ProductsPage = () => {
             <div className="text-2xl font-bold">{stats.totalProducts}</div>
           </CardContent>
         </Card>
-
         <Card
           className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${
             activeCardFilter === "active" ? "ring-2 ring-green-500" : ""
@@ -733,7 +721,6 @@ const ProductsPage = () => {
             <div className="text-2xl font-bold text-green-600">{stats.activeProducts}</div>
           </CardContent>
         </Card>
-
         <Card
           className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${
             activeCardFilter === "low_stock" ? "ring-2 ring-amber-500" : ""
@@ -748,7 +735,6 @@ const ProductsPage = () => {
             <div className="text-2xl font-bold text-amber-600">{stats.lowStockProducts}</div>
           </CardContent>
         </Card>
-
         <Card
           className={`cursor-pointer transition-all hover:shadow-md border-0 shadow-sm rounded-2xl bg-white ${
             activeCardFilter === "out_of_stock" ? "ring-2 ring-red-500" : ""
@@ -900,30 +886,32 @@ const ProductsPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-20 text-center">รูปภาพ</TableHead>
-                  <TableHead className="text-center">ชื่อสินค้า</TableHead>
-                  <TableHead className="w-24 text-center">ราคาขาย</TableHead>
-                  <TableHead className="w-20 text-center">หน่วย</TableHead>
-                  <TableHead className="w-24 text-center">หมวดหมู่</TableHead>
-                  <TableHead className="w-32 text-center">สถานะสินค้า</TableHead>
-                  <TableHead className="w-48 text-center">การดำเนินการ</TableHead>
+                  <TableHead className="w-[250px] text-left">สินค้า</TableHead>
+                  <TableHead className="w-[90px] text-center">ราคาขาย</TableHead>
+                  <TableHead className="w-[70px] text-center">หน่วย</TableHead>
+                  <TableHead className="w-[90px] text-center">หมวดหมู่</TableHead>
+                  <TableHead className="w-[110px] text-center">สถานะสินค้า</TableHead>
+                  <TableHead className="w-[180px] text-center">การดำเนินการ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {currentProducts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                       ไม่พบสินค้าที่ตรงกับเงื่อนไขการค้นหา
                     </TableCell>
                   </TableRow>
                 ) : (
                   currentProducts.map((product) => (
                     <TableRow key={product.id}>
-                      <TableCell className="text-center">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center mx-auto">
-                          <img
+                      <TableCell className="flex items-center gap-3 py-3">
+                        {/* Combined cell */}
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <Image
                             src={product.image || "/placeholder.svg"}
                             alt={product.name}
+                            width={48}
+                            height={48}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement
@@ -931,8 +919,8 @@ const ProductsPage = () => {
                             }}
                           />
                         </div>
+                        <span className="font-medium text-sm">{product.name}</span>
                       </TableCell>
-                      <TableCell className="font-medium text-sm text-center">{product.name}</TableCell>
                       <TableCell className="text-center">
                         <span className="font-medium text-xs">฿{product.price.toLocaleString()}</span>
                       </TableCell>
@@ -945,13 +933,7 @@ const ProductsPage = () => {
                       <TableCell className="text-center">
                         <Badge
                           variant="outline"
-                          className={`text-xs whitespace-nowrap ${
-                            product.status === "active"
-                              ? "border-green-200 bg-green-50 text-green-700"
-                              : product.status === "low_stock"
-                                ? "border-amber-200 bg-amber-50 text-amber-700"
-                                : "border-red-200 bg-red-50 text-red-700"
-                          }`}
+                          className={`text-xs whitespace-nowrap ${product.status === "active" ? "border-green-200 bg-green-50 text-green-700" : product.status === "low_stock" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-red-200 bg-red-50 text-red-700"}`}
                         >
                           {statusMap[product.status].label}
                         </Badge>
@@ -1016,9 +998,6 @@ const ProductsPage = () => {
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
-                            <span
-                              className={`text-xs font-medium ${product.isActive ? "text-green-700" : "text-red-600"}`}
-                            ></span>
                           </div>
                         </div>
                       </TableCell>
@@ -1046,7 +1025,6 @@ const ProductsPage = () => {
                   <ChevronLeft className="h-4 w-4" />
                   ก่อนหน้า
                 </Button>
-
                 {/* Page numbers */}
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -1060,7 +1038,6 @@ const ProductsPage = () => {
                     } else {
                       pageNumber = currentPage - 2 + i
                     }
-
                     return (
                       <Button
                         key={pageNumber}
@@ -1074,7 +1051,6 @@ const ProductsPage = () => {
                     )
                   })}
                 </div>
-
                 <Button
                   variant="outline"
                   size="sm"

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,6 +22,17 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Bell, Search, User, Settings } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import  LoginPage  from "./components/login"
 
 const breadcrumbMap: Record<string, string> = {
   "/dashboard": "แดชบอร์ด",
@@ -46,6 +57,7 @@ const breadcrumbMap: Record<string, string> = {
 
 export function AdminHeader() {
   const pathname = usePathname()
+  const router = useRouter()
   const pathSegments = pathname.split("/").filter(Boolean)
 
   return (
@@ -66,7 +78,6 @@ export function AdminHeader() {
               const path = "/" + pathSegments.slice(0, index + 1).join("/")
               const isLast = index === pathSegments.length - 1
               const title = breadcrumbMap[path] || segment
-
               return (
                 <div key={path} className="flex items-center">
                   <BreadcrumbSeparator className="hidden md:block" />
@@ -107,17 +118,40 @@ export function AdminHeader() {
             <DropdownMenuLabel className="text-slate-900">บัญชีของฉัน</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-slate-700 hover:text-slate-900">
-              <User className="mr-2 h-4 w-4" />
-              โปรไฟล์
+              <User className="mr-2 h-4 w-4" /> โปรไฟล์
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/settings" className="text-slate-700 hover:text-slate-900">
-                <Settings className="mr-2 h-4 w-4" />
-                ตั้งค่า
+                <Settings className="mr-2 h-4 w-4" /> ตั้งค่า
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600 hover:text-red-700 hover:bg-red-50">ออกจากระบบ</DropdownMenuItem>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onSelect={(event) => event.preventDefault()} // Prevent dropdown from closing
+                >
+                  ออกจากระบบ
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?</AlertDialogTitle>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      localStorage.clear() // ล้าง token หรือข้อมูล session ที่คุณใช้จริง ๆ
+                      router.push("/Login")
+                    }}
+                  >
+                    ออกจากระบบ
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

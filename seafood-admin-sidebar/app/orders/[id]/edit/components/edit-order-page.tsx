@@ -1,8 +1,8 @@
 "use client"
-
+import * as React from "react"
 import { DialogTrigger } from "@/components/ui/dialog"
 
-import * as React from "react"
+import { useParams } from "next/navigation" // Import useParams to get the ID from the URL
 import Link from "next/link"
 import { CalendarIcon, Plus, Search, Trash2, User, CreditCard, Banknote, ArrowLeft, Send, Eye } from "lucide-react"
 import { format } from "date-fns"
@@ -34,7 +34,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 
-// Sample customer data with multiple addresses
+// Sample customer data with multiple addresses (duplicated for this file)
 const customers = [
   {
     id: "1",
@@ -52,14 +52,13 @@ const customers = [
     phone: "02-123-4567",
     type: "credit",
     creditInfo: {
-      // Added creditInfo for existing credit customers
       creditType: "amount",
       creditLimit: 50000,
       creditBills: 0,
       creditDays: 30,
-      outstandingAmount: 12500, // Mock outstanding amount
-      outstandingBills: 2, // Mock outstanding bills
-      outstandingDays: 15, // Mock outstanding days
+      outstandingAmount: 12500,
+      outstandingBills: 2,
+      outstandingDays: 15,
     },
     addresses: [
       { id: "addr3", address: "789 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500", isDefault: true },
@@ -72,7 +71,6 @@ const customers = [
     phone: "089-876-5432",
     type: "credit",
     creditInfo: {
-      // Added creditInfo for existing credit customers
       creditType: "bills",
       creditLimit: 0,
       creditBills: 5,
@@ -85,11 +83,11 @@ const customers = [
   },
 ]
 
-// Sample product data with categories and lastDiscount
+// Sample product data with categories and lastDiscount (duplicated for this file)
 const products = [
-  { id: "1", name: "แซลมอนสด", unit: "กิโลกรัม", price: 450, stock: 25, category: "ปลา", lastDiscount: 5 }, // Added lastDiscount
+  { id: "1", name: "แซลมอนสด", unit: "กิโลกรัม", price: 450, stock: 25, category: "ปลา", lastDiscount: 5 },
   { id: "2", name: "กุ้งขาวใหญ่", unit: "กิโลกรัม", price: 320, stock: 15, category: "กุ้ง", lastDiscount: 0 },
-  { id: "3", name: "ปลาทูน่าสด", unit: "กิโลกรัม", price: 380, stock: 12, category: "ปลา", lastDiscount: 10 }, // Added lastDiscount
+  { id: "3", name: "ปลาทูน่าสด", unit: "กิโลกรัม", price: 380, stock: 12, category: "ปลา", lastDiscount: 10 },
   { id: "4", name: "หอยแมลงภู่", unit: "กิโลกรัม", price: 180, stock: 30, category: "หอย", lastDiscount: 0 },
   { id: "5", name: "ปูม้าสด", unit: "ตัว", price: 250, stock: 8, category: "ปู", lastDiscount: 0 },
   { id: "6", name: "ปลาหมึกสด", unit: "กิโลกรัม", price: 220, stock: 20, category: "ปลาหมึก", lastDiscount: 0 },
@@ -98,19 +96,180 @@ const products = [
   { id: "9", name: "หอยเชลล์", unit: "กิโลกรัม", price: 250, stock: 20, category: "หอย", lastDiscount: 0 },
 ]
 
-// Mock data for customer-specific product discounts
+// Mock data for customer-specific product discounts (duplicated for this file)
 const customerProductDiscounts: Record<string, Record<string, number>> = {
   "1": {
-    // นายสมชาย ใจดี
-    "1": 15, // แซลมอนสด: 15 บาท
-    "2": 8, // กุ้งขาวใหญ่: 8 บาท
+    "1": 15,
+    "2": 8,
   },
   "2": {
-    // บริษัท อาหารทะเล จำกัด
-    "3": 25, // ปลาทูน่าสด: 25 บาท
-    "6": 10, // ปลาหมึกสด: 10 บาท
+    "3": 25,
+    "6": 10,
   },
 }
+
+// Mock orders data (duplicated for this file to simulate fetching)
+const orders = [
+  {
+    id: "ORD-001",
+    customerName: "นายสมชาย ใจดี",
+    channel: "Line",
+    orderDate: "2024-01-15",
+    receiveDate: "2024-01-20",
+    totalPrice: 2450,
+    orderStatus: "pending",
+    paymentStatus: "unpaid",
+    paymentMethod: "cash",
+    printed: false,
+    customerType: "ลูกค้าเงินสด",
+    deliveryMethod: "ขนส่งเอกชน",
+    documents: {
+      packageLabel: false,
+      packingList: false,
+      pickList: false,
+    },
+    items: [
+      { name: "ปลาทูน่าสด", quantity: 2, unit: "กิโลกรัม", price: 250, total: 500 },
+      { name: "กุ้งขาว", quantity: 1, unit: "กิโลกรัม", price: 180, total: 180 },
+    ],
+    shippingAddress: "123 ถนนสุขุมวิท แขวงคลองตัน เขตคลองตัน กรุงเทพฯ 10110",
+    notes: "ต้องการสินค้าสดใหม่",
+    shippingCost: 50,
+  },
+  {
+    id: "ORD-002",
+    customerName: "บริษัท อาหารทะเล จำกัด",
+    channel: "Facebook",
+    orderDate: "2024-01-15",
+    receiveDate: "2024-01-22",
+    totalPrice: 8900,
+    orderStatus: "packing", // This order cannot be edited
+    paymentStatus: "unpaid",
+    paymentMethod: "scb",
+    printed: true,
+    customerType: "ลูกค้าเครดิต",
+    deliveryMethod: "ขนส่งไปรษณีย์",
+    documents: {
+      packageLabel: true,
+      packingList: true,
+      pickList: false,
+    },
+    items: [
+      { name: "ปลาแซลมอน", quantity: 10, unit: "กิโลกรัม", price: 450, total: 4500 },
+      { name: "หอยแมลงภู่", quantity: 5, unit: "กิโลกรัม", price: 120, total: 600 },
+    ],
+    shippingAddress: "789 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500",
+    notes: "สำหรับงานเลี้ยงบริษัท",
+    shippingCost: 100,
+  },
+  {
+    id: "ORD-003",
+    customerName: "นางสาวมาลี สวยงาม",
+    channel: "Tel",
+    orderDate: "2024-01-14",
+    receiveDate: "2024-01-19",
+    totalPrice: 1200,
+    orderStatus: "delivering", // This order cannot be edited
+    paymentStatus: "paid",
+    paymentMethod: "kbank",
+    printed: false,
+    customerType: "ลูกค้าเงินสด",
+    deliveryMethod: "ขนส่งเอกชน",
+    documents: {
+      packageLabel: false,
+      packingList: false,
+      pickList: true,
+    },
+    items: [
+      { name: "กุ้งขาว", quantity: 2, unit: "กิโลกรัม", price: 180, total: 360 },
+      { name: "หอยแมลงภู่", quantity: 3, unit: "กิโลกรัม", price: 120, total: 360 },
+    ],
+    shippingAddress: "456 ถนนพระราม 4 แขวงสุริยวงศ์ เขตบางรัก กรุงเทพฯ 10500",
+    notes: "",
+    shippingCost: 40,
+  },
+  {
+    id: "ORD-004",
+    customerName: "ร้านอาหารทะเลสด",
+    channel: "Line",
+    orderDate: "2024-01-14",
+    receiveDate: "2024-01-18",
+    totalPrice: 15600,
+    orderStatus: "completed", // This order cannot be edited
+    paymentStatus: "paid",
+    paymentMethod: "bbl",
+    printed: true,
+    customerType: "ลูกค้าเครดิต",
+    deliveryMethod: "ขนส่งไปรษณีย์",
+    documents: {
+      packageLabel: true,
+      packingList: true,
+      pickList: true,
+    },
+    items: [
+      { name: "ปลาทูน่าสด", quantity: 20, unit: "กิโลกรัม", price: 250, total: 5000 },
+      { name: "ปลาแซลมอน", quantity: 15, unit: "กิโลกรัม", price: 450, total: 6750 },
+      { name: "กุ้งขาว", quantity: 10, unit: "กิโลกรัม", price: 180, total: 1800 },
+    ],
+    shippingAddress: "321 ถนนเพชรบุรี แขวงมักกะสัน เขตราชเทวี กรุงเทพฯ 10400",
+    notes: "สำหรับร้านอาหาร ต้องการคุณภาพดี",
+    shippingCost: 150,
+  },
+  {
+    id: "ORD-005",
+    customerName: "นายประยุทธ์ รักทะเล",
+    channel: "Facebook",
+    orderDate: "2024-01-13",
+    receiveDate: "2024-01-21",
+    totalPrice: 3200,
+    orderStatus: "pending",
+    paymentStatus: "partially_paid",
+    paymentMethod: "cash",
+    printed: false,
+    customerType: "ลูกค้าเงินสด",
+    deliveryMethod: "ขนส่งเอกชน",
+    documents: {
+      packageLabel: false,
+      packingList: false,
+      pickList: false,
+    },
+    items: [
+      { name: "ปลาแซลมอน", quantity: 5, unit: "กิโลกรัม", price: 450, total: 2250 },
+      { name: "กุ้งขาว", quantity: 3, unit: "กิโลกรัม", price: 180, total: 540 },
+    ],
+    shippingAddress: "654 ถนนลาดพร้าว แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900",
+    notes: "ชำระเงินมัดจำแล้ว 1,500 บาท",
+    shippingCost: 60,
+  },
+  {
+    id: "ORD-006",
+    customerName: "โรงแรมสีฟู้ด พาราไดซ์",
+    channel: "Tel",
+    orderDate: "2024-01-13",
+    receiveDate: "2024-01-20",
+    totalPrice: 25400,
+    orderStatus: "packing", // This order cannot be edited
+    paymentStatus: "unpaid",
+    paymentMethod: "scb",
+    printed: true,
+    customerType: "ลูกค้าเครดิต",
+    deliveryMethod: "ขนส่งไปรษณีย์",
+    documents: {
+      packageLabel: true,
+      packingList: false,
+      pickList: true,
+    },
+    items: [
+      { name: "ปลาทูน่าสด", quantity: 30, unit: "กิโลกรัม", price: 250, total: 7500 },
+      { name: "ปลาแซลมอน", quantity: 25, unit: "กิโลกรัม", price: 450, total: 11250 },
+      { name: "กุ้งขาว", quantity: 20, unit: "กิโลกรัม", price: 180, total: 3600 },
+      { name: "หอยแมลงภู่", quantity: 15, unit: "กิโลกรัม", price: 120, total: 1800 },
+    ],
+    shippingAddress: "888 ถนนสุขุมวิท แขวงพระโขนง เขตวัฒนา กรุงเทพฯ 10110",
+    notes: "สำหรับบุฟเฟ่ต์โรงแรม ต้องการจัดส่งเช้า 6 โมง",
+    shippingCost: 200,
+  },
+]
 
 interface OrderItem {
   productId: string
@@ -122,9 +281,8 @@ interface OrderItem {
   total: number
 }
 
-// Define a type for the order data that will be passed to the preview dialog
 interface OrderPreviewData {
-  id: string // Mock ID for preview
+  id: string
   customerName: string
   customerType: "ลูกค้าเงินสด" | "ลูกค้าเครดิต"
   channel: string
@@ -147,7 +305,6 @@ interface OrderPreviewData {
   shippingCost: number
 }
 
-// Mock data for order status and payment status maps (needed for preview dialog)
 const orderStatusMap = {
   pending: { label: "รอยืนยันคำสั่งซื้อ", color: "bg-gray-50 text-gray-600 border-gray-200" },
   packing: { label: "รอแพ็คของ", color: "bg-yellow-50 text-yellow-600 border-yellow-200" },
@@ -166,7 +323,12 @@ const customerTypeMap = {
   ลูกค้าเครดิต: { color: "bg-purple-50 text-purple-700 border-purple-200" },
 } as const
 
-export function CreateOrderPage() {
+export default function EditOrderPage() {
+  const params = useParams()
+  const orderId = params.id as string
+
+  const initialOrder = orders.find((o) => o.id === orderId)
+
   const [selectedCustomer, setSelectedCustomer] = React.useState<string>("")
   const [customerType, setCustomerType] = React.useState<"cash" | "credit">("cash")
   const [customerName, setCustomerName] = React.useState("")
@@ -176,13 +338,10 @@ export function CreateOrderPage() {
   const [selectedAddress, setSelectedAddress] = React.useState("")
   const [customerSearchValue, setCustomerSearchValue] = React.useState("")
 
-  // Credit information
   const [creditType, setCreditType] = React.useState<"amount" | "bills" | "days">("amount")
   const [creditLimit, setCreditLimit] = React.useState("")
   const [creditBills, setCreditBills] = React.useState("")
   const [creditDays, setCreditDays] = React.useState("")
-
-  // New states for outstanding credit info
   const [outstandingAmount, setOutstandingAmount] = React.useState<number | null>(null)
   const [outstandingBills, setOutstandingBills] = React.useState<number | null>(null)
   const [outstandingDays, setOutstandingDays] = React.useState<number | null>(null)
@@ -191,35 +350,104 @@ export function CreateOrderPage() {
   const [deliveryDate, setDeliveryDate] = React.useState<Date>()
   const [orderItems, setOrderItems] = React.useState<OrderItem[]>([])
   const [productSearch, setProductSearch] = React.useState("")
-
   const [discountValue, setDiscountValue] = React.useState("")
   const [discountType, setDiscountType] = React.useState<"percentage" | "baht">("percentage")
-
   const [shippingCost, setShippingCost] = React.useState("")
   const [shippingMethod, setShippingMethod] = React.useState("")
   const [notes, setNotes] = React.useState("")
 
-  // Confirmation dialogs
-  const [showCreateConfirm, setShowCreateConfirm] = React.useState(false)
+  const [showSaveConfirm, setShowSaveConfirm] = React.useState(false) // Changed from showCreateConfirm
   const [showLineConfirm, setShowLineConfirm] = React.useState(false)
-  const [showOrderCreatedSuccess, setShowOrderCreatedSuccess] = React.useState(false)
+  const [showOrderSavedSuccess, setShowOrderSavedSuccess] = React.useState(false) // Changed from showOrderCreatedSuccess
   const [previewOrderData, setPreviewOrderData] = React.useState<OrderPreviewData | null>(null)
   const [showOrderDetail, setShowOrderDetail] = React.useState(false)
 
-  // Product category selection dialog
   const [showProductCategoryDialog, setShowProductCategoryDialog] = React.useState(false)
   const [selectedProductCategory, setSelectedProductCategory] = React.useState<string | "all">("all")
+
+  // Determine if the order is editable
+  const isEditable = initialOrder?.orderStatus === "pending"
+
+  React.useEffect(() => {
+    if (initialOrder) {
+      // Populate form fields with initial order data
+      const customer = customers.find((c) => c.name === initialOrder.customerName) // Find customer by name for simplicity
+      if (customer) {
+        setSelectedCustomer(customer.id)
+        setCustomerName(customer.name)
+        setCustomerPhone(customer.phone)
+        setCustomerType(customer.type as "cash" | "credit")
+        const defaultAddress = customer.addresses?.find((addr) => addr.address === initialOrder.shippingAddress)
+        if (defaultAddress) {
+          setSelectedAddress(defaultAddress.id)
+          setCustomerAddress(defaultAddress.address)
+        } else {
+          setCustomerAddress(initialOrder.shippingAddress) // Fallback if address not found in mock customer data
+        }
+
+        if (customer.type === "credit" && customer.creditInfo) {
+          setCreditType(customer.creditInfo.creditType)
+          setCreditLimit(customer.creditInfo.creditLimit.toString())
+          setCreditBills(customer.creditInfo.creditBills.toString())
+          setCreditDays(customer.creditInfo.creditDays.toString())
+          setOutstandingAmount(customer.creditInfo.outstandingAmount)
+          setOutstandingBills(customer.creditInfo.outstandingBills)
+          setOutstandingDays(customer.creditInfo.outstandingDays)
+        }
+      } else {
+        // Handle case where customer is not found in mock data (e.g., new customer)
+        setCustomerName(initialOrder.customerName)
+        // You might need to infer phone/address if not explicitly in initialOrder
+        setCustomerAddress(initialOrder.shippingAddress)
+        setCustomerType(initialOrder.customerType === "ลูกค้าเงินสด" ? "cash" : "credit")
+      }
+
+      setContactChannel(initialOrder.channel as "Line" | "Facebook" | "Tel" | "")
+      setIsPreOrder(
+        new Date(initialOrder.receiveDate).toDateString() !== new Date(initialOrder.orderDate).toDateString(),
+      )
+      setDeliveryDate(new Date(initialOrder.receiveDate))
+
+      // Map initial order items to OrderItem interface
+      const mappedItems: OrderItem[] = initialOrder.items.map((item) => {
+        const product = products.find((p) => p.name === item.name)
+        return {
+          productId: product?.id || item.name, // Use product ID if found, else name
+          productName: item.name,
+          unit: item.unit,
+          quantity: item.quantity,
+          pricePerUnit: item.price,
+          discount: item.price * item.quantity - item.total, // Calculate item-level discount
+          total: item.total,
+        }
+      })
+      setOrderItems(mappedItems)
+
+      // Calculate overall discount from total price difference
+      const initialSubtotal = mappedItems.reduce((sum, item) => sum + item.quantity * item.pricePerUnit, 0)
+      const initialDiscountAmount = initialSubtotal - initialOrder.totalPrice + initialOrder.shippingCost // Recalculate discount based on total price and shipping cost
+      if (initialDiscountAmount > 0) {
+        setDiscountValue(initialDiscountAmount.toString())
+        setDiscountType("baht") // Assume baht discount if a flat amount
+      } else {
+        setDiscountValue("")
+        setDiscountType("percentage")
+      }
+
+      setShippingCost(initialOrder.shippingCost.toString())
+      setShippingMethod(initialOrder.deliveryMethod) // Assuming deliveryMethod maps to shippingMethod
+      setNotes(initialOrder.notes)
+    }
+  }, [initialOrder])
 
   const selectedCustomerData = customers.find((c) => c.id === selectedCustomer)
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.total, 0)
-
   const calculatedDiscountValue = Number(discountValue || 0)
   const discountAmount =
     discountType === "percentage"
       ? (subtotal * Math.min(calculatedDiscountValue, 100)) / 100
       : Math.min(calculatedDiscountValue, subtotal)
-
   const totalAmount = subtotal - discountAmount
   const finalTotal = totalAmount + Number(shippingCost || 0)
 
@@ -236,14 +464,11 @@ export function CreateOrderPage() {
       setCustomerName(customer.name)
       setCustomerPhone(customer.phone)
       setCustomerType(customer.type as "cash" | "credit")
-      // Set default address
       const defaultAddress = customer.addresses?.find((addr) => addr.isDefault)
       if (defaultAddress) {
         setSelectedAddress(defaultAddress.id)
         setCustomerAddress(defaultAddress.address)
       }
-
-      // Set credit information if customer is credit type
       if (customer.type === "credit" && customer.creditInfo) {
         setCreditType(customer.creditInfo.creditType)
         setCreditLimit(customer.creditInfo.creditLimit.toString())
@@ -253,7 +478,6 @@ export function CreateOrderPage() {
         setOutstandingBills(customer.creditInfo.outstandingBills)
         setOutstandingDays(customer.creditInfo.outstandingDays)
       } else {
-        // Reset credit info if not a credit customer or no creditInfo
         setCreditType("amount")
         setCreditLimit("")
         setCreditBills("")
@@ -263,11 +487,10 @@ export function CreateOrderPage() {
         setOutstandingDays(null)
       }
     }
-    setCustomerSearchValue("") // Clear search after selection
+    setCustomerSearchValue("")
   }
 
   const addProduct = (product: (typeof products)[0]) => {
-    // Determine initial discount for the product
     let initialDiscount = 0
     if (selectedCustomer && customerProductDiscounts[selectedCustomer]?.[product.id]) {
       initialDiscount = customerProductDiscounts[selectedCustomer][product.id]
@@ -297,13 +520,13 @@ export function CreateOrderPage() {
           unit: product.unit,
           quantity: 1,
           pricePerUnit: product.price,
-          discount: initialDiscount, // Use the determined initial discount
-          total: product.price - initialDiscount, // Calculate total with initial discount
+          discount: initialDiscount,
+          total: product.price - initialDiscount,
         },
       ])
     }
     setProductSearch("")
-    setShowProductCategoryDialog(false) // Close dialog after adding product
+    setShowProductCategoryDialog(false)
   }
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -344,46 +567,43 @@ export function CreateOrderPage() {
     setOrderItems(orderItems.filter((item) => item.productId !== productId))
   }
 
-  const handleCreateOrder = () => {
-    const newOrderData: OrderPreviewData = {
-      id: `ORD-${Math.floor(Math.random() * 10000)
-        .toString()
-        .padStart(4, "0")}`, // Mock ID
+  const handleSaveOrder = () => {
+    // Changed function name
+    const updatedOrderData: OrderPreviewData = {
+      id: orderId, // Use the existing order ID
       customerName: customerName,
       customerType: customerType === "cash" ? "ลูกค้าเงินสด" : "ลูกค้าเครดิต",
       channel: contactChannel,
-      orderDate: format(new Date(), "yyyy-MM-dd"), // Current date
-      receiveDate: deliveryDate ? format(deliveryDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"), // Use deliveryDate or current
+      orderDate: initialOrder?.orderDate || format(new Date(), "yyyy-MM-dd"), // Keep original order date or current
+      receiveDate: deliveryDate ? format(deliveryDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       totalPrice: finalTotal,
-      orderStatus: "pending", // Default status for new order
-      paymentStatus: "unpaid", // Default status for new order
-      paymentMethod: customerType === "cash" ? "cash" : "scb", // Mock payment method
-      printed: false,
-      deliveryMethod: shippingMethod || "ขนส่งเอกชน", // Use selected or default
-      documents: {
-        packageLabel: false,
-        packingList: false,
-        pickList: false,
-      },
+      orderStatus: initialOrder?.orderStatus || "pending", // Keep original status
+      paymentStatus: initialOrder?.paymentStatus || "unpaid", // Keep original payment status
+      paymentMethod: initialOrder?.paymentMethod || (customerType === "cash" ? "cash" : "scb"), // Keep original or default
+      printed: initialOrder?.printed || false,
+      deliveryMethod: shippingMethod || "ขนส่งเอกชน",
+      documents: initialOrder?.documents || { packageLabel: false, packingList: false, pickList: false },
       items: orderItems,
       shippingAddress: customerAddress,
       notes: notes,
       shippingCost: Number(shippingCost || 0),
     }
-    console.log("Creating order:", newOrderData)
-    setPreviewOrderData(newOrderData) // Set data for preview
-    setShowCreateConfirm(false)
-    setShowOrderCreatedSuccess(true) // Show success dialog
-    // Do not clear form here, let user decide after preview/close
+    console.log("Saving order:", updatedOrderData)
+    setPreviewOrderData(updatedOrderData)
+    setShowSaveConfirm(false) // Changed from setShowCreateConfirm
+    setShowOrderSavedSuccess(true) // Changed from setShowOrderCreatedSuccess
   }
 
   const handleSendToLine = () => {
     console.log("ส่งข้อมูลไป LINE")
     setShowLineConfirm(false)
-    alert("ส่งข้อมูลไป LINE เรียบร้อยแล้ว!") // Alert after confirmation
+    alert("ส่งข้อมูลไป LINE เรียบร้อยแล้ว!")
   }
 
   const clearForm = () => {
+    // For edit page, "clear form" might mean reverting to initial state or just clearing current inputs
+    // For simplicity, let's just clear current inputs for now.
+    // A more robust solution would reload initialOrder or store a copy.
     setSelectedCustomer("")
     setCustomerName("")
     setCustomerPhone("")
@@ -395,9 +615,9 @@ export function CreateOrderPage() {
     setCreditLimit("")
     setCreditBills("")
     setCreditDays("")
-    setOutstandingAmount(null) // Clear new states
-    setOutstandingBills(null) // Clear new states
-    setOutstandingDays(null) // Clear new states
+    setOutstandingAmount(null)
+    setOutstandingBills(null)
+    setOutstandingDays(null)
     setOrderItems([])
     setDiscountValue("")
     setDiscountType("percentage")
@@ -429,6 +649,18 @@ export function CreateOrderPage() {
 
   const isExistingCreditCustomerSelected = selectedCustomerData && selectedCustomerData.type === "credit"
 
+  if (!initialOrder) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <h2 className="text-2xl font-bold text-red-600">ไม่พบคำสั่งซื้อ</h2>
+        <p className="text-muted-foreground">ไม่พบคำสั่งซื้อที่มีรหัส {orderId} ในระบบ</p>
+        <Button asChild>
+          <Link href="/orders">กลับสู่หน้ารายการคำสั่งซื้อ</Link>
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -444,8 +676,15 @@ export function CreateOrderPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">สร้างคำสั่งซื้อใหม่</h1>
-          <p className="text-muted-foreground">เพิ่มคำสั่งซื้อใหม่สำหรับลูกค้า</p>
+          <h1 className="text-3xl font-bold">แก้ไขคำสั่งซื้อ {orderId}</h1>
+          <p className="text-muted-foreground">
+            {isEditable ? "แก้ไขข้อมูลคำสั่งซื้อ" : "คำสั่งซื้อนี้ไม่สามารถแก้ไขได้เนื่องจากสถานะปัจจุบัน"}
+          </p>
+          {!isEditable && (
+            <Badge variant="destructive" className="mt-2">
+              สถานะ: {orderStatusMap[initialOrder.orderStatus as keyof typeof orderStatusMap].label} - ไม่สามารถแก้ไขได้
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -471,12 +710,13 @@ export function CreateOrderPage() {
                   setCreditLimit("")
                   setCreditBills("")
                   setCreditDays("")
-                  setOutstandingAmount(null) // Clear new states
-                  setOutstandingBills(null) // Clear new states
-                  setOutstandingDays(null) // Clear new states
+                  setOutstandingAmount(null)
+                  setOutstandingBills(null)
+                  setOutstandingDays(null)
                   setCustomerSearchValue("")
                 }}
                 className="bg-white border shadow-sm rounded-xl hover:shadow-md text-xs"
+                disabled={!isEditable}
               >
                 ล้างการกรอง
               </Button>
@@ -492,6 +732,7 @@ export function CreateOrderPage() {
                     value={customerSearchValue}
                     onChange={(e) => setCustomerSearchValue(e.target.value)}
                     className="pl-8"
+                    disabled={!isEditable}
                   />
                 </div>
               </div>
@@ -523,6 +764,7 @@ export function CreateOrderPage() {
                   )}
                 </div>
               )}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <Label htmlFor="customer-name">
@@ -533,6 +775,7 @@ export function CreateOrderPage() {
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="กรอกชื่อลูกค้า"
+                    disabled={!isEditable}
                   />
                 </div>
                 <div>
@@ -544,16 +787,17 @@ export function CreateOrderPage() {
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="กรอกเบอร์โทรศัพท์"
+                    disabled={!isEditable}
                   />
                 </div>
               </div>
-              {/* Address Selection */}
+
               {selectedCustomerData && selectedCustomerData.addresses && selectedCustomerData.addresses.length > 1 && (
                 <div>
                   <Label>
                     เลือกที่อยู่จัดส่ง <span className="text-red-500">*</span>
                   </Label>
-                  <Select value={selectedAddress} onValueChange={handleAddressSelect}>
+                  <Select value={selectedAddress} onValueChange={handleAddressSelect} disabled={!isEditable}>
                     <SelectTrigger>
                       <SelectValue placeholder="เลือกที่อยู่จัดส่ง" />
                     </SelectTrigger>
@@ -568,6 +812,7 @@ export function CreateOrderPage() {
                   </Select>
                 </div>
               )}
+
               <div>
                 <Label htmlFor="customer-address">
                   ที่อยู่ <span className="text-red-500">*</span>
@@ -578,14 +823,20 @@ export function CreateOrderPage() {
                   onChange={(e) => setCustomerAddress(e.target.value)}
                   placeholder="กรอกที่อยู่ลูกค้า"
                   rows={3}
+                  disabled={!isEditable}
                 />
               </div>
-              {/* Contact Channel */}
+
               <div>
                 <Label>
                   ช่องทางการสั่งซื้อ <span className="text-red-500">*</span>
                 </Label>
-                <RadioGroup value={contactChannel} onValueChange={setContactChannel} className="flex gap-6 mt-2">
+                <RadioGroup
+                  value={contactChannel}
+                  onValueChange={setContactChannel}
+                  className="flex gap-6 mt-2"
+                  disabled={!isEditable}
+                >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="Line" id="line" />
                     <Label htmlFor="line">Line</Label>
@@ -600,14 +851,14 @@ export function CreateOrderPage() {
                   </div>
                 </RadioGroup>
               </div>
-              {/* Customer Type */}
+
               <div>
                 <Label>ประเภทลูกค้า</Label>
                 <RadioGroup
                   value={customerType}
                   onValueChange={(value) => setCustomerType(value as "cash" | "credit")}
                   className="flex gap-6 mt-2"
-                  disabled={!!selectedCustomerData} // Disable if any customer is selected
+                  disabled={!!selectedCustomerData || !isEditable}
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="cash" id="cash" />
@@ -623,7 +874,7 @@ export function CreateOrderPage() {
                   </div>
                 </RadioGroup>
               </div>
-              {/* Credit Information */}
+
               {customerType === "credit" && (
                 <Card className="border-0 shadow-sm rounded-2xl bg-blue-50">
                   <CardHeader>
@@ -636,7 +887,7 @@ export function CreateOrderPage() {
                         value={creditType}
                         onValueChange={setCreditType}
                         className="flex gap-6 mt-2"
-                        disabled={isExistingCreditCustomerSelected} // Disable radio group
+                        disabled={isExistingCreditCustomerSelected || !isEditable}
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="amount" id="amount" />
@@ -661,7 +912,7 @@ export function CreateOrderPage() {
                             value={creditLimit}
                             onChange={(e) => setCreditLimit(e.target.value)}
                             placeholder="กรอกวงเงิน"
-                            disabled={isExistingCreditCustomerSelected} // Disable input
+                            disabled={isExistingCreditCustomerSelected || !isEditable}
                           />
                         </div>
                       )}
@@ -673,7 +924,7 @@ export function CreateOrderPage() {
                             value={creditBills}
                             onChange={(e) => setCreditBills(e.target.value)}
                             placeholder="กรอกจำนวนบิล"
-                            disabled={isExistingCreditCustomerSelected} // Disable input
+                            disabled={isExistingCreditCustomerSelected || !isEditable}
                           />
                         </div>
                       )}
@@ -685,12 +936,11 @@ export function CreateOrderPage() {
                             value={creditDays}
                             onChange={(e) => setCreditDays(e.target.value)}
                             placeholder="กรอกจำนวนวัน"
-                            disabled={isExistingCreditCustomerSelected} // Disable input
+                            disabled={isExistingCreditCustomerSelected || !isEditable}
                           />
                         </div>
                       )}
                     </div>
-                    {/* Credit warning */}
                     {creditType === "amount" &&
                       finalTotal > Number(creditLimit || 0) &&
                       Number(creditLimit || 0) > 0 && (
@@ -698,8 +948,6 @@ export function CreateOrderPage() {
                           <p className="text-sm text-red-600">⚠️ ยอดคำสั่งซื้อเกินวงเงินเครดิต</p>
                         </div>
                       )}
-
-                    {/* Display outstanding credit information */}
                     {isExistingCreditCustomerSelected && (
                       <div className="space-y-2 mt-4 p-3 bg-blue-100 rounded-lg border border-blue-200">
                         <h4 className="font-semibold text-sm text-blue-800">ข้อมูลเครดิตค้างชำระ:</h4>
@@ -723,7 +971,7 @@ export function CreateOrderPage() {
                   </CardContent>
                 </Card>
               )}
-              {/* แสดงข้อความเมื่อมีที่อยู่เดียว */}
+
               {selectedCustomerData &&
                 selectedCustomerData.addresses &&
                 selectedCustomerData.addresses.length === 1 && (
@@ -748,6 +996,7 @@ export function CreateOrderPage() {
                   setSelectedProductCategory("all")
                 }}
                 className="bg-white border shadow-sm rounded-xl hover:shadow-md text-xs"
+                disabled={!isEditable}
               >
                 ล้างการกรอง
               </Button>
@@ -762,11 +1011,16 @@ export function CreateOrderPage() {
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
                     className="pl-8"
+                    disabled={!isEditable}
                   />
                 </div>
                 <Dialog open={showProductCategoryDialog} onOpenChange={setShowProductCategoryDialog}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="rounded-xl border shadow-sm hover:shadow-md bg-transparent">
+                    <Button
+                      variant="outline"
+                      className="rounded-xl border shadow-sm hover:shadow-md bg-transparent"
+                      disabled={!isEditable}
+                    >
                       หมวดหมู่
                     </Button>
                   </DialogTrigger>
@@ -857,6 +1111,7 @@ export function CreateOrderPage() {
                               value={item.quantity}
                               onChange={(e) => updateQuantity(item.productId, Number.parseInt(e.target.value) || 0)}
                               className="w-20"
+                              disabled={!isEditable}
                             />
                           </TableCell>
                           <TableCell>
@@ -867,6 +1122,7 @@ export function CreateOrderPage() {
                               value={item.pricePerUnit}
                               onChange={(e) => updatePrice(item.productId, Number.parseFloat(e.target.value) || 0)}
                               className="w-24"
+                              disabled={!isEditable}
                             />
                           </TableCell>
                           <TableCell>
@@ -876,11 +1132,17 @@ export function CreateOrderPage() {
                               value={item.discount}
                               onChange={(e) => updateItemDiscount(item.productId, Number(e.target.value) || 0)}
                               className="w-20"
+                              disabled={!isEditable}
                             />
                           </TableCell>
                           <TableCell>฿{item.total.toLocaleString()}</TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="sm" onClick={() => removeItem(item.productId)}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(item.productId)}
+                              disabled={!isEditable}
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </TableCell>
@@ -910,13 +1172,14 @@ export function CreateOrderPage() {
                   setNotes("")
                 }}
                 className="bg-white border shadow-sm rounded-xl hover:shadow-md text-xs"
+                disabled={!isEditable}
               >
                 ล้างการกรอง
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-2">
-                <Switch id="pre-order" checked={isPreOrder} onCheckedChange={setIsPreOrder} />
+                <Switch id="pre-order" checked={isPreOrder} onCheckedChange={setIsPreOrder} disabled={!isEditable} />
                 <Label htmlFor="pre-order">สั่งล่วงหน้า (Pre-order)</Label>
               </div>
               {isPreOrder && (
@@ -930,6 +1193,7 @@ export function CreateOrderPage() {
                           "w-full justify-start text-left font-normal",
                           !deliveryDate && "text-muted-foreground",
                         )}
+                        disabled={!isEditable}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {deliveryDate ? format(deliveryDate, "dd/MM/yyyy", { locale: th }) : "เลือกวันที่จัดส่ง"}
@@ -940,14 +1204,14 @@ export function CreateOrderPage() {
                         mode="single"
                         selected={deliveryDate}
                         onSelect={setDeliveryDate}
-                        disabled={(date) => date < new Date()}
+                        disabled={(date) => date < new Date() || !isEditable}
                         initialFocus
                       />
                     </PopoverContent>
                   </Popover>
                 </div>
               )}
-              {/* Discount input with type selection */}
+
               <div className="flex items-end gap-2">
                 <div className="flex-1">
                   <Label htmlFor="discount">ส่วนลดทั้งบิล</Label>
@@ -963,6 +1227,7 @@ export function CreateOrderPage() {
                       }
                     }}
                     placeholder="กรอกส่วนลด"
+                    disabled={!isEditable}
                   />
                 </div>
                 <div className="flex gap-1">
@@ -970,6 +1235,7 @@ export function CreateOrderPage() {
                     variant={discountType === "percentage" ? "default" : "outline"}
                     onClick={() => setDiscountType("percentage")}
                     className="w-[50px]"
+                    disabled={!isEditable}
                   >
                     %
                   </Button>
@@ -977,13 +1243,13 @@ export function CreateOrderPage() {
                     variant={discountType === "baht" ? "default" : "outline"}
                     onClick={() => setDiscountType("baht")}
                     className="w-[50px]"
+                    disabled={!isEditable}
                   >
                     ฿
                   </Button>
                 </div>
               </div>
 
-              {/* Shipping Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>ค่าส่งสินค้า (บาท)</Label>
@@ -998,11 +1264,12 @@ export function CreateOrderPage() {
                       }
                     }}
                     placeholder="กรอกค่าส่ง"
+                    disabled={!isEditable}
                   />
                 </div>
                 <div>
                   <Label>ขนส่ง</Label>
-                  <Select value={shippingMethod} onValueChange={setShippingMethod}>
+                  <Select value={shippingMethod} onValueChange={setShippingMethod} disabled={!isEditable}>
                     <SelectTrigger>
                       <SelectValue placeholder="เลือกขนส่ง" />
                     </SelectTrigger>
@@ -1016,6 +1283,7 @@ export function CreateOrderPage() {
                   </Select>
                 </div>
               </div>
+
               <div>
                 <Label htmlFor="notes">หมายเหตุ</Label>
                 <Textarea
@@ -1024,6 +1292,7 @@ export function CreateOrderPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="หมายเหตุเพิ่มเติม..."
                   rows={3}
+                  disabled={!isEditable}
                 />
               </div>
             </CardContent>
@@ -1037,7 +1306,6 @@ export function CreateOrderPage() {
               <CardTitle>สรุปคำสั่งซื้อ</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Customer Details */}
               {customerName && (
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm">ข้อมูลลูกค้า:</h4>
@@ -1065,7 +1333,7 @@ export function CreateOrderPage() {
                   <Separator />
                 </div>
               )}
-              {/* Product Details */}
+
               {orderItems.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm">รายการสินค้า:</h4>
@@ -1083,6 +1351,7 @@ export function CreateOrderPage() {
                   <Separator />
                 </div>
               )}
+
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>ยอดรวมสินค้า:</span>
@@ -1110,12 +1379,14 @@ export function CreateOrderPage() {
                   <span>฿{finalTotal.toLocaleString()}</span>
                 </div>
               </div>
+
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>จำนวนรายการ: {orderItems.length} รายการ</p>
                 {shippingMethod && <p>ขนส่ง: {shippingMethod}</p>}
                 {isPreOrder && deliveryDate && <p>วันที่จัดส่ง: {format(deliveryDate, "dd/MM/yyyy", { locale: th })}</p>}
                 {notes && <p>หมายเหตุ: {notes}</p>}
               </div>
+
               {/* Action Buttons */}
               <div className="space-y-2">
                 <div className="flex justify-between">
@@ -1123,6 +1394,7 @@ export function CreateOrderPage() {
                     variant="outline"
                     onClick={clearForm}
                     className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent"
+                    disabled={!isEditable}
                   >
                     เคลียร์ข้อมูล
                   </Button>
@@ -1131,7 +1403,7 @@ export function CreateOrderPage() {
                       <Button
                         variant="outline"
                         className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent"
-                        disabled={orderItems.length === 0 || !customerName}
+                        disabled={orderItems.length === 0 || !customerName || !isEditable}
                       >
                         <Send className="w-4 h-4 mr-2" /> ส่งไป LINE
                       </Button>
@@ -1148,24 +1420,24 @@ export function CreateOrderPage() {
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-                <AlertDialog open={showCreateConfirm} onOpenChange={setShowCreateConfirm}>
+                <AlertDialog open={showSaveConfirm} onOpenChange={setShowSaveConfirm}>
                   <AlertDialogTrigger asChild>
                     <Button
                       className="w-full rounded-2xl bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white shadow-lg"
                       size="lg"
-                      disabled={orderItems.length === 0 || !customerName || !contactChannel}
+                      disabled={orderItems.length === 0 || !customerName || !contactChannel || !isEditable}
                     >
-                      สร้างคำสั่งซื้อ
+                      บันทึกการแก้ไข
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
                     <AlertDialogHeader>
-                      <AlertDialogTitle>ยืนยันการสร้างคำสั่งซื้อ</AlertDialogTitle>
-                      <AlertDialogDescription>ต้องการยืนยันการสร้างคำสั่งซื้อใช่หรือไม่?</AlertDialogDescription>
+                      <AlertDialogTitle>ยืนยันการบันทึกการแก้ไข</AlertDialogTitle>
+                      <AlertDialogDescription>ต้องการยืนยันการบันทึกการแก้ไขคำสั่งซื้อใช่หรือไม่?</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleCreateOrder}>ยืนยันการสร้างคำสั่งซื้อ</AlertDialogAction>
+                      <AlertDialogAction onClick={handleSaveOrder}>ยืนยันการบันทึก</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -1175,17 +1447,17 @@ export function CreateOrderPage() {
         </div>
       </div>
 
-      {/* Order Created Success Dialog */}
-      <Dialog open={showOrderCreatedSuccess} onOpenChange={setShowOrderCreatedSuccess}>
+      {/* Order Saved Success Dialog */}
+      <Dialog open={showOrderSavedSuccess} onOpenChange={setShowOrderSavedSuccess}>
         <DialogContent className="max-w-md border-0 rounded-3xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-center">คำสั่งซื้อถูกสร้างเรียบร้อยแล้ว!</DialogTitle>
+            <DialogTitle className="text-center">คำสั่งซื้อถูกบันทึกเรียบร้อยแล้ว!</DialogTitle>
           </DialogHeader>
           <div className="flex justify-center gap-4 py-4">
             <Button
               variant="outline"
               onClick={() => {
-                setShowOrderCreatedSuccess(false)
+                setShowOrderSavedSuccess(false)
                 setShowOrderDetail(true)
               }}
               className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent"
@@ -1194,8 +1466,9 @@ export function CreateOrderPage() {
             </Button>
             <Button
               onClick={() => {
-                setShowOrderCreatedSuccess(false)
-                clearForm() // Clear form after closing success dialog
+                setShowOrderSavedSuccess(false)
+                // For edit page, after saving, you might want to redirect back to the list or keep on this page
+                // For now, let's just close the dialog.
               }}
               className="rounded-2xl bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white shadow-lg"
             >

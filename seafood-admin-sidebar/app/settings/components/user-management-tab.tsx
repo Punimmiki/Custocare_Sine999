@@ -242,7 +242,7 @@ export function UserManagementTab() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="username">ชื่อผู้ใช้ *</Label>
+                <Label htmlFor="username">ชื่อผู้ใช้<span className="text-red-500">*</span></Label>
                 <Input
                   id="username"
                   value={formData.username}
@@ -252,7 +252,7 @@ export function UserManagementTab() {
                 />
               </div>
               <div>
-                <Label htmlFor="fullName">ชื่อจริง *</Label>
+                <Label htmlFor="fullName">ชื่อจริง <span className="text-red-500">*</span></Label>
                 <Input
                   id="fullName"
                   value={formData.fullName}
@@ -263,7 +263,7 @@ export function UserManagementTab() {
               </div>
             </div>
             <div>
-              <Label htmlFor="email">อีเมล *</Label>
+              <Label htmlFor="email">อีเมล <span className="text-red-500">*</span></Label>
               <Input
                 id="email"
                 type="email"
@@ -274,7 +274,7 @@ export function UserManagementTab() {
               />
             </div>
             <div>
-              <Label htmlFor="password">รหัสผ่าน {editingUser ? "(เว้นว่างหากไม่ต้องการเปลี่ยน)" : "*"}</Label>
+              <Label htmlFor="password">รหัสผ่าน <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -295,55 +295,8 @@ export function UserManagementTab() {
                 </Button>
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="role">บทบาท *</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, role: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกบทบาท" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Admin">ผู้ดูแล</SelectItem>
-                    <SelectItem value="Cashier">แคชเชียร์</SelectItem>
-                    <SelectItem value="Delivery">คนส่งของ</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center space-x-2 pt-6">
-                <Switch
-                  id="isActive"
-                  checked={formData.isActive}
-                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isActive: checked }))}
-                />
-                <Label htmlFor="isActive">เปิดใช้งานบัญชี</Label>
-              </div>
-            </div>
-            <div>
-              <Label className="text-base font-medium">สิทธิ์การเข้าถึง</Label>
-              <div className="mt-2 space-y-3 max-h-48 overflow-y-auto border rounded-lg p-4">
-                {permissions.map((permission) => (
-                  <div key={permission.id} className="flex items-start space-x-3">
-                    <Checkbox
-                      id={permission.id}
-                      checked={formData.permissions.includes(permission.id)}
-                      onCheckedChange={(checked) => handlePermissionChange(permission.id, checked as boolean)}
-                    />
-                    <div className="grid gap-1.5 leading-none">
-                      <Label
-                        htmlFor={permission.id}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        {permission.label}
-                      </Label>
-                      <p className="text-xs text-muted-foreground">{permission.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            
+            
             <div className="flex gap-4 pt-4">
               <Button type="submit" className="flex-1">
                 {editingUser ? "บันทึกการแก้ไข" : "เพิ่มผู้ใช้"}
