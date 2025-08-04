@@ -1,6 +1,6 @@
 "use client"
-
 import type React from "react"
+import { usePathname } from "next/navigation"
 import { AppSidebar } from "./app-sidebar"
 import { AdminHeader } from "./admin-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
@@ -11,6 +11,9 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children, hideHeader = false }: AdminLayoutProps) {
+  const pathname = usePathname()
+  const showSidebar = pathname !== "/pos"
+
   return (
     <SidebarProvider
       style={
@@ -21,7 +24,7 @@ export function AdminLayout({ children, hideHeader = false }: AdminLayoutProps) 
         } as React.CSSProperties
       }
     >
-      <AppSidebar />
+      {showSidebar && <AppSidebar />}
       <SidebarInset className="flex flex-col min-h-screen">
         {!hideHeader && <AdminHeader />}
         <div className={`flex flex-1 flex-col gap-4 ${hideHeader ? "p-0" : "p-6 pt-4"} bg-slate-50 min-h-0`}>

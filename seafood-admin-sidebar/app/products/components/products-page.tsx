@@ -17,7 +17,6 @@ import {
   AlertTriangle,
   XCircle,
 } from "lucide-react"
-
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -46,7 +45,7 @@ interface Product {
   id: string
   name: string
   image: string
-  price: number
+  price: number // Base price
   unit: string
   category: string
   status: "active" | "low_stock" | "out_of_stock"
@@ -55,6 +54,7 @@ interface Product {
   stock?: number
   createdAt?: string
   updatedAt?: string
+  variants?: { name: string; price: number }[] // New: Array of product variants
 }
 
 // Sample product data with additional details
@@ -63,7 +63,7 @@ const initialProducts: Product[] = [
     id: "1",
     name: "แซลมอนสด",
     image: "/placeholder.svg?height=60&width=60&text=แซลมอน",
-    price: 450,
+    price: 450, // Base price for "ทั้งตัว"
     unit: "กิโลกรัม",
     category: "ปลา",
     status: "active",
@@ -72,6 +72,12 @@ const initialProducts: Product[] = [
     stock: 25,
     createdAt: "2024-01-15",
     updatedAt: "2024-01-20",
+    variants: [
+      { name: "หัว", price: 150 },
+      { name: "ท้อง", price: 550 },
+      { name: "หาง", price: 300 },
+      { name: "ทั้งตัว", price: 450 },
+    ],
   },
   {
     id: "2",
@@ -133,7 +139,7 @@ const initialProducts: Product[] = [
     id: "6",
     name: "ปลาหมึกกล้วย",
     image: "/placeholder.svg?height=60&width=60&text=ปลาหมึกกล้วย",
-    price: 220,
+    price: 220, // Base price for "กลาง"
     unit: "กิโลกรัม",
     category: "ปลาหมึก",
     status: "active",
@@ -142,6 +148,11 @@ const initialProducts: Product[] = [
     stock: 15,
     createdAt: "2024-01-20",
     updatedAt: "2024-01-25",
+    variants: [
+      { name: "เล็ก", price: 180 },
+      { name: "กลาง", price: 220 },
+      { name: "ใหญ่", price: 280 },
+    ],
   },
   {
     id: "7",
@@ -208,7 +219,7 @@ const initialProducts: Product[] = [
     category: "กุ้ง",
     status: "low_stock",
     isActive: true,
-    description: "กุ้งแม่น้ำสดใหม่ เนื้อหวานกรอบ เหมาะสำหรับทำต้มยำ���ละผัด",
+    description: "กุ้งแม่น้ำสดใหม่ เนื้อหวานกรอบ เหมาะสำหรับทำต้มยำและผัด",
     stock: 7,
     createdAt: "2024-01-25",
     updatedAt: "2024-01-30",
@@ -362,7 +373,6 @@ const ProductDetailDialog = ({
   onOpenChange: (open: boolean) => void
 }) => {
   if (!product) return null
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
@@ -437,6 +447,25 @@ const ProductDetailDialog = ({
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">รายละเอียดสินค้า</h3>
                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                   <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                </div>
+              </div>
+            )}
+            {/* Variants Section (New) */}
+            {product.variants && product.variants.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                  <Package className="h-5 w-5 mr-2 text-gray-600" />
+                  ตัวเลือกสินค้า
+                </h3>
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <ul className="space-y-2">
+                    {product.variants.map((variant) => (
+                      <li key={variant.name} className="flex justify-between items-center text-gray-700">
+                        <span>{variant.name}</span>
+                        <span className="font-medium">฿{variant.price.toLocaleString()}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             )}
@@ -518,7 +547,21 @@ const ProductsPage = () => {
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = React.useState(false)
   const [activeCardFilter, setActiveCardFilter] = React.useState<string | null>(null)
+  // New state for selected variants
+  const [selectedVariants, setSelectedVariants] = React.useState<{ [productId: string]: string }>({})
+
   const { toast } = useToast()
+
+  // Initialize selectedVariants for products that have them
+  React.useEffect(() => {
+    const initialSelections: { [productId: string]: string } = {}
+    products.forEach((product) => {
+      if (product.variants && product.variants.length > 0) {
+        initialSelections[product.id] = product.variants[0].name // Select the first variant by default
+      }
+    })
+    setSelectedVariants(initialSelections)
+  }, [products])
 
   const filteredProducts = React.useMemo(() => {
     return products.filter((product) => {
@@ -547,6 +590,14 @@ const ProductsPage = () => {
   React.useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm, categoryFilter, activeFilter, statusFilter, activeCardFilter])
+
+  // Handle variant selection change
+  const handleVariantChange = (productId: string, variantName: string) => {
+    setSelectedVariants((prev) => ({
+      ...prev,
+      [productId]: variantName,
+    }))
+  }
 
   const handleToggleActive = async (productId: string) => {
     setUpdatingProductId(productId)
@@ -593,7 +644,6 @@ const ProductsPage = () => {
     setSearchTerm("")
     setCategoryFilter("ทั้งหมด")
     setActiveFilter("ทั้งหมด")
-
     // Apply the selected card filter
     if (activeCardFilter === filterType) {
       // If clicking the same card, reset all filters
@@ -690,7 +740,6 @@ const ProductsPage = () => {
           </Link>
         </Button>
       </div>
-
       {/* Stats Cards - Now clickable */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card
@@ -750,7 +799,6 @@ const ProductsPage = () => {
           </CardContent>
         </Card>
       </div>
-
       {/* Active Filter Indicator */}
       {activeCardFilter && (
         <div className="flex items-center gap-2 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl shadow-sm border-0">
@@ -774,7 +822,6 @@ const ProductsPage = () => {
           </Button>
         </div>
       )}
-
       {/* Filters */}
       <Card className="border-0 shadow-sm rounded-2xl bg-white">
         <CardHeader className="flex flex-row items-center justify-between">
@@ -850,7 +897,6 @@ const ProductsPage = () => {
           </div>
         </CardContent>
       </Card>
-
       {/* Products Table */}
       <Card className="border-0 shadow-sm rounded-2xl bg-white">
         <CardHeader>
@@ -887,7 +933,7 @@ const ProductsPage = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[250px] text-left">สินค้า</TableHead>
-                  <TableHead className="w-[90px] text-center">ราคาขาย</TableHead>
+                  <TableHead className="w-[150px] text-center">ราคาขาย</TableHead>
                   <TableHead className="w-[70px] text-center">หน่วย</TableHead>
                   <TableHead className="w-[90px] text-center">หมวดหมู่</TableHead>
                   <TableHead className="w-[110px] text-center">สถานะสินค้า</TableHead>
@@ -905,7 +951,6 @@ const ProductsPage = () => {
                   currentProducts.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell className="flex items-center gap-3 py-3">
-                        {/* Combined cell */}
                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
                           <Image
                             src={product.image || "/placeholder.svg"}
@@ -919,10 +964,39 @@ const ProductsPage = () => {
                             }}
                           />
                         </div>
-                        <span className="font-medium text-sm">{product.name}</span>
+                        <div className="flex items-center gap-2">
+                          {" "}
+                          {/* Changed to flex-row and added gap */}
+                          <span className="font-medium text-sm">{product.name}</span>
+                          {product.variants && product.variants.length > 0 && (
+                            <Select
+                              value={selectedVariants[product.id] || product.variants[0].name}
+                              onValueChange={(value) => handleVariantChange(product.id, value)}
+                            >
+                              <SelectTrigger className="w-[120px] h-8 text-xs">
+                                {" "}
+                                {/* Removed mt-1 */}
+                                <SelectValue placeholder="เลือกตัวเลือก" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {product.variants.map((variant) => (
+                                  <SelectItem key={variant.name} value={variant.name}>
+                                    {variant.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <span className="font-medium text-xs">฿{product.price.toLocaleString()}</span>
+                        <span className="font-medium text-xs">
+                          ฿
+                          {(product.variants && selectedVariants[product.id]
+                            ? product.variants.find((v) => v.name === selectedVariants[product.id])?.price
+                            : product.price
+                          )?.toLocaleString()}
+                        </span>
                       </TableCell>
                       <TableCell className="text-xs text-center">{product.unit}</TableCell>
                       <TableCell className="text-center">
@@ -933,7 +1007,13 @@ const ProductsPage = () => {
                       <TableCell className="text-center">
                         <Badge
                           variant="outline"
-                          className={`text-xs whitespace-nowrap ${product.status === "active" ? "border-green-200 bg-green-50 text-green-700" : product.status === "low_stock" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-red-200 bg-red-50 text-red-700"}`}
+                          className={`text-xs whitespace-nowrap ${
+                            product.status === "active"
+                              ? "border-green-200 bg-green-50 text-green-700"
+                              : product.status === "low_stock"
+                                ? "border-amber-200 bg-amber-50 text-amber-700"
+                                : "border-red-200 bg-red-50 text-red-700"
+                          }`}
                         >
                           {statusMap[product.status].label}
                         </Badge>
@@ -1007,7 +1087,6 @@ const ProductsPage = () => {
               </TableBody>
             </Table>
           </div>
-
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
@@ -1066,7 +1145,6 @@ const ProductsPage = () => {
           )}
         </CardContent>
       </Card>
-
       {/* Product Detail Dialog */}
       <ProductDetailDialog product={selectedProduct} open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen} />
     </div>

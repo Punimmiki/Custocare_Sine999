@@ -1,7 +1,6 @@
 "use client"
 import React from "react"
 import { DialogTrigger } from "@/components/ui/dialog"
-
 import { CalendarIcon, Search, Plus, ChevronLeft, ChevronRight, Eye, CreditCard, Banknote, Edit } from "lucide-react"
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
@@ -20,7 +19,40 @@ import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
-const orders = [
+interface OrderItem {
+  name: string
+  quantity: number
+  unit: string
+  price: number
+  discount?: number // Discount is now always a fixed amount in Baht
+  total: number // This will be the final total for the item after discount
+}
+
+interface Order {
+  id: string
+  customerName: string
+  channel: string
+  orderDate: string
+  receiveDate: string
+  totalPrice: number
+  orderStatus: "pending" | "packing" | "delivering" | "completed"
+  paymentStatus: "unpaid" | "partially_paid" | "paid"
+  paymentMethod: string
+  printed: boolean
+  customerType: "ลูกค้าเงินสด" | "ลูกค้าเครดิต"
+  deliveryMethod: string
+  documents: {
+    packageLabel: boolean
+    packingList: boolean
+    pickList: boolean
+  }
+  items: OrderItem[]
+  shippingAddress: string
+  notes: string
+  shippingCost: number
+}
+
+const orders: Order[] = [
   {
     id: "ORD-001",
     customerName: "นายสมชาย ใจดี",
@@ -40,12 +72,20 @@ const orders = [
       pickList: false,
     },
     items: [
-      { name: "ปลาทูน่าสด", quantity: 2, unit: "กิโลกรัม", price: 250, total: 500 },
-      { name: "กุ้งขาว", quantity: 1, unit: "กิโลกรัม", price: 180, total: 180 },
+      {
+        name: "ปลาทูน่าสด",
+        quantity: 2,
+        unit: "กิโลกรัม",
+        price: 250,
+        discount: 50, // 10% of 500 (2*250) is 50 Baht
+        total: 450,
+      },
+      { name: "กุ้งขาว", quantity: 1, unit: "กิโลกรัม", price: 180, discount: 20, total: 160 },
+      { name: "ปลาหมึก", quantity: 3, unit: "กิโลกรัม", price: 600, total: 1800 },
     ],
     shippingAddress: "123 ถนนสุขุมวิท แขวงคลองตัน เขตคลองตัน กรุงเทพฯ 10110",
     notes: "ต้องการสินค้าสดใหม่",
-    shippingCost: 50, // Added shipping cost
+    shippingCost: 40,
   },
   {
     id: "ORD-002",
@@ -55,7 +95,7 @@ const orders = [
     receiveDate: "2024-01-22",
     totalPrice: 8900,
     orderStatus: "packing",
-    paymentStatus: "unpaid", // Changed to unpaid for testing checkbox functionality
+    paymentStatus: "unpaid",
     paymentMethod: "scb",
     printed: true,
     customerType: "ลูกค้าเครดิต",
@@ -71,7 +111,7 @@ const orders = [
     ],
     shippingAddress: "789 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500",
     notes: "สำหรับงานเลี้ยงบริษัท",
-    shippingCost: 100, // Added shipping cost
+    shippingCost: 100,
   },
   {
     id: "ORD-003",
@@ -97,7 +137,7 @@ const orders = [
     ],
     shippingAddress: "456 ถนนพระราม 4 แขวงสุริยวงศ์ เขตบางรัก กรุงเทพฯ 10500",
     notes: "",
-    shippingCost: 40, // Added shipping cost
+    shippingCost: 40,
   },
   {
     id: "ORD-004",
@@ -124,7 +164,7 @@ const orders = [
     ],
     shippingAddress: "321 ถนนเพชรบุรี แขวงมักกะสัน เขตราชเทวี กรุงเทพฯ 10400",
     notes: "สำหรับร้านอาหาร ต้องการคุณภาพดี",
-    shippingCost: 150, // Added shipping cost
+    shippingCost: 150,
   },
   {
     id: "ORD-005",
@@ -145,12 +185,19 @@ const orders = [
       pickList: false,
     },
     items: [
-      { name: "ปลาแซลมอน", quantity: 5, unit: "กิโลกรัม", price: 450, total: 2250 },
-      { name: "กุ้งขาว", quantity: 3, unit: "กิโลกรัม", price: 180, total: 540 },
+      {
+        name: "ปลาแซลมอน",
+        quantity: 5,
+        unit: "กิโลกรัม",
+        price: 450,
+        discount: 112.5, // 5% of 2250 (5*450) is 112.5 Baht
+        total: 2137.5,
+      },
+      { name: "กุ้งขาว", quantity: 3, unit: "กิโลกรัม", price: 180, discount: 50, total: 490 },
     ],
     shippingAddress: "654 ถนนลาดพร้าว แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900",
     notes: "ชำระเงินมัดจำแล้ว 1,500 บาท",
-    shippingCost: 60, // Added shipping cost
+    shippingCost: 572.5,
   },
   {
     id: "ORD-006",
@@ -160,7 +207,7 @@ const orders = [
     receiveDate: "2024-01-20",
     totalPrice: 25400,
     orderStatus: "packing",
-    paymentStatus: "unpaid", // Changed to unpaid for testing checkbox functionality
+    paymentStatus: "unpaid",
     paymentMethod: "scb",
     printed: true,
     customerType: "ลูกค้าเครดิต",
@@ -178,7 +225,7 @@ const orders = [
     ],
     shippingAddress: "888 ถนนสุขุมวิท แขวงพระโขนง เขตวัฒนา กรุงเทพฯ 10110",
     notes: "สำหรับบุฟเฟ่ต์โรงแรม ต้องการจัดส่งเช้า 6 โมง",
-    shippingCost: 200, // Added shipping cost
+    shippingCost: 200,
   },
 ]
 
@@ -220,11 +267,11 @@ export default function OrdersPage() {
   const [receiveDateFrom, setReceiveDateFrom] = React.useState<Date>()
   const [showSalesDialog, setShowSalesDialog] = React.useState(false)
   const [showOrderDetail, setShowOrderDetail] = React.useState(false)
-  const [selectedOrder, setSelectedOrder] = React.useState<any>(null)
+  const [selectedOrder, setSelectedOrder] = React.useState<Order | null>(null)
   const [summaryDateFrom, setSummaryDateFrom] = React.useState<Date>()
   const [summaryDateTo, setSummaryDateTo] = React.useState<Date>()
   const [activeCardFilter, setActiveCardFilter] = React.useState<string | null>(null)
-  const [selectedOrderIds, setSelectedOrderIds] = React.useState<Set<string>>(new Set()) // New state for selected order IDs
+  const [selectedOrderIds, setSelectedOrderIds] = React.useState<Set<string>>(new Set())
 
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -281,10 +328,8 @@ export default function OrdersPage() {
     let printStatusMatch = true
     if (printStatusFilter === "printed") printStatusMatch = order.printed === true
     else if (printStatusFilter === "not_printed") printStatusMatch = order.printed === false
-
     const orderDate = new Date(order.orderDate)
     const matchesOrderDate = !dateFrom || orderDate >= dateFrom
-
     const receiveDate = new Date(order.receiveDate)
     const matchesReceiveDate = !receiveDateFrom || receiveDate >= receiveDateFrom
 
@@ -367,7 +412,7 @@ export default function OrdersPage() {
     console.log(`Order ${orderId}: ${documentType} = ${checked}`)
   }
 
-  const handleViewOrder = (order: any) => {
+  const handleViewOrder = (order: Order) => {
     setSelectedOrder(order)
     setShowOrderDetail(true)
   }
@@ -376,7 +421,7 @@ export default function OrdersPage() {
     const creditOrdersToSendBill = Array.from(selectedOrderIds)
       .map((id) => orders.find((o) => o.id === id))
       .filter(Boolean) // Remove undefined if any
-      .filter((order) => order.customerType === "ลูกค้าเครดิต" && order.paymentStatus !== "paid") as typeof orders
+      .filter((order) => order!.customerType === "ลูกค้าเครดิต" && order!.paymentStatus !== "paid") as Order[]
 
     if (creditOrdersToSendBill.length > 0) {
       console.log(
@@ -543,16 +588,20 @@ export default function OrdersPage() {
                               <TableHead className="text-center">จำนวน</TableHead>
                               <TableHead className="text-center">หน่วย</TableHead>
                               <TableHead className="text-center">ราคาต่อหน่วย</TableHead>
+                              <TableHead className="text-center">ส่วนลด</TableHead>
                               <TableHead className="text-center">ราคารวม</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {selectedOrder.items.map((item: any, index: number) => (
+                            {selectedOrder.items.map((item: OrderItem, index: number) => (
                               <TableRow key={index}>
                                 <TableCell className="text-center">{item.name}</TableCell>
                                 <TableCell className="text-center">{item.quantity}</TableCell>
                                 <TableCell className="text-center">{item.unit}</TableCell>
                                 <TableCell className="text-center">฿{item.price.toLocaleString()}</TableCell>
+                                <TableCell className="text-center">
+                                  {item.discount ? `฿${item.discount.toLocaleString()}` : "-"}
+                                </TableCell>
                                 <TableCell className="text-center">฿{item.total.toLocaleString()}</TableCell>
                               </TableRow>
                             ))}
@@ -567,6 +616,9 @@ export default function OrdersPage() {
                               ค่าส่ง: ฿{selectedOrder.shippingCost.toLocaleString()}
                             </div>
                           )}
+                          <div className="text-sm font-medium text-gray-700">
+                            มีสินค้าทั้งหมด: {selectedOrder.items.length} รายการ
+                          </div>
                           <div className="text-lg font-semibold">
                             ยอดรวมทั้งสิ้น: ฿{selectedOrder.totalPrice.toLocaleString()}
                           </div>
@@ -1154,26 +1206,39 @@ export default function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewOrder(order)}
-                        className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md bg-transparent disabled:opacity-50"
-                        disabled={order.orderStatus !== "pending"}
-                      >
-                        <Link href={`/orders/${order.id}/edit`}>
-                          <Edit className="h-3 w-3 mr-1" />
-                          แก้ไข
-                        </Link>
-                      </Button>
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewOrder(order)}
+                          className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        {order.orderStatus === "pending" ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md bg-transparent"
+                          >
+                            <Link href={`/orders/${order.id}/edit`}>
+                              <Edit className="h-3 w-3 mr-1" />
+                              แก้ไข
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border border-gray-200 shadow-sm rounded-xl bg-transparent opacity-50 cursor-not-allowed"
+                            disabled // Explicitly disable the button element
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            แก้ไข
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

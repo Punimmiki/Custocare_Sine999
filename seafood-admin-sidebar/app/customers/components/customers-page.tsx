@@ -32,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog"
 
 // Sample product data for customer purchases - เพิ่มหน่วยนับ
@@ -259,7 +260,6 @@ const customerPurchases = {
     },
   ],
 }
-
 // Sample customer data (expanded for pagination)
 const initialCustomers = [
   {
@@ -443,7 +443,6 @@ const initialCustomers = [
     isActive: false,
   },
 ]
-
 const CustomersPage = () => {
   const [customers, setCustomers] = React.useState(initialCustomers)
   const [searchTerm, setSearchTerm] = React.useState("")
@@ -456,6 +455,14 @@ const CustomersPage = () => {
   const [editingDiscounts, setEditingDiscounts] = React.useState<{ [key: string]: number }>({})
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
+
+  // State for confirmation dialog
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false)
+  const [pendingAction, setPendingAction] = React.useState<{
+    type: "line" | "status"
+    customerId: string
+    newValue: boolean
+  } | null>(null)
 
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch =
@@ -488,19 +495,16 @@ const CustomersPage = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
-
   const handleItemsPerPageChange = (value: string) => {
     setItemsPerPage(Number(value))
     setCurrentPage(1)
   }
-
   const handleCardFilter = (filterType: string) => {
     // Reset all filters first
     setSearchTerm("")
     setTypeFilter("all")
     setStatusFilter("all")
     setLineFilter("all")
-
     // Apply the selected card filter
     if (activeCardFilter === filterType) {
       // If clicking the same card, reset all filters
@@ -570,7 +574,7 @@ const CustomersPage = () => {
   }
 
   const getCustomerProducts = (customerId: string) => {
-    return customerProducts[customerId] || []
+    return customerPurchases[customerId] || []
   }
 
   const getLatestPurchaseDate = (customerId: string) => {
@@ -589,6 +593,18 @@ const CustomersPage = () => {
   const creditCustomers = customers.filter((c) => c.type === "credit").length
   const cashCustomers = customers.filter((c) => c.type === "cash").length
   const lineEnabledCustomers = customers.filter((c) => c.lineNotifications && c.isActive).length // เฉพาะลูกค้าที่ใช้งานอยู่
+
+  const handleConfirmAction = () => {
+    if (pendingAction) {
+      if (pendingAction.type === "line") {
+        handleLineNotificationToggle(pendingAction.customerId, pendingAction.newValue)
+      } else if (pendingAction.type === "status") {
+        handleStatusToggle(pendingAction.customerId, pendingAction.newValue)
+      }
+      setIsConfirmDialogOpen(false)
+      setPendingAction(null)
+    }
+  }
 
   return (
     <div className="space-y-6 ">
@@ -899,13 +915,22 @@ const CustomersPage = () => {
                       <div className="flex items-center justify-center gap-1">
                         <Switch
                           checked={customer.lineNotifications}
-                          onCheckedChange={(checked) => handleLineNotificationToggle(customer.id, checked)}
+                          onClick={() => {
+                            setPendingAction({
+                              type: "line",
+                              customerId: customer.id,
+                              newValue: !customer.lineNotifications,
+                            })
+                            setIsConfirmDialogOpen(true)
+                          }}
                           disabled={!customer.isActive} // Disable if customer is inactive
                           className={`
                             scale-75
-                            w-11 h-6 rounded-full relative transition-colors
-                            ${!customer.isActive ? "bg-gray-300 cursor-not-allowed" : "bg-gray-200 data-[state=checked]:bg-green-500"}
-                          `}
+                            w-11 h-6 rounded-full relative transition-colors${
+                              !customer.isActive
+                                ? "bg-gray-300 cursor-not-allowed"
+                                : "bg-gray-200 data-[state=checked]:bg-green-500"
+                            }`}
                         />
                       </div>
                     </TableCell>
@@ -956,7 +981,6 @@ const CustomersPage = () => {
                                   </p>
                                 </div>
                               </div>
-
                               {/* Products Table */}
                               <div>
                                 <h3 className="text-lg font-semibold mb-4">รายการสินค้าที่เคยซื้อ</h3>
@@ -1047,7 +1071,6 @@ const CustomersPage = () => {
                                   <div className="text-center py-8 text-muted-foreground">ไม่มีข้อมูลการซื้อสินค้า</div>
                                 )}
                               </div>
-
                               {/* Note */}
                               <div className="p-4 bg-blue-50 rounded-lg">
                                 <p className="text-sm text-blue-800">
@@ -1067,7 +1090,14 @@ const CustomersPage = () => {
                         <div className="flex items-center gap-1">
                           <Switch
                             checked={customer.isActive}
-                            onCheckedChange={(checked) => handleStatusToggle(customer.id, checked)}
+                            onClick={() => {
+                              setPendingAction({
+                                type: "status",
+                                customerId: customer.id,
+                                newValue: !customer.isActive,
+                              })
+                              setIsConfirmDialogOpen(true)
+                            }}
                             // นำ className เดิมกลับมา
                             className="scale-75 data-[state=checked]:bg-green-500 bg-gray-200 rounded-full w-11 h-6 relative transition-colors"
                           ></Switch>
@@ -1118,10 +1148,8 @@ const CustomersPage = () => {
                         </Badge>
                       </div>
                     </div>
-
                     {/* Address */}
                     <p className="text-xs text-muted-foreground line-clamp-2">{customer.address}</p>
-
                     {/* Credit/Outstanding Info */}
                     {customer.type === "credit" && (
                       <div className="grid grid-cols-2 gap-4 text-xs">
@@ -1139,7 +1167,6 @@ const CustomersPage = () => {
                         )}
                       </div>
                     )}
-
                     {/* Overdue Info */}
                     {(customer.unpaidBills > 0 || customer.overdueDays > 0 || customer.overdueAmount > 0) && (
                       <div className="grid grid-cols-3 gap-2 text-xs">
@@ -1169,7 +1196,6 @@ const CustomersPage = () => {
                         </div>
                       </div>
                     )}
-
                     {/* Last Order & LINE */}
                     <div className="flex items-center justify-between text-xs">
                       <div>
@@ -1181,13 +1207,22 @@ const CustomersPage = () => {
                       <div className="flex items-center gap-1">
                         <Switch
                           checked={customer.lineNotifications}
-                          onCheckedChange={(checked) => handleLineNotificationToggle(customer.id, checked)}
+                          onClick={() => {
+                            setPendingAction({
+                              type: "line",
+                              customerId: customer.id,
+                              newValue: !customer.lineNotifications,
+                            })
+                            setIsConfirmDialogOpen(true)
+                          }}
                           disabled={!customer.isActive} // Disable if customer is inactive
                           className={`
                             scale-75
-                            w-11 h-6 rounded-full relative transition-colors
-                            ${!customer.isActive ? "bg-gray-300 cursor-not-allowed" : "bg-gray-200 data-[state=checked]:bg-green-500"}
-                          `}
+                            w-11 h-6 rounded-full relative transition-colors${
+                              !customer.isActive
+                                ? "bg-gray-300 cursor-not-allowed"
+                                : "bg-gray-200 data-[state=checked]:bg-green-500"
+                            }`}
                         />
                         <MessageCircle
                           className={`h-3 w-3 ${
@@ -1200,7 +1235,6 @@ const CustomersPage = () => {
                         />
                       </div>
                     </div>
-
                     {/* Actions */}
                     <div className="flex items-center justify-between pt-2 border-t">
                       <div className="flex gap-2">
@@ -1250,7 +1284,6 @@ const CustomersPage = () => {
                                   </p>
                                 </div>
                               </div>
-
                               {/* Products Table */}
                               <div>
                                 <h3 className="text-lg font-semibold mb-4">รายการสินค้าที่เคยซื้อ</h3>
@@ -1341,7 +1374,6 @@ const CustomersPage = () => {
                                   <div className="text-center py-8 text-muted-foreground">ไม่มีข้อมูลการซื้อสินค้า</div>
                                 )}
                               </div>
-
                               {/* Note */}
                               <div className="p-4 bg-blue-50 rounded-lg">
                                 <p className="text-sm text-blue-800">
@@ -1362,7 +1394,14 @@ const CustomersPage = () => {
                       <div className="flex items-center gap-1">
                         <Switch
                           checked={customer.isActive}
-                          onCheckedChange={(checked) => handleStatusToggle(customer.id, checked)}
+                          onClick={() => {
+                            setPendingAction({
+                              type: "status",
+                              customerId: customer.id,
+                              newValue: !customer.isActive,
+                            })
+                            setIsConfirmDialogOpen(true)
+                          }}
                           // นำ className เดิมกลับมา
                           className="scale-75 data-[state=checked]:bg-green-500 bg-gray-200 rounded-full w-11 h-6 relative transition-colors"
                         />
@@ -1435,6 +1474,43 @@ const CustomersPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ยืนยันการเปลี่ยนแปลง</DialogTitle>
+            <DialogDescription>
+              {pendingAction?.type === "line"
+                ? `คุณต้องการ${pendingAction.newValue ? "เปิด" : "ปิด"}การแจ้งเตือน LINE สำหรับลูกค้า ${
+                    getCustomerById(pendingAction.customerId)?.name
+                  } ใช่หรือไม่?`
+                : `คุณต้องการ${pendingAction?.newValue ? "เปิดใช้งาน" : "ปิดใช้งาน"}ลูกค้า ${
+                    getCustomerById(pendingAction?.customerId)?.name
+                  } ใช่หรือไม่?`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              className="bg-gray-800 text-white hover:bg-gray-900"
+              onClick={() => setIsConfirmDialogOpen(false)}
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              className={
+                pendingAction?.newValue
+                  ? "bg-green-500 hover:bg-green-600 text-white"
+                  : "bg-red-500 hover:bg-red-600 text-white"
+              }
+              onClick={handleConfirmAction}
+            >
+              ยืนยัน
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
