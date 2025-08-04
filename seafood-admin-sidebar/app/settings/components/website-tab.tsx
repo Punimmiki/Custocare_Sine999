@@ -74,7 +74,7 @@ TikTok: @seafoodfresh`,
         <p className="text-muted-foreground">จัดการเนื้อหาและรูปภาพสำหรับเว็บไซต์</p>
       </div>
 
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Store className="h-5 w-5" />
@@ -108,7 +108,7 @@ TikTok: @seafoodfresh`,
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
@@ -171,7 +171,7 @@ TikTok: @seafoodfresh`,
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Truck className="h-5 w-5" />
@@ -196,7 +196,7 @@ TikTok: @seafoodfresh`,
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
@@ -243,7 +243,7 @@ TikTok: @seafoodfresh`,
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle>ตัวอย่างการแสดงผล</CardTitle>
           <CardDescription>ตัวอย่างเนื้อหาที่จะแสดงในเว็บไซต์</CardDescription>

@@ -678,7 +678,7 @@ export default function OrdersPage() {
 
           <Dialog open={showSalesDialog} onOpenChange={setShowSalesDialog}>
             <DialogTrigger asChild>
-              <Button className="rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg">
+              <Button className="rounded-2xl bg-[#5FB3F6] hover:from-cyan-600 hover:to-blue-200 text-white shadow-lg">
                 ดูยอดสรุป
               </Button>
             </DialogTrigger>

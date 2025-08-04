@@ -174,7 +174,7 @@ const ReportsPage = () => {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card className="border-0 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">ยอดขายรวม</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -186,7 +186,7 @@ const ReportsPage = () => {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-0 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">จำนวนออเดอร์</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -198,7 +198,7 @@ const ReportsPage = () => {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-0 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">ค่าเฉลี่ยต่อออเดอร์</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -210,7 +210,7 @@ const ReportsPage = () => {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-0 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">ยอดค้างชำระ</CardTitle>
             <AlertTriangle className="h-4 w-4 text-red-500" />
@@ -226,7 +226,7 @@ const ReportsPage = () => {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Daily Sales Report */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 border-0 rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart className="h-5 w-5" />
@@ -259,7 +259,7 @@ const ReportsPage = () => {
         </Card>
 
         {/* Top Selling Products */}
-        <Card>
+        <Card className="border-0 rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
@@ -306,7 +306,7 @@ const ReportsPage = () => {
         </Card>
 
         {/* Delivery Summary */}
-        <Card>
+        <Card className="border-0 rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Truck className="h-5 w-5" />
@@ -345,7 +345,7 @@ const ReportsPage = () => {
       </div>
 
       {/* Outstanding Credit Report */}
-      <Card>
+      <Card className="border-0 rounded-2xl"> 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />

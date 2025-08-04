@@ -131,12 +131,15 @@ const DeliveryPage = () => {
 
   // useMobile hook logic integrated directly
   const [isMobile, setIsMobile] = useState(false)
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768) // Adjust breakpoint as needed
     }
+
     handleResize() // Set initial value
     window.addEventListener("resize", handleResize) // Listen for window resize events
+
     return () => {
       window.removeEventListener("resize", handleResize)
     } // Clean up event listener on unmount
@@ -170,6 +173,7 @@ const DeliveryPage = () => {
     const subtotal = delivery.items?.reduce((sum: number, item: any) => sum + item.total, 0) || 0
     const vat = subtotal * 0.07 // VAT 7%
     const grandTotal = subtotal + vat
+
     let title = ""
     let content = ""
 
@@ -177,134 +181,201 @@ const DeliveryPage = () => {
       case "shippingLabel":
         title = "ใบปะหน้าพัสดุ"
         content = `
-          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ccc;">
-            <div style="text-align: center; margin-bottom: 20px;">
-              <h2 style="margin: 0;">${title}</h2>
-              <p style="margin: 5px 0; color: #666;">Shipping Label</p>
+          <div style="font-family: Arial, sans-serif; padding: 10px; max-width: 600px; border: 1px solid #000; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 10px;">
+              <h2 style="margin: 0; font-size: 24px;">ใบส่งพัสดุ</h2>
             </div>
-            <div style="margin-bottom: 20px;">
-              <strong>จาก:</strong><br>
-              ชื่อผู้ส่ง: ร้านค้าของคุณ<br>
-              ที่อยู่: 123 ถนนตัวอย่าง, กรุงเทพฯ 10000<br>
-              โทร: 099-999-9999<br>
-            </div>
-            <div style="margin-bottom: 20px;">
-              <strong>ถึง:</strong><br>
-              ชื่อลูกค้า: ${delivery.customerName}<br>
-              ที่อยู่จัดส่ง: ${delivery.customerAddress}<br>
-              โทร: ${delivery.driverPhone || "N/A"}<br>
-            </div>
-            <div style="text-align: center; margin-bottom: 20px;">
-              <img src="https://barcode.tec-it.com/barcode.ashx?data=${delivery.id}&code=Code128&dpi=96" alt="Barcode" style="width: 80%; height: auto; margin-bottom: 10px;">
-              <p style="font-size: 18px; font-weight: bold;">${delivery.id}</p>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666;">
-              <span>ผู้ให้บริการ: ${delivery.serviceProvider}</span>
-              <span>วันที่: ${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}</span>
-            </div>
-          </div>`
-        break
-      case "packingList":
-        title = "Packing List"
-        content = `
-          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="margin: 0; font-size: 24px;">${title}</h1>
-              <p style="margin: 5px 0; color: #666;">รายการสินค้าที่บรรจุ</p>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-              <div>
-                <strong>รหัสคำสั่งซื้อ:</strong> ${delivery.orderId}<br>
-                <strong>วันที่จัดส่ง:</strong> ${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}<br>
+            <div style="display: flex; border-top: 1px solid #000; border-bottom: 1px solid #000;">
+              <div style="flex: 1; padding: 10px; border-right: 1px solid #000;">
+                <h3 style="margin: 0 0 5px 0; font-size: 16px;">ผู้ส่ง (Sender)</h3>
+                <p style="margin: 0; font-size: 14px;"><strong>ชื่อ:</strong> ชื่อบริษัท (กรุณาตั้งค่าใน Settings)</p>
+                <p style="margin: 0; font-size: 14px;"><strong>โทร:</strong> เบอร์โทรบริษัท (กรุณาตั้งค่าใน Settings)</p>
+                <p style="margin: 0; font-size: 14px;"><strong>ที่อยู่:</strong> ที่อยู่บริษัท (กรุณาตั้งค่าใน Settings)</p>
               </div>
-              <div style="text-align: right;">
-                <strong>สถานะ:</strong> ${statusMap[delivery.status as keyof typeof statusMap]?.label}<br>
+              <div style="flex: 1; padding: 10px;">
+                <h3 style="margin: 0 0 5px 0; font-size: 16px;">ผู้รับ (Receiver)</h3>
+                <p style="margin: 0; font-size: 14px;"><strong>ชื่อ:</strong> ${delivery.customerName}</p>
+                <p style="margin: 0; font-size: 14px;"><strong>โทร:</strong> ${delivery.driverPhone || "N/A"}</p>
+                <p style="margin: 0; font-size: 14px;"><strong>ที่อยู่:</strong> ${delivery.customerAddress}</p>
               </div>
             </div>
-            <div style="margin-bottom: 30px;">
-              <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">ข้อมูลลูกค้า</h3>
-              <div style="padding-left: 10px;">
-                <strong>ชื่อลูกค้า:</strong> ${delivery.customerName}<br>
-                <strong>ที่อยู่จัดส่ง:</strong> ${delivery.customerAddress}<br>
-              </div>
+            <div style="padding: 10px; border-bottom: 1px solid #000;">
+              <p style="margin: 0; font-size: 14px;"><strong>เลขที่ใบส่งสินค้า:</strong> ${delivery.orderId}</p>
+              <p style="margin: 0; font-size: 14px;"><strong>วันที่ส่งสินค้า:</strong> ${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}</p>
             </div>
-            <div style="margin-bottom: 30px;">
-              <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">รายการสินค้า</h3>
-              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <div style="padding: 10px; border-bottom: 1px solid #000;">
+              <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                  <tr style="background-color: #f8f9fa;">
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">รายการ</th>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">จำนวน</th>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">หน่วย</th>
+                  <tr>
+                    <th style="border: 1px solid #000; padding: 5px; font-size: 14px;">ลำดับ</th>
+                    <th style="border: 1px solid #000; padding: 5px; font-size: 14px;">รายการ</th>
+                    <th style="border: 1px solid #000; padding: 5px; font-size: 14px;">จำนวน</th>
+                    <th style="border: 1px solid #000; padding: 5px; font-size: 14px;">หน่วย</th>
                   </tr>
                 </thead>
-                <tbody>${
-                  delivery.items
-                    ?.map(
-                      (item: any) => `
-                    <tr>
-                      <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
-                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.quantity}</td>
-                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.unit}</td>
-                    </tr>`,
-                    )
-                    .join("") ||
-                  '<tr><td colspan="3" style="border: 1px solid #ddd; padding: 8px; text-align: center;">ไม่มีรายการสินค้า</td></tr>'
-                }
+                <tbody>
+                  ${
+                    delivery.items
+                      ?.map(
+                        (item: any, index: number) => `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">${index + 1}</td>
+                    <td style="border: 1px solid #000; padding: 5px; font-size: 14px;">${item.name}</td>
+                    <td style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">${item.quantity}</td>
+                    <td style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">${item.unit}</td>
+                  </tr>
+                  `,
+                      )
+                      .join("") ||
+                    '<tr><td colspan="4" style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">ไม่มีรายการสินค้า</td></tr>'
+                  }
                 </tbody>
               </table>
             </div>
-            <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 15px;">
-              พิมพ์เมื่อ: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: th })}
+            <div style="padding: 10px; display: flex; justify-content: space-between; font-size: 14px; border-bottom: 1px solid #000;">
+              <span><strong>ประเภทการส่ง:</strong> ${delivery.serviceProvider || "ไม่ระบุ"}</span>
+              <span><strong>หมายเหตุ:</strong> ${delivery.notes || "ไม่มี"}</span>
             </div>
-          </div>`
+            <div style="text-align: center; padding: 10px;">
+              <p style="margin: 0; font-size: 14px;">[บาร์โค้ด / QR Code]</p>
+              <img src="https://barcode.tec-it.com/barcode.ashx?data=${delivery.id}&code=Code128&dpi=96" alt="Barcode" style="width: 80%; max-width: 300px; height: auto; margin-top: 5px;">
+              <p style="font-size: 16px; font-weight: bold; margin-top: 5px;">${delivery.id}</p>
+            </div>
+          </div>
+`
+        break
+      case "packingList":
+        title = "ใบจัดสินค้า/ใบส่งของ"
+        content = `
+          <div style="font-family: Arial, sans-serif; padding: 10px; max-width: 800px; border: 1px solid #000; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div style="text-align: center; flex-grow: 1;">
+                <h2 style="margin: 0; font-size: 24px;">${title}</h2>
+                <p style="margin: 0; font-size: 14px; color: #666;">SHIPPING SLIP</p>
+              </div>
+              
+            </div>
+
+            <div style="padding: 10px; border-top: 1px solid #000; background-color: #f8f8f8;">
+              <h3 style="margin: 0 0 5px 0; font-size: 16px;">ข้อมูลผู้ส่ง (Sender)</h3>
+              <p style="margin: 0; font-size: 14px;"><strong>ชื่อ:</strong> ชื่อบริษัท (กรุณาตั้งค่าใน Settings)</p>
+              <p style="margin: 0; font-size: 14px;"><strong>โทร:</strong> เบอร์โทรบริษัท (กรุณาตั้งค่าใน Settings)</p>
+              <p style="margin: 0; font-size: 14px;"><strong>ที่อยู่:</strong> ที่อยู่บริษัท (กรุณาตั้งค่าใน Settings)</p>
+            </div>
+
+            <div style="padding: 10px; border-top: 1px solid #000; background-color: #f8f8f8;">
+              <h3 style="margin: 0 0 5px 0; font-size: 16px;">ข้อมูลผู้รับ (Receiver)</h3>
+              <p style="margin: 0; font-size: 14px;"><strong>ชื่อ:</strong> ${delivery.customerName}</p>
+              <p style="margin: 0; font-size: 14px;"><strong>โทร:</strong> ${delivery.driverPhone || "N/A"}</p>
+              <p style="margin: 0; font-size: 14px;"><strong>ที่อยู่:</strong> ${delivery.customerAddress}</p>
+            </div>
+
+            <div style="display: flex; border-top: 1px solid #000;">
+              <div style="flex: 1; padding: 10px; border-right: 1px solid #000; background-color: #f8f9fa;">
+                <p style="margin: 0; font-size: 14px;"><strong>เลขที่คำสั่งซื้อ</strong></p>
+                <p style="margin: 0; font-size: 14px;">${delivery.orderId}</p>
+              </div>
+              <div style="flex: 1; padding: 10px; background-color: #f8f8f8;">
+                <p style="margin: 0; font-size: 14px;"><strong>วันที่ส่งสินค้า</strong></p>
+                <p style="margin: 0; font-size: 14px;">${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}</p>
+              </div>
+            </div>
+
+            <div style="padding: 10px; border-top: 1px solid #000;">
+              <h3 style="margin: 0 0 10px 0; font-size: 16px;">รายการสินค้า</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th style="border: 1px solid #000; padding: 8px; text-align: center; background-color: #f0f0f0; font-size: 14px;">ลำดับ</th>
+                    <th style="border: 1px solid #000; padding: 8px; text-align: left; background-color: #f0f0f0; font-size: 14px;">รายการสินค้า</th>
+                    <th style="border: 1px solid #000; padding: 8px; text-align: center; background-color: #f0f0f0; font-size: 14px;">จำนวน</th>
+                    <th style="border: 1px solid #000; padding: 8px; text-align: center; background-color: #f0f0f0; font-size: 14px;">หน่วย</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${
+                    delivery.items
+                      ?.map(
+                        (item: any, index: number) => `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${index + 1}</td>
+                    <td style="border: 1px solid #000; padding: 8px; font-size: 14px;">${item.name}</td>
+                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${item.quantity}</td>
+                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${item.unit}</td>
+                  </tr>`,
+                      )
+                      .join("") ||
+                    '<tr><td colspan="4" style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">ไม่มีรายการสินค้า</td></tr>'
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div style="display: flex; border-top: 1px solid #000;">
+              <div style="flex: 1; padding: 10px; border-right: 1px solid #000; background-color: #f8f8f8;">
+                <p style="margin: 0; font-size: 14px;"><strong>ประเภทการส่ง</strong></p>
+                <p style="margin: 0; font-size: 14px;">${delivery.serviceProvider || "ไม่ระบุ"}</p>
+              </div>
+              <div style="flex: 1; padding: 10px; background-color: #f8f8f8;">
+                <p style="margin: 0; font-size: 14px;"><strong>หมายเหตุ</strong></p>
+                <p style="margin: 0; font-size: 14px;">${delivery.notes || "ไม่มี"}</p>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+              <div style="width: 30%; border: 1px solid #000; padding: 10px; text-align: center; background-color: #f8f8f8;">
+                <p style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold; color: #000;">ผู้จัดสินค้า</p>
+                <p style="margin: 0 0 15px 0; font-size: 14px;">Receiver</p>
+                <p style="margin: 0; font-size: 14px;">ลงชื่อ / Signature</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 5px 0; height: 1px;"></div>
+                <p style="margin: 0; font-size: 14px;">วันที่ / Date:</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 0 0; height: 1px;"></div>
+              </div>
+              <div style="width: 30%; border: 1px solid #000; padding: 10px; text-align: center; background-color: #f8f8f8;">
+                <p style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">ผู้ตรวจสอบ</p>
+                <p style="margin: 0 0 15px 0; font-size: 14px;">Inspector</p>
+                <p style="margin: 0; font-size: 14px;">ลงชื่อ / Signature</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 5px 0; height: 1px;"></div>
+                <p style="margin: 0; font-size: 14px;">วันที่ / Date:</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 0 0; height: 1px;"></div>
+              </div>
+              <div style="width: 30%; border: 1px solid #000; padding: 10px; text-align: center; background-color: #f8f8f8;">
+                <p style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">ผู้จัดส่ง</p>
+                <p style="margin: 0 0 15px 0; font-size: 14px;">Delivery Staff</p>
+                <p style="margin: 0; font-size: 14px;">ลงชื่อ / Signature</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 5px 0; height: 1px;"></div>
+                <p style="margin: 0; font-size: 14px;">วันที่ / Date:</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 0 0; height: 1px;"></div>
+              </div>
+            </div>
+          </div>
+`
         break
       case "pickList":
         title = "Pick List"
         content = `
-          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="margin: 0; font-size: 24px;">${title}</h1>
-              <p style="margin: 5px 0; color: #666;">รายการสินค้าสำหรับจัดเตรียม</p>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-              <div>
-                <strong>รหัสคำสั่งซื้อ:</strong> ${delivery.orderId}<br>
-                <strong>วันที่จัดส่ง:</strong> ${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}<br>
-              </div>
-            </div>
-            <div style="margin-bottom: 30px;">
-              <h3 style="background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0;">รายการสินค้าที่ต้องหยิบ</h3>
-              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                <thead>
-                  <tr style="background-color: #f8f9fa;">
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">รายการ</th>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">จำนวน</th>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">หน่วย</th>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">สถานะการหยิบ</th>
-                  </tr>
-                </thead>
-                <tbody>${
-                  delivery.items
-                    ?.map(
-                      (item: any) => `
-                    <tr>
-                      <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
-                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.quantity}</td>
-                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.unit}</td>
-                      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">[ ]</td>
-                    </tr>`,
-                    )
-                    .join("") ||
-                  '<tr><td colspan="4" style="border: 1px solid #ddd; padding: 8px; text-align: center;">ไม่มีรายการสินค้า</td></tr>'
-                }
-                </tbody>
-              </table>
-            </div>
-            <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 15px;">
-              พิมพ์เมื่อ: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: th })}
-            </div>
-          </div>`
+        <div style="font-family: Arial, sans-serif; padding: 10px; max-width: 800px; margin: 0 auto;">
+          <h1 style="text-align: center; margin-bottom: 20px; font-size: 24px;">${title} สำหรับคำสั่งซื้อ: ${delivery.orderId}</h1>
+          <p style="text-align: center; margin-bottom: 20px; font-size: 16px; color: #666;">รายการสินค้าสำหรับจัดเตรียม (ตัดแยกได้)</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+            ${
+              delivery.items
+                ?.map(
+                  (item: any) => `
+              <div style="width: 200px; height: 150px; border: 1px solid #000; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; page-break-inside: avoid;">
+                <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333;">ลูกค้า: ${delivery.customerName}</p>
+                <p style="margin: 10px 0 5px 0; font-size: 18px; font-weight: bold; color: #000;">${item.name}</p>
+                <p style="margin: 0; font-size: 28px; font-weight: bold; color: #000;">${item.quantity} ${item.unit}</p>
+              </div>`,
+                )
+                .join("") ||
+              '<div style="text-align: center; padding: 20px; font-size: 16px; color: #666;">ไม่มีรายการสินค้าสำหรับจัดเตรียม</div>'
+            }
+          </div>
+          <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 15px;">
+            พิมพ์เมื่อ: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: th })}
+          </div>
+        </div>`
         break
     }
     return content
@@ -347,12 +418,14 @@ const DeliveryPage = () => {
       const matchesVehicleType = vehicleTypeFilter === "all" || delivery.vehicleType === vehicleTypeFilter
       const matchesServiceProvider =
         serviceProviderFilter === "all" || delivery.serviceProvider === serviceProviderFilter
+
       let matchesDate = true
       if (deliveryDateFilter) {
         const deliveryDate = parseISO(delivery.deliveryDate)
         const filterDate = parseISO(deliveryDateFilter)
         matchesDate = format(deliveryDate, "yyyy-MM-dd") === format(filterDate, "yyyy-MM-dd")
       }
+
       return matchesSearch && matchesStatus && matchesVehicleType && matchesServiceProvider && matchesDate
     })
   }, [deliveries, searchTerm, statusFilter, vehicleTypeFilter, serviceProviderFilter, deliveryDateFilter])
@@ -413,7 +486,7 @@ const DeliveryPage = () => {
       <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card
           className={cn(
-            "cursor-pointer hover:bg-muted/50 transition-colors",
+            "cursor-pointer hover:bg-muted/50 transition-colors border-0 rounded-2xl",
             statusFilter === "all" && "border-primary",
           )}
           onClick={() => setStatusFilter("all")}
@@ -428,7 +501,7 @@ const DeliveryPage = () => {
         </Card>
         <Card
           className={cn(
-            "cursor-pointer hover:bg-muted/50 transition-colors",
+            "cursor-pointer hover:bg-muted/50 transition-colors border-0 rounded-2xl",
             statusFilter === "preparing" && "border-primary",
           )}
           onClick={() => setStatusFilter("preparing")}
@@ -442,7 +515,7 @@ const DeliveryPage = () => {
         </Card>
         <Card
           className={cn(
-            "cursor-pointer hover:bg-muted/50 transition-colors",
+            "cursor-pointer hover:bg-muted/50 transition-colors border-0 rounded-2xl",
             statusFilter === "shipped" && "border-primary",
           )}
           onClick={() => setStatusFilter("shipped")}
@@ -456,7 +529,7 @@ const DeliveryPage = () => {
         </Card>
         <Card
           className={cn(
-            "cursor-pointer hover:bg-muted/50 transition-colors",
+            "cursor-pointer hover:bg-muted/50 transition-colors border-0 rounded-2xl",
             statusFilter === "delivered" && "border-primary",
           )}
           onClick={() => setStatusFilter("delivered")}
@@ -471,7 +544,7 @@ const DeliveryPage = () => {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <CardTitle>ค้นหาและกรองข้อมูล</CardTitle>
@@ -575,7 +648,7 @@ const DeliveryPage = () => {
       </Card>
 
       {/* Deliveries List (Conditional Rendering) */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border-0 rounded-2xl">
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>

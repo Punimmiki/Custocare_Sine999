@@ -275,7 +275,7 @@ const CreateDeliveryPage = () => {
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Customer Information */}
-            <Card>
+            <Card className="border-0 rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
@@ -374,7 +374,7 @@ const CreateDeliveryPage = () => {
             </Card>
 
             {/* Driver Information */}
-            <Card>
+            <Card className="border-0 rounded-2xl">
               <CardHeader>
                 <CardTitle>ข้อมูลการจัดส่ง</CardTitle>
               </CardHeader>
@@ -593,7 +593,7 @@ const CreateDeliveryPage = () => {
 
         {/* Delivery Images */}
         <div className="lg:col-span-1">
-          <Card className="sticky top-4">
+          <Card className="sticky top-4 border-0 rounded-2xl">
             <CardHeader>
               <CardTitle>รูปภาพการจัดส่ง</CardTitle>
               <p className="text-sm text-muted-foreground">อัพโหลดได้สูงสุด 3 รูป</p>

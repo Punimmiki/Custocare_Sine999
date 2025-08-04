@@ -336,7 +336,7 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
       <div className="w-full">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Customer Information */}
-          <Card>
+          <Card className="border-0 rounded-2xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
@@ -384,7 +384,7 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
           </Card>
 
           {/* Customer Type and Credit */}
-          <Card>
+          <Card className="border-0 rounded-2xl">
             <CardHeader>
               <CardTitle>ประเภทลูกค้าและเครดิต</CardTitle>
             </CardHeader>
@@ -479,7 +479,7 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
           </Card>
 
           {/* Notification Settings */}
-          <Card>
+          <Card className="border-0 rounded-2xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5" />

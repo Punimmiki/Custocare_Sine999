@@ -839,7 +839,7 @@ export default function DocumentsPage() {
 
       {/* Action Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-muted/30 rounded-lg">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 border-0 rounded-2xl">
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
             ดาวน์โหลดทั้งหมด
@@ -868,7 +868,7 @@ export default function DocumentsPage() {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle>ค้นหาและกรองข้อมูล</CardTitle>
         </CardHeader>
@@ -939,7 +939,7 @@ export default function DocumentsPage() {
       </Card>
 
       {/* Documents List */}
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
@@ -1394,7 +1394,7 @@ export default function DocumentsPage() {
               </Card>
 
               {/* ข้อมูลคำสั่งซื้อ */}
-              <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+              <Card className="border-0 shadow-sm rounded-2xl bg-gray-50 border-0 rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-lg">ข้อมูลคำสั่งซื้อ</CardTitle>
                 </CardHeader>
@@ -1441,7 +1441,7 @@ export default function DocumentsPage() {
               </Card>
 
               {/* ที่อยู่จัดส่ง */}
-              <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
+              <Card className="border-0 shadow-sm rounded-2xl bg-gray-50 ">
                 <CardHeader>
                   <CardTitle className="text-lg">ที่อยู่จัดส่ง</CardTitle>
                 </CardHeader>

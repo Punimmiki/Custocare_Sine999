@@ -45,7 +45,7 @@ export function CompanyTab() {
       </div>
 
       {/* Company Information */}
-      <Card>
+      <Card className="border-0 rounded-2xl"> 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building className="h-5 w-5" />

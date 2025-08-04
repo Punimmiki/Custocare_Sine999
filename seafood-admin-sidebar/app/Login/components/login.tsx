@@ -28,7 +28,7 @@ export default function LoginPage() {
     if (email === correctEmail && password === correctPassword) {
       // Simulate successful login
       console.log("Login successful! Redirecting to /pos")
-      router.push("/pos") // Redirect to the /pos page
+      router.push("/orders") // Redirect to the /pos page
     } else {
       setError("Invalid email or password.")
     }

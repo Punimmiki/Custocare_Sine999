@@ -173,7 +173,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Product Information */}
-            <Card>
+            <Card className="border-0 rounded-2xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
@@ -267,7 +267,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
             </Card>
 
             {/* Display Settings */}
-            <Card>
+            <Card className="border-0 rounded-2xl">
               <CardHeader>
                 <CardTitle>การแสดงผล</CardTitle>
               </CardHeader>
@@ -322,7 +322,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
 
         {/* Product Images */}
         <div className="lg:col-span-1">
-          <Card className="sticky top-4">
+          <Card className="sticky top-4 border-0 rounded-2xl">
             <CardHeader>
               <CardTitle>รูปภาพสินค้า</CardTitle>
               <p className="text-sm text-muted-foreground">อัพโหลดได้สูงสุด 5 รูป คลิกดาวเพื่อเลือกรูปหน้าปก</p>

@@ -224,7 +224,7 @@ export function ShippingSettingsTab() {
       </div>
 
       {/* Transport Providers */}
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -313,7 +313,7 @@ export function ShippingSettingsTab() {
       </Card>
 
       {/* Shipping Fee Rules */}
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>

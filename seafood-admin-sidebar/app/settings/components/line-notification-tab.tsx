@@ -123,7 +123,7 @@ export function LineNotificationTab() {
       </div>
 
       {/* LINE Configuration */}
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />
@@ -171,7 +171,7 @@ export function LineNotificationTab() {
       {/* Message Templates */}
       <div className="space-y-6">
         {/* Order Confirmation Template */}
-        <Card>
+        <Card className="border-0 rounded-2xl">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -228,7 +228,7 @@ export function LineNotificationTab() {
         </Card>
 
         {/* Payment Request Template */}
-        <Card>
+        <Card className="border-0 rounded-2xl">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -285,7 +285,7 @@ export function LineNotificationTab() {
         </Card>
 
         {/* Delivery Update Template */}
-        <Card>
+        <Card className="border-0 rounded-2xl">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>

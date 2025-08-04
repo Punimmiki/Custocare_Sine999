@@ -111,12 +111,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   href="/orders"
                   className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center"
                 >
-                  <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-lg">
-                    <Fish className="size-5" />
+                 <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-lg">
+                    <img src="/logo.png" alt="Logo" className="size-10" />
                   </div>
+
                   <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold text-white">ระบบจัดการซีฟู้ด</span>
-                    <span className="truncate text-sm text-slate-300">จัดการ</span>
+                    <span className="truncate font-semibold text-white">SINE 999</span>
+                    
                   </div>
                 </Link>
               </SidebarMenuButton>

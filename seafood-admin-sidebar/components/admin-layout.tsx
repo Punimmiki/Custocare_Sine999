@@ -27,9 +27,13 @@ export function AdminLayout({ children, hideHeader = false }: AdminLayoutProps) 
       {showSidebar && <AppSidebar />}
       <SidebarInset className="flex flex-col min-h-screen">
         {!hideHeader && <AdminHeader />}
-        <div className={`flex flex-1 flex-col gap-4 ${hideHeader ? "p-0" : "p-6 pt-4"} bg-slate-50 min-h-0`}>
+        <div
+          className={`flex flex-1 flex-col gap-4 ${hideHeader ? "p-0" : "p-6 pt-4"} min-h-0`}
+          style={{ backgroundColor: "#EFF2F4" }}
+        >
           {children}
         </div>
+
       </SidebarInset>
     </SidebarProvider>
   )

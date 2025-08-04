@@ -175,7 +175,7 @@ export function UserManagementTab() {
       </div>
 
       {/* Users Table */}
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle>รายชื่อผู้ใช้</CardTitle>
           <CardDescription>ผู้ใช้ทั้งหมด {users.length} คน</CardDescription>

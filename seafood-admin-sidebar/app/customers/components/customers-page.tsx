@@ -623,9 +623,9 @@ const CustomersPage = () => {
       </div>
 
       {/* Stats Cards - Now clickable */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 ">
         <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${
+          className={`border-0 rounded-2xl cursor-pointer transition-all hover:shadow-md ${
             activeCardFilter === "all" ? "border-primary" : ""
           }`}
           onClick={() => handleCardFilter("all")}
@@ -641,7 +641,7 @@ const CustomersPage = () => {
           </CardContent>
         </Card>
         <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${
+          className={`border-0 rounded-2xl cursor-pointer transition-all hover:shadow-md ${
             activeCardFilter === "credit" ? "border-primary" : ""
           }`}
           onClick={() => handleCardFilter("credit")}
@@ -655,7 +655,7 @@ const CustomersPage = () => {
           </CardContent>
         </Card>
         <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${
+          className={`border-0 rounded-2xl cursor-pointer transition-all hover:shadow-md ${
             activeCardFilter === "cash" ? "border-primary" : ""
           }`}
           onClick={() => handleCardFilter("cash")}
@@ -669,7 +669,7 @@ const CustomersPage = () => {
           </CardContent>
         </Card>
         <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${
+          className={`border-0 rounded-2xl cursor-pointer transition-all hover:shadow-md ${
             activeCardFilter === "line" ? "border-primary" : ""
           }`}
           onClick={() => handleCardFilter("line")}
@@ -705,7 +705,7 @@ const CustomersPage = () => {
       )}
 
       {/* Filters */}
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle>ค้นหาและกรองข้อมูล</CardTitle>
         </CardHeader>
@@ -781,7 +781,7 @@ const CustomersPage = () => {
       </Card>
 
       {/* Customers Table */}
-      <Card>
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
@@ -812,7 +812,7 @@ const CustomersPage = () => {
         </CardHeader>
         <CardContent>
           {/* Desktop Table */}
-          <div className="hidden lg:block rounded-md border overflow-x-auto">
+          <div className="hidden lg:block rounded-2xl border-0 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
