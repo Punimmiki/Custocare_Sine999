@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { User, ArrowLeft, Upload, X, CalendarIcon, Search } from "lucide-react"
+import { User, ArrowLeft, Upload, X, CalendarIcon, Search } from 'lucide-react'
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -81,17 +82,14 @@ interface DeliveryImage {
 const CreateDeliveryPage = () => {
   const router = useRouter()
   const { toast } = useToast()
-
   const [orderSearchTerm, setOrderSearchTerm] = React.useState<string>("")
   const [selectedOrder, setSelectedOrder] = React.useState<(typeof initialOrders)[0] | null>(null)
-
   const [customerName, setCustomerName] = React.useState("")
   const [customerPhone, setCustomerPhone] = React.useState("")
   const [customerAddress, setCustomerAddress] = React.useState("")
   const [notes, setNotes] = React.useState("")
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-
   const [driverName, setDriverName] = React.useState("")
   const [vehiclePlate, setVehiclePlate] = React.useState("")
   const [driverPhone, setDriverPhone] = React.useState("")
@@ -99,15 +97,15 @@ const CreateDeliveryPage = () => {
   const [serviceProvider, setServiceProvider] = React.useState("")
   const [deliveryDate, setDeliveryDate] = React.useState<Date>(new Date())
   const [deliveryImages, setDeliveryImages] = React.useState<DeliveryImage[]>([])
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = React.useState(false) // New state for success dialog
 
   // Filter orders based on search term and status
   const filteredOrders = React.useMemo(() => {
     const lowerCaseSearchTerm = orderSearchTerm.toLowerCase()
-    return initialOrders.filter(
-      (order) =>
-        (order.status === "preparing" || order.status === "shipped") &&
-        (order.orderId.toLowerCase().includes(lowerCaseSearchTerm) ||
-          order.customerName.toLowerCase().includes(lowerCaseSearchTerm)),
+    return initialOrders.filter((order) =>
+      (order.status === "preparing" || order.status === "shipped") &&
+      (order.orderId.toLowerCase().includes(lowerCaseSearchTerm) ||
+        order.customerName.toLowerCase().includes(lowerCaseSearchTerm)),
     )
   }, [orderSearchTerm])
 
@@ -157,7 +155,6 @@ const CreateDeliveryPage = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     // Validation: Ensure an order is selected
     if (!selectedOrder) {
       toast({
@@ -167,7 +164,6 @@ const CreateDeliveryPage = () => {
       })
       return
     }
-
     // Other validations remain
     if (!driverName.trim()) {
       toast({
@@ -209,7 +205,6 @@ const CreateDeliveryPage = () => {
       })
       return
     }
-
     setIsSubmitDialogOpen(true)
   }
 
@@ -238,13 +233,8 @@ const CreateDeliveryPage = () => {
       }
       console.log("Creating delivery:", deliveryData)
 
-      toast({
-        title: "สำเร็จ!",
-        description: "สร้างการจัดส่งใหม่เรียบร้อยแล้ว",
-      })
       setIsSubmitDialogOpen(false)
-      // Redirect back to delivery page
-      router.push("/delivery")
+      setIsSuccessDialogOpen(true) // Show success dialog
     } catch (error) {
       toast({
         title: "เกิดข้อผิดพลาด",
@@ -254,6 +244,26 @@ const CreateDeliveryPage = () => {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleSuccessConfirm = () => {
+    setIsSuccessDialogOpen(false)
+    // Reset form fields
+    setOrderSearchTerm("")
+    setSelectedOrder(null)
+    setCustomerName("")
+    setCustomerPhone("")
+    setCustomerAddress("")
+    setNotes("")
+    setDriverName("")
+    setVehiclePlate("")
+    setDriverPhone("")
+    setVehicleType("")
+    setServiceProvider("")
+    setDeliveryDate(new Date())
+    setDeliveryImages([])
+    // Optionally redirect
+    // router.push("/delivery")
   }
 
   return (
@@ -270,7 +280,6 @@ const CreateDeliveryPage = () => {
           <p className="text-muted-foreground">เพิ่มการจัดส่งใหม่สำหรับลูกค้า</p>
         </div>
       </div>
-
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -302,7 +311,6 @@ const CreateDeliveryPage = () => {
                     />
                   </div>
                 </div>
-
                 <div>
                   <Label htmlFor="order-select">
                     เลือกคำสั่งซื้อ <span className="text-red-500">*</span>
@@ -330,7 +338,6 @@ const CreateDeliveryPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <Label htmlFor="customer-name">
@@ -428,9 +435,7 @@ const CreateDeliveryPage = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {vehicleTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -445,9 +450,7 @@ const CreateDeliveryPage = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {serviceProviders.map((provider) => (
-                          <SelectItem key={provider} value={provider}>
-                            {provider}
-                          </SelectItem>
+                          <SelectItem key={provider} value={provider}>{provider}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -534,8 +537,7 @@ const CreateDeliveryPage = () => {
                             </div>
                           )}
                           <div>
-                            <span className="font-medium">ที่อยู่:</span> {selectedOrder?.customerAddress.substring(0, 60)}
-                            {selectedOrder && selectedOrder.customerAddress.length > 60 ? "..." : ""}
+                            <span className="font-medium">ที่อยู่:</span> {selectedOrder?.customerAddress.substring(0, 60)}{selectedOrder && selectedOrder.customerAddress.length > 60 ? "..." : ""}
                           </div>
                           <div>
                             <span className="font-medium">คนขับ:</span> {driverName} ({driverPhone})
@@ -626,7 +628,6 @@ const CreateDeliveryPage = () => {
                   ))}
                 </div>
               )}
-
               {/* Upload Area */}
               {deliveryImages.length < 3 && (
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -639,7 +640,6 @@ const CreateDeliveryPage = () => {
                   </div>
                 </div>
               )}
-
               {/* File Input */}
               {deliveryImages.length < 3 && (
                 <div>
@@ -652,7 +652,6 @@ const CreateDeliveryPage = () => {
                   />
                 </div>
               )}
-
               {/* Instructions */}
               {deliveryImages.length > 0 && (
                 <div className="text-xs text-muted-foreground space-y-1">
@@ -660,7 +659,6 @@ const CreateDeliveryPage = () => {
                   <p>• รูปภาพจะแสดงในรายการจัดส่ง</p>
                 </div>
               )}
-
               {/* Driver Summary */}
               <div className="border-t pt-4 mt-4">
                 <div className="space-y-2 text-sm text-muted-foreground">
@@ -672,8 +670,7 @@ const CreateDeliveryPage = () => {
                   <p>วันที่จัดส่ง: {format(deliveryDate, "dd/MM/yyyy", { locale: th })}</p>
                   {selectedOrder && (
                     <p>
-                      ที่อยู่: {selectedOrder.customerAddress.substring(0, 30)}
-                      {selectedOrder.customerAddress.length > 30 ? "..." : ""}
+                      ที่อยู่: {selectedOrder.customerAddress.substring(0, 30)}{selectedOrder.customerAddress.length > 30 ? "..." : ""}
                     </p>
                   )}
                 </div>
@@ -682,6 +679,23 @@ const CreateDeliveryPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <AlertDialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>เพิ่มการจัดส่งสำเร็จ</AlertDialogTitle>
+            <AlertDialogDescription>
+              การจัดส่งสำหรับคำสั่งซื้อ &quot;{selectedOrder?.orderId}&quot; ได้ถูกเพิ่มเรียบร้อยแล้ว
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleSuccessConfirm} className="bg-green-600 hover:bg-green-700">
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

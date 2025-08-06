@@ -1,15 +1,32 @@
 "use client"
 
 import * as React from "react"
-import { Building, Save, Clock, Globe, MessageCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
+import { Building, Save, Clock, Globe, MessageCircle } from 'lucide-react'
+import {
+  Button,
+} from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 export function CompanyTab() {
-  const [companyData, setCompanyData] = React.useState({
+  const [companyData, setCompanyData] = useState({
     companyName: "บริษัท ซีฟู้ด เฟรช จำกัด",
     registrationNumber: "0105563123456",
     address: "123/45 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพมหานคร 10500",
@@ -22,6 +39,8 @@ export function CompanyTab() {
     fax: "02-234-5679",
     taxId: "0105563123456",
   })
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
 
   const handleInputChange = (field: string, value: string) => {
     setCompanyData((prev) => ({
@@ -30,10 +49,11 @@ export function CompanyTab() {
     }))
   }
 
-  const handleSave = () => {
-    // Save company settings logic here
+  const handleSaveConfirmed = () => {
+    // สมมติว่า Save สำเร็จ
     console.log("Saving company settings:", companyData)
-    // Show success message
+    setShowConfirmDialog(false)
+    setShowSuccessDialog(true)
   }
 
   return (
@@ -45,7 +65,7 @@ export function CompanyTab() {
       </div>
 
       {/* Company Information */}
-      <Card className="border-0 rounded-2xl"> 
+      <Card className="border-0 rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building className="h-5 w-5" />
@@ -198,11 +218,40 @@ export function CompanyTab() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button onClick={handleSave} size="lg">
+        <Button onClick={() => setShowConfirmDialog(true)} size="lg">
           <Save className="h-4 w-4 mr-2" />
           บันทึกการตั้งค่า
         </Button>
       </div>
+
+      {/* Confirm Save Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ยืนยันการบันทึก</DialogTitle>
+            <DialogDescription>คุณต้องการบันทึกการตั้งค่าบริษัทหรือไม่?</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+              ยกเลิก
+            </Button>
+            <Button onClick={handleSaveConfirmed}>ยืนยัน</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>บันทึกสำเร็จ</DialogTitle>
+            <DialogDescription>การตั้งค่าบริษัทถูกบันทึกเรียบร้อยแล้ว</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowSuccessDialog(false)}>ปิด</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

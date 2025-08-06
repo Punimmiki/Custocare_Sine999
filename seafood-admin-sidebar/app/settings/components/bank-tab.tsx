@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Edit, Trash2, Save, Building2 } from "lucide-react"
+import { Plus, Edit, Trash2, Building2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Textarea } from "@/components/ui/textarea"
 
-// Sample bank accounts data
 const initialBankAccounts = [
   {
     id: "1",
@@ -64,8 +63,6 @@ export function BankTab() {
   const [bankAccounts, setBankAccounts] = React.useState(initialBankAccounts)
   const [isAddBankOpen, setIsAddBankOpen] = React.useState(false)
   const [editingBank, setEditingBank] = React.useState<any>(null)
-
-  // Form state
   const [formData, setFormData] = React.useState({
     bankName: "",
     accountName: "",
@@ -76,6 +73,8 @@ export function BankTab() {
     qrCode: "",
     notes: "",
   })
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false)
+  const [successMessage, setSuccessMessage] = React.useState("")
 
   const handleAddBank = () => {
     setFormData({
@@ -93,58 +92,47 @@ export function BankTab() {
   }
 
   const handleEditBank = (bank: any) => {
-    setFormData({
-      bankName: bank.bankName,
-      accountName: bank.accountName,
-      accountNumber: bank.accountNumber,
-      branch: bank.branch,
-      isActive: bank.isActive,
-      isDefault: bank.isDefault,
-      qrCode: bank.qrCode,
-      notes: bank.notes,
-    })
+    setFormData({ ...bank })
     setEditingBank(bank)
     setIsAddBankOpen(true)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (editingBank) {
-      // Update existing bank account
-      setBankAccounts(bankAccounts.map((bank) => (bank.id === editingBank.id ? { ...bank, ...formData } : bank)))
+      setBankAccounts((prev) =>
+        prev.map((bank) => (bank.id === editingBank.id ? { ...bank, ...formData } : bank)),
+      )
+      setSuccessMessage("แก้ไขบัญชีธนาคารสำเร็จ")
     } else {
-      // Add new bank account
       const newBank = {
-        id: String(bankAccounts.length + 1),
+        id: Date.now().toString(),
         ...formData,
       }
-      setBankAccounts([...bankAccounts, newBank])
+      setBankAccounts((prev) => [...prev, newBank])
+      setSuccessMessage("เพิ่มบัญชีธนาคารสำเร็จ")
     }
     setIsAddBankOpen(false)
+    setShowSuccessDialog(true)
   }
 
   const handleDeleteBank = (bankId: string) => {
-    setBankAccounts(bankAccounts.filter((bank) => bank.id !== bankId))
+    setBankAccounts((prev) => prev.filter((bank) => bank.id !== bankId))
+    setSuccessMessage("ลบบัญชีธนาคารสำเร็จ")
+    setShowSuccessDialog(true)
   }
 
   const handleToggleActive = (bankId: string, isActive: boolean) => {
-    setBankAccounts(bankAccounts.map((bank) => (bank.id === bankId ? { ...bank, isActive } : bank)))
+    setBankAccounts((prev) => prev.map((bank) => (bank.id === bankId ? { ...bank, isActive } : bank)))
   }
 
   const handleSetDefault = (bankId: string) => {
-    setBankAccounts(
-      bankAccounts.map((bank) => ({
+    setBankAccounts((prev) =>
+      prev.map((bank) => ({
         ...bank,
         isDefault: bank.id === bankId,
       })),
     )
-  }
-
-  const handleSave = () => {
-    // Save bank settings logic here
-    console.log("Saving bank settings:", bankAccounts)
-    // Show success message
   }
 
   return (
@@ -162,7 +150,8 @@ export function BankTab() {
       </div>
 
       {/* Bank Accounts Table */}
-      <Card className="border-0 rounded-2xl"> 
+      <Card className="border-0 rounded-2xl">
+        {" "}
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
@@ -193,10 +182,7 @@ export function BankTab() {
                     <TableCell>{bank.branch}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Switch
-                          checked={bank.isActive}
-                          onCheckedChange={(checked) => handleToggleActive(bank.id, checked)}
-                        />
+                        <Switch checked={bank.isActive} onCheckedChange={(checked) => handleToggleActive(bank.id, checked)} />
                         <span className={bank.isActive ? "text-green-600" : "text-red-600"}>
                           {bank.isActive ? "ใช้งาน" : "ปิดใช้งาน"}
                         </span>
@@ -234,10 +220,7 @@ export function BankTab() {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteBank(bank.id)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
+                                <AlertDialogAction onClick={() => handleDeleteBank(bank.id)} className="bg-red-600 hover:bg-red-700">
                                   ลบบัญชี
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -357,7 +340,17 @@ export function BankTab() {
         </DialogContent>
       </Dialog>
 
-  
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{successMessage}</DialogTitle>
+            <DialogDescription>ดำเนินการเรียบร้อยแล้ว</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowSuccessDialog(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

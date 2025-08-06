@@ -51,18 +51,34 @@ const ManageCategoriesPage = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false)
 
+  // สำหรับลบ
+  const [categoryToDelete, setCategoryToDelete] = React.useState<Category | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
+  const [showDeleteSuccess, setShowDeleteSuccess] = React.useState(false)
+
+  // สำหรับเพิ่ม ยืนยัน
+  const [showAddConfirm, setShowAddConfirm] = React.useState(false)
+  const [showAddSuccess, setShowAddSuccess] = React.useState(false)
+
   const handleAddCategory = () => {
     if (newCategoryName.trim()) {
-      const newCategory: Category = {
-        id: Date.now().toString(),
-        name: newCategoryName.trim(),
-        showOnWebsite: true,
-        productCount: 0,
-      }
-      setCategories((prev) => [...prev, newCategory])
-      setNewCategoryName("")
-      setIsAddDialogOpen(false)
+      setShowAddConfirm(true)
     }
+  }
+
+  // กดยืนยันเพิ่มจริง ๆ
+  const handleAddCategoryConfirmed = () => {
+    const newCategory: Category = {
+      id: Date.now().toString(),
+      name: newCategoryName.trim(),
+      showOnWebsite: true,
+      productCount: 0,
+    }
+    setCategories((prev) => [...prev, newCategory])
+    setNewCategoryName("")
+    setIsAddDialogOpen(false)
+    setShowAddConfirm(false)
+    setShowAddSuccess(true)
   }
 
   const handleEditCategory = () => {
@@ -76,8 +92,19 @@ const ManageCategoriesPage = () => {
     }
   }
 
-  const handleDeleteCategory = (categoryId: string) => {
-    setCategories((prev) => prev.filter((cat) => cat.id !== categoryId))
+  // เปิด popup ยืนยันลบ
+  const openDeleteConfirm = (category: Category) => {
+    setCategoryToDelete(category)
+    setShowDeleteConfirm(true)
+  }
+
+  // ลบจริงหลัง confirm
+  const handleDeleteCategoryConfirmed = () => {
+    if (!categoryToDelete) return
+    setCategories((prev) => prev.filter((cat) => cat.id !== categoryToDelete.id))
+    setShowDeleteConfirm(false)
+    setShowDeleteSuccess(true)
+    setCategoryToDelete(null)
   }
 
   const toggleWebsiteVisibility = (categoryId: string) => {
@@ -195,35 +222,15 @@ const ManageCategoriesPage = () => {
                   </Button>
 
                   {/* Delete Button */}
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={category.productCount > 0}
-                        className="h-8 px-2 border-0 shadow-sm rounded-xl hover:shadow-md bg-transparent disabled:opacity-50"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>ยืนยันการลบหมวดหมู่</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          คุณแน่ใจหรือไม่ที่จะลบหมวดหมู่ "{category.name}"? การดำเนินการนี้ไม่สามารถย้อนกลับได้
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeleteCategory(category.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          ลบหมวดหมู่
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={category.productCount > 0}
+                    className="h-8 px-2 border-0 shadow-sm rounded-xl hover:shadow-md bg-transparent disabled:opacity-50"
+                    onClick={() => openDeleteConfirm(category)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
               </div>
 
@@ -278,6 +285,74 @@ const ManageCategoriesPage = () => {
               บันทึกการแก้ไข
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Confirm Dialog */}
+      <AlertDialog open={showAddConfirm} onOpenChange={setShowAddConfirm}>
+        <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการเพิ่มหมวดหมู่</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณแน่ใจหรือไม่ที่จะเพิ่มหมวดหมู่ "{newCategoryName.trim()}"?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowAddConfirm(false)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleAddCategoryConfirmed}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              เพิ่มหมวดหมู่
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Add Success Dialog */}
+      <Dialog open={showAddSuccess} onOpenChange={setShowAddSuccess}>
+        <DialogContent className="border-0 rounded-3xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle>เพิ่มหมวดหมู่สำเร็จ</DialogTitle>
+            <DialogDescription>หมวดหมู่ถูกเพิ่มเรียบร้อยแล้ว</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowAddSuccess(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm AlertDialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการลบหมวดหมู่</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณแน่ใจหรือไม่ที่จะลบหมวดหมู่ "{categoryToDelete?.name}"? การดำเนินการนี้ไม่สามารถย้อนกลับได้
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteConfirm(false)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCategoryConfirmed}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              ลบหมวดหมู่
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Success Dialog */}
+      <Dialog open={showDeleteSuccess} onOpenChange={setShowDeleteSuccess}>
+        <DialogContent className="border-0 rounded-3xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle>ลบหมวดหมู่สำเร็จ</DialogTitle>
+            <DialogDescription>หมวดหมู่ถูกลบเรียบร้อยแล้ว</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowDeleteSuccess(false)}>ตกลง</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,26 +1,25 @@
 "use client"
 
 import * as React from "react"
-import { Globe, Save, ImageIcon, Youtube, Truck, Store } from "lucide-react"
+import { Globe, Save, ImageIcon, Youtube, Truck, Store } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export function WebsiteTab() {
   const [websiteData, setWebsiteData] = React.useState({
     logo: "",
     headerPicture: "",
     headerText: `ยินดีต้อนรับสู่ ซีฟู้ด เฟรช
-
 อาหารทะเลสดใหม่ คุณภาพพรีเมียม
 ส่งตรงจากทะเลสู่โต๊ะอาหารของคุณ
-
 ดูวิดีโอแนะนำสินค้าของเรา: https://youtube.com/watch?v=example`,
     headerYoutubeLink: "https://youtube.com/watch?v=example",
     shippingInfo: `ค่าจัดส่ง
-
 🚚 ส่งฟรี! เมื่อสั่งซื้อครบ 1,000 บาท (ในเขตกรุงเทพฯ และปริมณฑล)
 📦 ค่าจัดส่งปกติ 50 บาท (ในเขตกรุงเทพฯ และปริมณฑล)
 🌍 ส่งต่างจังหวัด เริ่มต้น 100 บาท
@@ -32,7 +31,6 @@ export function WebsiteTab() {
 📞 ติดต่อสอบถาม: 02-234-5678`,
     footerText: `บริษัท ซีฟู้ด เฟรช จำกัด
 123/45 ถนนสีลม แขวงสีลม เขตบางรัก กรุงเทพมหานคร 10500
-
 📞 โทร: 02-234-5678
 📧 อีเมล: info@seafoodfresh.com
 🌐 เว็บไซต์: www.seafoodfresh.com
@@ -46,6 +44,10 @@ Instagram: @seafoodfresh
 TikTok: @seafoodfresh`,
     footerImage: "",
   })
+
+  const [showConfirmDialog, setShowConfirmDialog] = React.useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false)
+  const [successMessage, setSuccessMessage] = React.useState("")
 
   const handleInputChange = (field: string, value: string) => {
     setWebsiteData((prev) => ({
@@ -64,7 +66,14 @@ TikTok: @seafoodfresh`,
   }
 
   const handleSave = () => {
+    setShowConfirmDialog(true)
+  }
+
+  const handleConfirmSave = () => {
     console.log("Saving website settings:", websiteData)
+    setSuccessMessage("บันทึกการตั้งค่าเว็บไซต์สำเร็จ")
+    setShowConfirmDialog(false)
+    setShowSuccessDialog(true)
   }
 
   return (
@@ -94,11 +103,7 @@ TikTok: @seafoodfresh`,
             />
             {websiteData.logo && (
               <div className="mt-2">
-                <img
-                  src={websiteData.logo}
-                  alt="Store Logo Preview"
-                  className="max-w-[150px] h-auto object-contain rounded-md border shadow"
-                />
+                <img src={websiteData.logo || "/placeholder.svg"} alt="Store Logo Preview" className="max-w-[150px] h-auto object-contain rounded-md border shadow" />
               </div>
             )}
             <p className="text-sm text-muted-foreground mt-1">
@@ -128,11 +133,7 @@ TikTok: @seafoodfresh`,
             />
             {websiteData.headerPicture && (
               <div className="mt-2">
-                <img
-                  src={websiteData.headerPicture}
-                  alt="Header Preview"
-                  className="max-w-xs h-32 object-cover rounded-lg border"
-                />
+                <img src={websiteData.headerPicture || "/placeholder.svg"} alt="Header Preview" className="max-w-xs h-32 object-cover rounded-lg border" />
               </div>
             )}
             <p className="text-sm text-muted-foreground">
@@ -229,11 +230,7 @@ TikTok: @seafoodfresh`,
             />
             {websiteData.footerImage && (
               <div className="mt-2">
-                <img
-                  src={websiteData.footerImage}
-                  alt="Footer Preview"
-                  className="max-w-xs h-32 object-cover rounded-lg border"
-                />
+                <img src={websiteData.footerImage || "/placeholder.svg"} alt="Footer Preview" className="max-w-xs h-32 object-cover rounded-lg border" />
               </div>
             )}
             <p className="text-sm text-muted-foreground">
@@ -254,12 +251,7 @@ TikTok: @seafoodfresh`,
             <div className="whitespace-pre-wrap text-sm">{websiteData.headerText}</div>
             {websiteData.headerYoutubeLink && (
               <div className="mt-2">
-                <a
-                  href={websiteData.headerYoutubeLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline text-sm"
-                >
+                <a href={websiteData.headerYoutubeLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
                   🎥 ดูวิดีโอ
                 </a>
               </div>
@@ -282,6 +274,33 @@ TikTok: @seafoodfresh`,
           บันทึกการตั้งค่า
         </Button>
       </div>
+
+      {/* Confirm Save Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการบันทึก</AlertDialogTitle>
+            <AlertDialogDescription>คุณแน่ใจหรือไม่ว่าต้องการบันทึกการตั้งค่าเว็บไซต์นี้?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSave}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>บันทึกสำเร็จ</DialogTitle>
+            <DialogDescription>{successMessage}</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowSuccessDialog(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowLeft, Package, Upload, X, Star, Settings } from "lucide-react"
+import { ArrowLeft, Package, Upload, X, Star, Plus } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -23,21 +23,27 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+interface ProductImage {
+  id: string;
+  url: string;
+  file?: File;
+  isCover: boolean;
+}
+
 interface EditProductPageProps {
-  productId: string
+  productId: string;
 }
 
 const categories = ["ปลา", "กุ้ง", "หอย", "ปู", "ปลาหมึก"]
 const units = ["กิโลกรัม", "ตัว", "โหล", "กล่อง", "ถุง"]
 
-interface ProductImage {
-  id: string
-  url: string
-  file?: File
-  isCover: boolean
+interface ProductVariant {
+  id: string;
+  name: string;
+  price: string;
 }
 
-// Sample product data for editing
+// Sample product data for editing - now used as the primary source
 const sampleProduct = {
   id: "1",
   name: "แซลมอนสด",
@@ -65,9 +71,16 @@ const sampleProduct = {
       isCover: false,
     },
   ] as ProductImage[],
+  variants: [
+    { name: "หัว", price: 150 },
+    { name: "ท้อง", price: 550 },
+    { name: "หาง", price: 300 },
+    { name: "ทั้งตัว", price: 450 },
+  ],
 }
 
 const EditProductPage = ({ productId }: EditProductPageProps) => {
+  // Initialize states directly from sampleProduct
   const [productName, setProductName] = React.useState(sampleProduct.name)
   const [productPrice, setProductPrice] = React.useState(sampleProduct.price.toString())
   const [productUnit, setProductUnit] = React.useState(sampleProduct.unit)
@@ -77,18 +90,17 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
   const [productImages, setProductImages] = React.useState<ProductImage[]>(sampleProduct.images)
   const [showOnWebsite, setShowOnWebsite] = React.useState(sampleProduct.showOnWebsite)
   const [categoryShowOnWebsite, setCategoryShowOnWebsite] = React.useState(sampleProduct.categoryShowOnWebsite)
-
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = React.useState(false)
+  // New state for product variants, initialized from sampleProduct
+  const [productVariants, setProductVariants] = React.useState<ProductVariant[]>(sampleProduct.variants?.map(v => ({ id: Date.now().toString() + Math.random().toString(), name: v.name, price: v.price.toString() })) || [])
+  // New state for success dialog
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = React.useState(false)
 
-  // Load product data based on productId (in real app, this would be an API call)
-  React.useEffect(() => {
-    // TODO: Fetch product data by productId
-    console.log("Loading product data for ID:", productId)
-  }, [productId])
+  // Removed useEffect for fetching product data as per user's request.
+  // The component now always displays the sampleProduct data.
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-
     files.forEach((file) => {
       if (productImages.length < 5) {
         const reader = new FileReader()
@@ -104,7 +116,6 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
         reader.readAsDataURL(file)
       }
     })
-
     // Reset input
     e.target.value = ""
   }
@@ -129,8 +140,32 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
     )
   }
 
+  // Variant handlers
+  const addVariant = () => {
+    setProductVariants((prev) => [...prev, { id: Date.now().toString(), name: "", price: "" }])
+  }
+
+  const removeVariant = (id: string) => {
+    setProductVariants((prev) => prev.filter((variant) => variant.id !== id))
+  }
+
+  const handleVariantChange = (id: string, field: "name" | "price", value: string) => {
+    setProductVariants((prev) =>
+      prev.map((variant) => (variant.id === id ? { ...variant, [field]: value } : variant)),
+    )
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // Basic validation for variants
+    if (productVariants.length > 0) {
+      for (const variant of productVariants) {
+        if (!variant.name.trim() || !variant.price.trim() || isNaN(Number(variant.price))) {
+          alert("กรุณากรอกชื่อและราคาของตัวเลือกสินค้าให้ครบถ้วนและถูกต้อง")
+          return
+        }
+      }
+    }
     setIsSubmitDialogOpen(true)
   }
 
@@ -144,10 +179,12 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
       productStock: Number.parseInt(productStock),
       productDescription,
       productImages,
+      productVariants: productVariants.map(v => ({ name: v.name, price: Number.parseFloat(v.price) })), // Convert variant prices to number
       showOnWebsite,
       categoryShowOnWebsite,
     })
     setIsSubmitDialogOpen(false)
+    setIsSuccessDialogOpen(true) // Show success dialog
     // TODO: Add success toast and redirect
   }
 
@@ -166,9 +203,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
             แก้ไขข้อมูลสินค้า: {productName} (ID: {productId})
           </p>
         </div>
-    
       </div>
-
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -182,7 +217,9 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="product-name">ชื่อสินค้า <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="product-name">
+                    ชื่อสินค้า <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="product-name"
                     value={productName}
@@ -191,10 +228,11 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                     required
                   />
                 </div>
-
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="product-price">ราคา (บาท) <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="product-price">
+                      ราคา (บาท) <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="product-price"
                       type="number"
@@ -207,40 +245,41 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="product-unit">หน่วย <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="product-unit">
+                      หน่วย <span className="text-red-500">*</span>
+                    </Label>
                     <Select value={productUnit} onValueChange={setProductUnit} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกหน่วย" />
                       </SelectTrigger>
                       <SelectContent>
                         {units.map((unit) => (
-                          <SelectItem key={unit} value={unit}>
-                            {unit}
-                          </SelectItem>
+                          <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
-
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="product-category">หมวดหมู่ <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="product-category">
+                      หมวดหมู่ <span className="text-red-500">*</span>
+                    </Label>
                     <Select value={productCategory} onValueChange={setProductCategory} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกหมวดหมู่" />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="product-stock">จำนวนคงเหลือ <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="product-stock">
+                      จำนวนคงเหลือ <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="product-stock"
                       type="number"
@@ -252,7 +291,6 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                     />
                   </div>
                 </div>
-
                 <div>
                   <Label htmlFor="product-description">รายละเอียดสินค้า</Label>
                   <Textarea
@@ -263,6 +301,61 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                     rows={3}
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Product Variants */}
+            <Card className="border-0 rounded-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  เพิ่มสินค้าย่อย
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  เพิ่มตัวเลือกสินค้าย่อย เช่น ส่วนหัว ส่วนหาง กำหนดราคาที่ต่างกัน
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {productVariants.map((variant, index) => (
+                  <div key={variant.id} className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <Label htmlFor={`variant-name-${variant.id}`}>ชื่อตัวเลือก</Label>
+                      <Input
+                        id={`variant-name-${variant.id}`}
+                        value={variant.name}
+                        onChange={(e) => handleVariantChange(variant.id, "name", e.target.value)}
+                        placeholder="เช่น หัว, ท้อง, หาง"
+                        required
+                      />
+                    </div>
+                    <div className="w-28">
+                      <Label htmlFor={`variant-price-${variant.id}`}>ราคา</Label>
+                      <Input
+                        id={`variant-price-${variant.id}`}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={variant.price}
+                        onChange={(e) => handleVariantChange(variant.id, "price", e.target.value)}
+                        placeholder="0.00"
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => removeVariant(variant.id)}
+                      className="shrink-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" onClick={addVariant} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  เพิ่มตัวเลือก
+                </Button>
               </CardContent>
             </Card>
 
@@ -279,7 +372,6 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                   </div>
                   <Switch checked={showOnWebsite} onCheckedChange={setShowOnWebsite} />
                 </div>
-
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>แสดงหมวดหมู่บนเว็บไซต์</Label>
@@ -302,7 +394,7 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>ยืนยันการแก้ไขสินค้า</AlertDialogTitle>
                     <AlertDialogDescription>
-                      คุณแน่ใจหรือไม่ที่จะบันทึกการแก้ไขสินค้า "{productName}" (ID: {productId})?
+                      คุณแน่ใจหรือไม่ที่จะบันทึกการแก้ไขสินค้า &quot;{productName}&quot; (ID: {productId})?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -342,10 +434,8 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                           target.src = "/placeholder.svg?height=200&width=200"
                         }}
                       />
-
                       {/* Cover Badge */}
                       {image.isCover && <Badge className="absolute top-1 left-1 text-xs">หน้าปก</Badge>}
-
                       {/* Action Buttons */}
                       <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
@@ -373,7 +463,6 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                   ))}
                 </div>
               )}
-
               {/* Upload Area */}
               {productImages.length < 5 && (
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -386,20 +475,12 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
                   </div>
                 </div>
               )}
-
               {/* File Input */}
               {productImages.length < 5 && (
                 <div>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="cursor-pointer"
-                  />
+                  <Input type="file" accept="image/*" multiple onChange={handleImageUpload} className="cursor-pointer" />
                 </div>
               )}
-
               {/* Instructions */}
               {productImages.length > 0 && (
                 <div className="text-xs text-muted-foreground space-y-1">
@@ -412,6 +493,23 @@ const EditProductPage = ({ productId }: EditProductPageProps) => {
           </Card>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <AlertDialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>แก้ไขสินค้าสำเร็จ</AlertDialogTitle>
+            <AlertDialogDescription>
+              สินค้า &quot;{productName}&quot; ได้ถูกแก้ไขเข้าสู่ระบบเรียบร้อยแล้ว
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsSuccessDialogOpen(false)} className="bg-green-600 hover:bg-green-700">
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

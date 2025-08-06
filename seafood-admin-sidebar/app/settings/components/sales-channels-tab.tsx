@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Store, Plus, Edit, Trash2, Save, ShoppingCart, Smartphone, Globe } from "lucide-react"
+import { Store, Plus, Edit, Trash2, Save, ShoppingCart, Smartphone, Globe } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -91,6 +91,10 @@ export function SalesChannelsTab() {
   const [isAddChannelOpen, setIsAddChannelOpen] = React.useState(false)
   const [editingChannel, setEditingChannel] = React.useState<any>(null)
 
+  const [showConfirmDialog, setShowConfirmDialog] = React.useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false)
+  const [successMessage, setSuccessMessage] = React.useState("")
+
   // Form state
   const [formData, setFormData] = React.useState({
     name: "",
@@ -137,23 +141,31 @@ export function SalesChannelsTab() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirmDialog(true) // Open confirmation dialog
+  }
 
+  const handleConfirmSubmit = () => {
     if (editingChannel) {
-      // Update existing channel
       setChannels(channels.map((channel) => (channel.id === editingChannel.id ? { ...channel, ...formData } : channel)))
+      setSuccessMessage(`แก้ไขช่องทางการขาย ${formData.name} สำเร็จ`)
     } else {
-      // Add new channel
       const newChannel = {
-        id: String(channels.length + 1),
+        id: Date.now().toString(),
         ...formData,
       }
       setChannels([...channels, newChannel])
+      setSuccessMessage(`เพิ่มช่องทางการขาย ${formData.name} สำเร็จ`)
     }
+    setShowConfirmDialog(false)
     setIsAddChannelOpen(false)
+    setShowSuccessDialog(true)
   }
 
   const handleDeleteChannel = (channelId: string) => {
+    const deletedChannel = channels.find(channel => channel.id === channelId);
     setChannels(channels.filter((channel) => channel.id !== channelId))
+    setSuccessMessage(`ลบช่องทางการขาย ${deletedChannel?.name} สำเร็จ`)
+    setShowSuccessDialog(true)
   }
 
   const handleToggleActive = (channelId: string, isActive: boolean) => {
@@ -161,11 +173,10 @@ export function SalesChannelsTab() {
   }
 
   const handleSetDefault = (channelId: string) => {
-    setChannels(
-      channels.map((channel) => ({
-        ...channel,
-        isDefault: channel.id === channelId,
-      })),
+    setChannels(channels.map((channel) => ({
+      ...channel,
+      isDefault: channel.id === channelId,
+    })),
     )
   }
 
@@ -232,10 +243,7 @@ export function SalesChannelsTab() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Switch
-                            checked={channel.isActive}
-                            onCheckedChange={(checked) => handleToggleActive(channel.id, checked)}
-                          />
+                          <Switch checked={channel.isActive} onCheckedChange={(checked) => handleToggleActive(channel.id, checked)} />
                           <span className={channel.isActive ? "text-green-600" : "text-red-600"}>
                             {channel.isActive ? "ใช้งาน" : "ปิดใช้งาน"}
                           </span>
@@ -273,10 +281,7 @@ export function SalesChannelsTab() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteChannel(channel.id)}
-                                    className="bg-red-600 hover:bg-red-700"
-                                  >
+                                  <AlertDialogAction onClick={() => handleDeleteChannel(channel.id)} className="bg-red-600 hover:bg-red-700">
                                     ลบช่องทาง
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -338,7 +343,6 @@ export function SalesChannelsTab() {
                 rows={3}
               />
             </div>
-    
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Switch
@@ -369,7 +373,32 @@ export function SalesChannelsTab() {
         </DialogContent>
       </Dialog>
 
-    
+      {/* Confirm Save Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{editingChannel ? "ยืนยันการแก้ไขช่องทางการขาย" : "ยืนยันการเพิ่มช่องทางการขายใหม่"}</AlertDialogTitle>
+            <AlertDialogDescription>คุณแน่ใจหรือไม่ที่จะดำเนินการนี้?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ดำเนินการสำเร็จ!</DialogTitle>
+            <DialogDescription>{successMessage}</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowSuccessDialog(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

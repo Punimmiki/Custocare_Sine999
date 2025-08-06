@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { MessageCircle, Save, RotateCcw, TestTube } from "lucide-react"
+import { MessageCircle, Save, RotateCcw, TestTube } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 // Default message templates
 const defaultTemplates = {
@@ -16,16 +18,11 @@ const defaultTemplates = {
     enabled: true,
     subject: "ยืนยันคำสั่งซื้อ",
     message: `สวัสดีครับ/ค่ะ คุณ {customerName}
-
 ขอบคุณสำหรับคำสั่งซื้อ รหัส: {orderId}
 วันที่สั่ง: {orderDate}
 ยอดรวม: {totalAmount} บาท
-
-รายการสินค้า:
-{orderItems}
-
+รายการสินค้า:{orderItems}
 สถานะ: รอดำเนินการ
-
 หากมีข้อสงสัยกรุณาติดต่อ 02-xxx-xxxx
 ขอบคุณครับ/ค่ะ`,
   },
@@ -33,15 +30,12 @@ const defaultTemplates = {
     enabled: true,
     subject: "แจ้งชำระเงิน",
     message: `สวัสดีครับ/ค่ะ คุณ {customerName}
-
 แจ้งชำระเงินสำหรับคำสั่งซื้อ รหัส: {orderId}
 ยอดที่ต้องชำระ: {amount} บาท
 กำหนดชำระ: {dueDate}
-
 ช่องทางการชำระเงิน:
 - โอนเงินผ่านธนาคาร xxx-x-xxxxx-x
 - เงินสดหน้าร้าน
-
 กรุณาแจ้งหลักฐานการโอนเงินด้วยครับ/ค่ะ
 ขอบคุณครับ/ค่ะ`,
   },
@@ -49,15 +43,12 @@ const defaultTemplates = {
     enabled: true,
     subject: "อัพเดทการจัดส่ง",
     message: `สวัสดีครับ/ค่ะ คุณ {customerName}
-
 อัพเดทสถานะการจัดส่ง รหัส: {orderId}
 สถานะ: {deliveryStatus}
 คนขับ: {driverName}
 เบอร์โทรคนขับ: {driverPhone}
 ทะเบียนรถ: {vehiclePlate}
-
 {deliveryMessage}
-
 หากมีข้อสงสัยกรุณาติดต่อคนขับโดยตรง
 ขอบคุณครับ/ค่ะ`,
   },
@@ -85,6 +76,10 @@ export function LineNotificationTab() {
     isEnabled: true,
   })
 
+  const [showConfirmDialog, setShowConfirmDialog] = React.useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false)
+  const [successMessage, setSuccessMessage] = React.useState("")
+
   const handleTemplateChange = (templateType: keyof typeof templates, field: string, value: any) => {
     setTemplates((prev) => ({
       ...prev,
@@ -96,9 +91,14 @@ export function LineNotificationTab() {
   }
 
   const handleSave = () => {
-    // Save settings logic here
+    setShowConfirmDialog(true)
+  }
+
+  const handleConfirmSave = () => {
     console.log("Saving LINE notification settings:", { templates, lineSettings })
-    // Show success message
+    setSuccessMessage("บันทึกการตั้งค่า LINE สำเร็จ")
+    setShowConfirmDialog(false)
+    setShowSuccessDialog(true)
   }
 
   const handleReset = (templateType: keyof typeof templates) => {
@@ -143,7 +143,6 @@ export function LineNotificationTab() {
               {lineSettings.isEnabled ? "เปิดใช้งาน" : "ปิดใช้งาน"}
             </Badge>
           </div>
-
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="access-token">Channel Access Token</Label>
@@ -349,6 +348,33 @@ export function LineNotificationTab() {
           บันทึกการตั้งค่า
         </Button>
       </div>
+
+      {/* Confirm Save Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยั��การบันทึก</AlertDialogTitle>
+            <AlertDialogDescription>คุณแน่ใจหรือไม่ว่าต้องการบันทึกการตั้งค่า LINE นี้?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSave}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>บันทึกสำเร็จ</DialogTitle>
+            <DialogDescription>{successMessage}</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowSuccessDialog(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

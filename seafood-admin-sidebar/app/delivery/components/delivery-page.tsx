@@ -1,23 +1,10 @@
 "use client"
-
 import * as React from "react"
-import { useState, useEffect } from "react" // Import useState and useEffect for the useMobile logic
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { format, parseISO } from "date-fns"
-import { th } from "date-fns/locale" // Import Thai locale for date-fns
-import {
-  Truck,
-  Plus,
-  Search,
-  Phone,
-  User,
-  Printer,
-  Eye,
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Upload,
-} from "lucide-react"
+import { th } from "date-fns/locale"
+import { Truck, Plus, Search, Phone, User, Printer, Eye, CalendarDays, ChevronLeft, ChevronRight, Upload } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -27,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { useToast } from "@/hooks/use-toast"
@@ -101,6 +88,44 @@ const initialDeliveries = [
     ],
     images: [],
   },
+  {
+    id: "DEL-004",
+    orderId: "ORD-004",
+    customerName: "ร้านอาหารทะเลสด",
+    customerAddress: "101 ถนนลาดพร้าว แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900",
+    driverName: "นายสมชาย ขยัน",
+    vehiclePlate: "กค-4321",
+    vehicleType: "รถกระบะ",
+    serviceProvider: "Grab Express",
+    driverPhone: "090-123-4567",
+    status: "preparing",
+    deliveryDate: format(new Date(), "yyyy-MM-dd"), // Today
+    notes: "ด่วนที่สุด",
+    items: [
+      { name: "ปลาหมึกกล้วย", quantity: 5, unit: "กิโลกรัม", price: 280, total: 1400 },
+      { name: "ปลาอินทรี", quantity: 2, unit: "ตัว", price: 350, total: 700 },
+    ],
+    images: [],
+  },
+  {
+    id: "DEL-005",
+    orderId: "ORD-005",
+    customerName: "คุณอรุณี สุขใจ",
+    customerAddress: "222 ถนนรัชดาภิเษก แขวงดินแดง เขตดินแดง กรุงเทพฯ 10400",
+    driverName: "นางสาวสุดา ส่งไว",
+    vehiclePlate: "นบ-8765",
+    vehicleType: "รถเก๋ง",
+    serviceProvider: "Line Man",
+    driverPhone: "065-987-6543",
+    status: "shipped",
+    deliveryDate: format(new Date(Date.now() + 24 * 60 * 60 * 1000), "yyyy-MM-dd"), // Tomorrow
+    notes: "โทรแจ้งก่อนเข้าส่ง",
+    items: [
+      { name: "กุ้งแม่น้ำ", quantity: 3, unit: "กิโลกรัม", price: 600, total: 1800 },
+      { name: "ปลาสำลี", quantity: 1, unit: "ตัว", price: 420, total: 420 },
+    ],
+    images: [],
+  },
 ]
 
 const statusMap = {
@@ -124,28 +149,23 @@ const DeliveryPage = () => {
   const [statusFilter, setStatusFilter] = React.useState("all")
   const [vehicleTypeFilter, setVehicleTypeFilter] = React.useState("all")
   const [serviceProviderFilter, setServiceProviderFilter] = React.useState("all")
-  const [deliveryDateFilter, setDeliveryDateFilter] = React.useState("")
+  const [deliveryDateFilter, setDeliveryDateFilter] = React.useState<string | undefined>(undefined)
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
   const { toast } = useToast()
-
-  // useMobile hook logic integrated directly
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768) // Adjust breakpoint as needed
+      setIsMobile(window.innerWidth < 768)
     }
-
-    handleResize() // Set initial value
-    window.addEventListener("resize", handleResize) // Listen for window resize events
-
+    handleResize()
+    window.addEventListener("resize", handleResize)
     return () => {
       window.removeEventListener("resize", handleResize)
-    } // Clean up event listener on unmount
+    }
   }, [])
 
-  // State for managing images in the dialog
   const [dialogImages, setDialogImages] = React.useState<string[]>([])
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -155,25 +175,20 @@ const DeliveryPage = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      // In a real application, you would upload this file to a server
-      // and get a URL back. For this demo, we'll use a placeholder.
       const newImage = `/placeholder.svg?height=80&width=80&text=New+Image+${dialogImages.length + 1}`
       setDialogImages((prevImages) => [...prevImages, newImage])
       toast({
         title: "อัปโหลดรูปภาพสำเร็จ",
         description: "รูปภาพถูกเพิ่มเข้าสู่รายการแล้ว (จำลอง)",
       })
-      // Clear the input so the same file can be selected again if needed
       event.target.value = ""
     }
   }
 
-  // Print functions
   const generatePrintContent = (delivery: any, type: "shippingLabel" | "packingList" | "pickList") => {
     const subtotal = delivery.items?.reduce((sum: number, item: any) => sum + item.total, 0) || 0
-    const vat = subtotal * 0.07 // VAT 7%
+    const vat = subtotal * 0.07
     const grandTotal = subtotal + vat
-
     let title = ""
     let content = ""
 
@@ -213,22 +228,26 @@ const DeliveryPage = () => {
                     <th style="border: 1px solid #000; padding: 5px; font-size: 14px;">หน่วย</th>
                   </tr>
                 </thead>
-                <tbody>
-                  ${
-                    delivery.items
-                      ?.map(
-                        (item: any, index: number) => `
+                <tbody>${
+                  delivery.items
+                    ?.map(
+                      (item: any, index: number) => `
                   <tr>
-                    <td style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">${index + 1}</td>
+                    <td style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">${
+                      index + 1
+                    }</td>
                     <td style="border: 1px solid #000; padding: 5px; font-size: 14px;">${item.name}</td>
-                    <td style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">${item.quantity}</td>
-                    <td style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">${item.unit}</td>
-                  </tr>
-                  `,
-                      )
-                      .join("") ||
-                    '<tr><td colspan="4" style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">ไม่มีรายการสินค้า</td></tr>'
-                  }
+                    <td style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">${
+                      item.quantity
+                    }</td>
+                    <td style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">${
+                      item.unit
+                    }</td>
+                  </tr>`,
+                    )
+                    .join("") ||
+                  '<tr><td colspan="4" style="border: 1px solid #000; padding: 5px; text-align: center; font-size: 14px;">ไม่มีรายการสินค้า</td></tr>'
+                }
                 </tbody>
               </table>
             </div>
@@ -238,11 +257,12 @@ const DeliveryPage = () => {
             </div>
             <div style="text-align: center; padding: 10px;">
               <p style="margin: 0; font-size: 14px;">[บาร์โค้ด / QR Code]</p>
-              <img src="https://barcode.tec-it.com/barcode.ashx?data=${delivery.id}&code=Code128&dpi=96" alt="Barcode" style="width: 80%; max-width: 300px; height: auto; margin-top: 5px;">
+              <img src="https://barcode.tec-it.com/barcode.ashx?data=${
+                delivery.id
+              }&code=Code128&dpi=96" alt="Barcode" style="width: 80%; max-width: 300px; height: auto; margin-top: 5px;">
               <p style="font-size: 16px; font-weight: bold; margin-top: 5px;">${delivery.id}</p>
             </div>
-          </div>
-`
+          </div>`
         break
       case "packingList":
         title = "ใบจัดสินค้า/ใบส่งของ"
@@ -253,23 +273,19 @@ const DeliveryPage = () => {
                 <h2 style="margin: 0; font-size: 24px;">${title}</h2>
                 <p style="margin: 0; font-size: 14px; color: #666;">SHIPPING SLIP</p>
               </div>
-              
             </div>
-
             <div style="padding: 10px; border-top: 1px solid #000; background-color: #f8f8f8;">
               <h3 style="margin: 0 0 5px 0; font-size: 16px;">ข้อมูลผู้ส่ง (Sender)</h3>
               <p style="margin: 0; font-size: 14px;"><strong>ชื่อ:</strong> ชื่อบริษัท (กรุณาตั้งค่าใน Settings)</p>
               <p style="margin: 0; font-size: 14px;"><strong>โทร:</strong> เบอร์โทรบริษัท (กรุณาตั้งค่าใน Settings)</p>
               <p style="margin: 0; font-size: 14px;"><strong>ที่อยู่:</strong> ที่อยู่บริษัท (กรุณาตั้งค่าใน Settings)</p>
             </div>
-
             <div style="padding: 10px; border-top: 1px solid #000; background-color: #f8f8f8;">
               <h3 style="margin: 0 0 5px 0; font-size: 16px;">ข้อมูลผู้รับ (Receiver)</h3>
               <p style="margin: 0; font-size: 14px;"><strong>ชื่อ:</strong> ${delivery.customerName}</p>
               <p style="margin: 0; font-size: 14px;"><strong>โทร:</strong> ${delivery.driverPhone || "N/A"}</p>
               <p style="margin: 0; font-size: 14px;"><strong>ที่อยู่:</strong> ${delivery.customerAddress}</p>
             </div>
-
             <div style="display: flex; border-top: 1px solid #000;">
               <div style="flex: 1; padding: 10px; border-right: 1px solid #000; background-color: #f8f9fa;">
                 <p style="margin: 0; font-size: 14px;"><strong>เลขที่คำสั่งซื้อ</strong></p>
@@ -277,10 +293,11 @@ const DeliveryPage = () => {
               </div>
               <div style="flex: 1; padding: 10px; background-color: #f8f8f8;">
                 <p style="margin: 0; font-size: 14px;"><strong>วันที่ส่งสินค้า</strong></p>
-                <p style="margin: 0; font-size: 14px;">${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", { locale: th })}</p>
+                <p style="margin: 0; font-size: 14px;">${format(parseISO(delivery.deliveryDate), "dd/MM/yyyy", {
+                  locale: th,
+                })}</p>
               </div>
             </div>
-
             <div style="padding: 10px; border-top: 1px solid #000;">
               <h3 style="margin: 0 0 10px 0; font-size: 16px;">รายการสินค้า</h3>
               <table style="width: 100%; border-collapse: collapse;">
@@ -292,25 +309,29 @@ const DeliveryPage = () => {
                     <th style="border: 1px solid #000; padding: 8px; text-align: center; background-color: #f0f0f0; font-size: 14px;">หน่วย</th>
                   </tr>
                 </thead>
-                <tbody>
-                  ${
-                    delivery.items
-                      ?.map(
-                        (item: any, index: number) => `
+                <tbody>${
+                  delivery.items
+                    ?.map(
+                      (item: any, index: number) => `
                   <tr>
-                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${index + 1}</td>
+                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${
+                      index + 1
+                    }</td>
                     <td style="border: 1px solid #000; padding: 8px; font-size: 14px;">${item.name}</td>
-                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${item.quantity}</td>
-                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${item.unit}</td>
+                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${
+                      item.quantity
+                    }</td>
+                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${
+                      item.unit
+                    }</td>
                   </tr>`,
-                      )
-                      .join("") ||
-                    '<tr><td colspan="4" style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">ไม่มีรายการสินค้า</td></tr>'
-                  }
+                    )
+                    .join("") ||
+                  '<tr><td colspan="4" style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">ไม่มีรายการสินค้า</td></tr>'
+                }
                 </tbody>
               </table>
             </div>
-
             <div style="display: flex; border-top: 1px solid #000;">
               <div style="flex: 1; padding: 10px; border-right: 1px solid #000; background-color: #f8f8f8;">
                 <p style="margin: 0; font-size: 14px;"><strong>ประเภทการส่ง</strong></p>
@@ -321,7 +342,6 @@ const DeliveryPage = () => {
                 <p style="margin: 0; font-size: 14px;">${delivery.notes || "ไม่มี"}</p>
               </div>
             </div>
-
             <div style="display: flex; justify-content: space-around; margin-top: 20px;">
               <div style="width: 30%; border: 1px solid #000; padding: 10px; text-align: center; background-color: #f8f8f8;">
                 <p style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold; color: #000;">ผู้จัดสินค้า</p>
@@ -348,29 +368,29 @@ const DeliveryPage = () => {
                 <div style="border-bottom: 1px solid #000; margin: 5px 0 0 0; height: 1px;"></div>
               </div>
             </div>
-          </div>
-`
+          </div>`
         break
       case "pickList":
         title = "Pick List"
         content = `
         <div style="font-family: Arial, sans-serif; padding: 10px; max-width: 800px; margin: 0 auto;">
-          <h1 style="text-align: center; margin-bottom: 20px; font-size: 24px;">${title} สำหรับคำสั่งซื้อ: ${delivery.orderId}</h1>
+          <h1 style="text-align: center; margin-bottom: 20px; font-size: 24px;">${title} สำหรับคำสั่งซื้อ: ${
+          delivery.orderId
+        }</h1>
           <p style="text-align: center; margin-bottom: 20px; font-size: 16px; color: #666;">รายการสินค้าสำหรับจัดเตรียม (ตัดแยกได้)</p>
-          <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-            ${
-              delivery.items
-                ?.map(
-                  (item: any) => `
+          <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">${
+            delivery.items
+              ?.map(
+                (item: any) => `
               <div style="width: 200px; height: 150px; border: 1px solid #000; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; page-break-inside: avoid;">
                 <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333;">ลูกค้า: ${delivery.customerName}</p>
                 <p style="margin: 10px 0 5px 0; font-size: 18px; font-weight: bold; color: #000;">${item.name}</p>
                 <p style="margin: 0; font-size: 28px; font-weight: bold; color: #000;">${item.quantity} ${item.unit}</p>
               </div>`,
-                )
-                .join("") ||
-              '<div style="text-align: center; padding: 20px; font-size: 16px; color: #666;">ไม่มีรายการสินค้าสำหรับจัดเตรียม</div>'
-            }
+              )
+              .join("") ||
+            '<div style="text-align: center; padding: 20px; font-size: 16px; color: #666;">ไม่มีรายการสินค้าสำหรับจัดเตรียม</div>'
+          }
           </div>
           <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 15px;">
             พิมพ์เมื่อ: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: th })}
@@ -418,25 +438,21 @@ const DeliveryPage = () => {
       const matchesVehicleType = vehicleTypeFilter === "all" || delivery.vehicleType === vehicleTypeFilter
       const matchesServiceProvider =
         serviceProviderFilter === "all" || delivery.serviceProvider === serviceProviderFilter
-
       let matchesDate = true
       if (deliveryDateFilter) {
         const deliveryDate = parseISO(delivery.deliveryDate)
         const filterDate = parseISO(deliveryDateFilter)
         matchesDate = format(deliveryDate, "yyyy-MM-dd") === format(filterDate, "yyyy-MM-dd")
       }
-
       return matchesSearch && matchesStatus && matchesVehicleType && matchesServiceProvider && matchesDate
     })
   }, [deliveries, searchTerm, statusFilter, vehicleTypeFilter, serviceProviderFilter, deliveryDateFilter])
 
-  // Pagination calculations
   const totalPages = Math.ceil(filteredDeliveries.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentDeliveries = filteredDeliveries.slice(startIndex, endIndex)
 
-  // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm, statusFilter, vehicleTypeFilter, serviceProviderFilter, deliveryDateFilter])
@@ -454,7 +470,7 @@ const DeliveryPage = () => {
     setStatusFilter("all")
     setVehicleTypeFilter("all")
     setServiceProviderFilter("all")
-    setDeliveryDateFilter("")
+    setDeliveryDateFilter(undefined)
   }
 
   const handlePageChange = (page: number) => {
@@ -464,6 +480,16 @@ const DeliveryPage = () => {
   const handleItemsPerPageChange = (value: string) => {
     setItemsPerPage(Number(value))
     setCurrentPage(1)
+  }
+
+  const handleFilterToday = () => {
+    const today = format(new Date(), "yyyy-MM-dd")
+    setDeliveryDateFilter(today)
+  }
+
+  const handleFilterTomorrow = () => {
+    const tomorrow = format(new Date(Date.now() + 24 * 60 * 60 * 1000), "yyyy-MM-dd")
+    setDeliveryDateFilter(tomorrow)
   }
 
   return (
@@ -616,32 +642,42 @@ const DeliveryPage = () => {
             </div>
             <div className="mb-4">
               <Label>วันที่ส่ง</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !deliveryDateFilter && "text-muted-foreground",
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {deliveryDateFilter
-                      ? format(new Date(deliveryDateFilter), "dd/MM/yyyy", { locale: th })
-                      : "เลือกวันที่ส่ง"}
+              <div className="flex flex-col gap-2"> {/* Changed to flex-col */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal", // Make button full width
+                        !deliveryDateFilter && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {deliveryDateFilter
+                        ? format(parseISO(deliveryDateFilter), "dd/MM/yyyy", { locale: th })
+                        : "เลือกวันที่ส่ง"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={deliveryDateFilter ? parseISO(deliveryDateFilter) : undefined}
+                      onSelect={(date) => {
+                        if (date) setDeliveryDateFilter(format(date, "yyyy-MM-dd"))
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <div className="flex gap-2"> {/* New div for buttons, keep them side-by-side */}
+                  <Button variant="outline" onClick={handleFilterToday} className="whitespace-nowrap flex-1"> {/* Added flex-1 */}
+                    ส่งวันนี้
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={deliveryDateFilter ? new Date(deliveryDateFilter) : undefined}
-                    onSelect={(date) => {
-                      if (date) setDeliveryDateFilter(date.toISOString()) // หรือ format ให้เป็น 'yyyy-MM-dd'
-                    }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                  <Button variant="outline" onClick={handleFilterTomorrow} className="whitespace-nowrap flex-1"> {/* Added flex-1 */}
+                    ส่งพรุ่งนี้
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -802,8 +838,13 @@ const DeliveryPage = () => {
                                 </div>
                                 <div className="flex justify-between">
                                   <span className="text-muted-foreground">สถานะ:</span>
-                                  <Badge className={statusMap[delivery.status as keyof typeof statusMap]?.className}>
-                                    {statusMap[delivery.status as keyof typeof statusMap]?.label || delivery.status}
+                                  <Badge
+                                    className={
+                                      statusMap[delivery.status as keyof typeof statusMap]?.className
+                                    }
+                                  >
+                                    {statusMap[delivery.status as keyof typeof statusMap]?.label ||
+                                      delivery.status}
                                   </Badge>
                                 </div>
                                 {delivery.notes && (
@@ -871,7 +912,9 @@ const DeliveryPage = () => {
                     ) : (
                       currentDeliveries.map((delivery) => (
                         <TableRow key={delivery.id}>
-                          <TableCell className="font-medium text-sm truncate text-center">{delivery.orderId}</TableCell>
+                          <TableCell className="font-medium text-sm truncate text-center">
+                            {delivery.orderId}
+                          </TableCell>
                           <TableCell className="text-center">
                             <div>
                               <p className="font-medium text-sm truncate" title={delivery.customerName}>
@@ -1014,7 +1057,9 @@ const DeliveryPage = () => {
                                       <div className="flex justify-between">
                                         <span className="text-muted-foreground">สถานะ:</span>
                                         <Badge
-                                          className={statusMap[delivery.status as keyof typeof statusMap]?.className}
+                                          className={
+                                            statusMap[delivery.status as keyof typeof statusMap]?.className
+                                          }
                                         >
                                           {statusMap[delivery.status as keyof typeof statusMap]?.label ||
                                             delivery.status}

@@ -3,21 +3,7 @@
 import * as React from "react"
 import { format, parseISO } from "date-fns"
 import { th } from "date-fns/locale"
-import {
-  FileText,
-  Search,
-  CalendarIcon,
-  User,
-  Receipt,
-  Camera,
-  Download,
-  Grid3X3,
-  List,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
-
+import { FileText, Search, CalendarIcon, User, Receipt, Camera, Download, Grid3X3, List, Eye, ChevronLeft, ChevronRight, Package, Truck, CheckCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -31,6 +17,7 @@ import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DateRange } from "react-day-picker" // New import for date range
 
 // Mock orders data ที่ตรงกับ documents
 export const ordersData = [
@@ -316,34 +303,29 @@ export const ordersData = [
     notes: "จัดส่งด่วน",
   },
 ]
-
 export const orderStatusMapData = {
-  pending: { label: "รอยืนยันคำสั่งซื้อ", color: "bg-gray-50 text-gray-600 border-gray-200" },
-  packing: { label: "รอแพ็คของ", color: "bg-yellow-50 text-yellow-600 border-yellow-200" },
-  delivering: { label: "รอจัดส่ง", color: "bg-orange-50 text-orange-600 border-orange-200" },
-  completed: { label: "จัดส่งแล้ว", color: "bg-green-50 text-green-600 border-green-200" },
+  pending: { label: "รอยืนยันคำสั่งซื้อ", color: "bg-gray-50 text-gray-600 border-gray-200", textColor: "text-gray-600" },
+  packing: { label: "รอแพ็คของ", color: "bg-yellow-50 text-yellow-600 border-yellow-200", textColor: "text-orange-600" },
+  delivering: { label: "รอจัดส่ง", color: "bg-orange-50 text-orange-600 border-orange-200", textColor: "text-blue-600" },
+  completed: { label: "จัดส่งแล้ว", color: "bg-green-50 text-green-600 border-green-200", textColor: "text-green-600" },
 } as const
-
 export const paymentStatusMapData = {
-  unpaid: { label: "รอชำระเงิน", color: "bg-red-50 text-red-600 border-red-200" },
-  partially_paid: { label: "ชำระบางส่วน", color: "bg-yellow-50 text-yellow-600 border-yellow-200" },
-  paid: { label: "ชำระเงินแล้ว", color: "bg-green-50 text-green-600 border-green-200" },
+  unpaid: { label: "รอชำระเงิน", color: "bg-red-50 text-red-600 border-red-200", textColor: "text-red-600" },
+  partially_paid: { label: "ชำระบางส่วน", color: "bg-yellow-50 text-yellow-600 border-yellow-200", textColor: "text-yellow-600" },
+  paid: { label: "ชำระเงินแล้ว", color: "bg-green-50 text-green-600 border-green-200", textColor: "text-green-600" },
 } as const
-
 export const customerTypeMapData = {
   ลูกค้าเงินสด: { color: "bg-green-50 text-green-700 border-green-200" },
   ลูกค้าเครดิต: { color: "bg-purple-50 text-purple-700 border-purple-200" },
 } as const
-
 export const bankMapData = {
   cash: { name: "เงินสด", color: "bg-green-100 text-green-800" },
   scb: { name: "ไทยพาณิชย์", color: "bg-purple-100 text-purple-800" },
   kbank: { name: "กสิกรไทย", color: "bg-green-100 text-green-800" },
   bbl: { name: "กรุงเทพ", color: "bg-blue-100 text-blue-800" },
-  ktb: { name: "กรุงไทย", color: "bg-blue-100 text-blue-800" },
+  ktb: { name: "กุงไทย", color: "bg-blue-100 text-blue-800" },
   tmb: { name: "ทหารไทย", color: "bg-yellow-100 text-yellow-800" },
 } as const
-
 // Sample documents data
 export const documentsData = [
   {
@@ -351,6 +333,7 @@ export const documentsData = [
     orderId: "ORD-001",
     customerName: "นายสมชาย ใจดี",
     date: "2024-07-27",
+    orderDate: "2024-07-27", // Added orderDate to documents for filtering
     paymentSlips: [
       {
         id: "slip-001-1",
@@ -391,6 +374,7 @@ export const documentsData = [
     orderId: "ORD-002",
     customerName: "บริษัท อาหารทะเล จำกัด",
     date: "2024-07-28",
+    orderDate: "2024-07-28",
     paymentSlips: [
       {
         id: "slip-002-1",
@@ -419,6 +403,7 @@ export const documentsData = [
     orderId: "ORD-003",
     customerName: "นางสาวมาลี สวยงาม",
     date: "2024-07-26",
+    orderDate: "2024-07-26",
     paymentSlips: [
       {
         id: "slip-003-1",
@@ -441,6 +426,7 @@ export const documentsData = [
     orderId: "ORD-004",
     customerName: "ร้านอาหารทะเลสด",
     date: "2024-07-27",
+    orderDate: "2024-07-27",
     paymentSlips: [
       {
         id: "slip-004-1",
@@ -469,6 +455,7 @@ export const documentsData = [
     orderId: "ORD-005",
     customerName: "นายประยุทธ์ รักทะเล",
     date: "2024-07-28",
+    orderDate: "2024-07-28",
     paymentSlips: [],
     deliveryPhotos: [
       {
@@ -484,6 +471,7 @@ export const documentsData = [
     orderId: "ORD-006",
     customerName: "ร้านอาหารญี่ปุ่น",
     date: "2024-07-25",
+    orderDate: "2024-07-25",
     paymentSlips: [
       {
         id: "slip-006-1",
@@ -519,6 +507,7 @@ export const documentsData = [
     orderId: "ORD-007",
     customerName: "ร้านอาหารเกาหลี",
     date: "2024-07-24",
+    orderDate: "2024-07-24",
     paymentSlips: [
       {
         id: "slip-007-1",
@@ -541,6 +530,7 @@ export const documentsData = [
     orderId: "ORD-008",
     customerName: "นายสมศักดิ์ รักปลา",
     date: "2024-07-23",
+    orderDate: "2024-07-23",
     paymentSlips: [],
     deliveryPhotos: [
       {
@@ -562,6 +552,7 @@ export const documentsData = [
     orderId: "ORD-009",
     customerName: "ร้านอาหารทะเลใหม่",
     date: "2024-07-29",
+    orderDate: "2024-07-29",
     paymentSlips: [],
     deliveryPhotos: [],
   },
@@ -570,6 +561,7 @@ export const documentsData = [
     orderId: "ORD-010",
     customerName: "นางสาวฟ้าใส",
     date: "2024-07-29",
+    orderDate: "2024-07-29",
     paymentSlips: [
       {
         id: "slip-010-1",
@@ -585,6 +577,7 @@ export const documentsData = [
     orderId: "ORD-011",
     customerName: "นายแดง",
     date: "2024-07-30",
+    orderDate: "2024-07-30",
     paymentSlips: [
       {
         id: "slip-011-1",
@@ -702,9 +695,11 @@ const GalleryViewer = ({
 export default function DocumentsPage() {
   const [documents, setDocuments] = React.useState(documentsData)
   const [searchTerm, setSearchTerm] = React.useState("")
-  const [dateFilter, setDateFilter] = React.useState<Date | undefined>(undefined)
+  const [dateRangeFilter, setDateRangeFilter] = React.useState<DateRange | undefined>(undefined) // Changed to DateRange
   const [documentTypeFilter, setDocumentTypeFilter] = React.useState("all")
-  const [customerTypeFilter, setCustomerTypeFilter] = React.useState("all") // New state for customer type filter
+  const [customerTypeFilter, setCustomerTypeFilter] = React.useState("all")
+  const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = React.useState<string | null>(null) // New state for order status filter
+  const [selectedPaymentStatusFilter, setSelectedPaymentStatusFilter] = React.useState<string | null>(null) // New state for payment status filter
   const [viewMode, setViewMode] = React.useState<"table" | "grid">("table")
   const [selectedImages, setSelectedImages] = React.useState<
     Array<{ id: string; name: string; url: string; uploadedAt: string }>
@@ -720,23 +715,67 @@ export default function DocumentsPage() {
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
 
+  // Calculate counts for order statuses (only 'all' is needed for the cards)
+  const orderStatusCounts = React.useMemo(() => {
+    return {
+      all: ordersData.length,
+    }
+  }, [])
+
+  // Calculate counts for payment statuses (only 'all' is needed for the cards)
+  const paymentStatusCounts = React.useMemo(() => {
+    return {
+      all: ordersData.length,
+    }
+  }, [])
+
   // Filter and flatten documents
   const filteredDocuments = React.useMemo(() => {
     return documents.filter((doc) => {
       const order = ordersData.find((o) => o.id === doc.orderId) // Find the corresponding order
+      if (!order) return false // Ensure there's a corresponding order
+
       const matchesSearch =
         doc.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
         doc.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesDate = !dateFilter || doc.date === format(dateFilter, "yyyy-MM-dd")
+
+      const docOrderDate = parseISO(doc.orderDate) // Use doc.orderDate for filtering
+      const matchesDateRange =
+        !dateRangeFilter?.from ||
+        !dateRangeFilter?.to ||
+        (docOrderDate >= dateRangeFilter.from && docOrderDate <= dateRangeFilter.to)
+
       const matchesType =
         documentTypeFilter === "all" ||
         (documentTypeFilter === "payment" && doc.paymentSlips.length > 0) ||
         (documentTypeFilter === "delivery" && doc.deliveryPhotos.length > 0)
-      const matchesCustomerType = customerTypeFilter === "all" || (order && order.customerType === customerTypeFilter)
 
-      return matchesSearch && matchesDate && matchesType && matchesCustomerType
+      const matchesCustomerType = customerTypeFilter === "all" || order.customerType === customerTypeFilter
+
+      const matchesOrderStatus =
+        !selectedOrderStatusFilter || selectedOrderStatusFilter === "all" || order.orderStatus === selectedOrderStatusFilter
+
+      const matchesPaymentStatus =
+        !selectedPaymentStatusFilter || selectedPaymentStatusFilter === "all" || order.paymentStatus === selectedPaymentStatusFilter
+
+      return (
+        matchesSearch &&
+        matchesDateRange &&
+        matchesType &&
+        matchesCustomerType &&
+        matchesOrderStatus &&
+        matchesPaymentStatus
+      )
     })
-  }, [documents, searchTerm, dateFilter, documentTypeFilter, customerTypeFilter]) // Add customerTypeFilter to dependencies
+  }, [
+    documents,
+    searchTerm,
+    dateRangeFilter,
+    documentTypeFilter,
+    customerTypeFilter,
+    selectedOrderStatusFilter,
+    selectedPaymentStatusFilter,
+  ])
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage)
@@ -747,7 +786,7 @@ export default function DocumentsPage() {
   // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, dateFilter, documentTypeFilter, customerTypeFilter]) // Add customerTypeFilter to dependencies
+  }, [searchTerm, dateRangeFilter, documentTypeFilter, customerTypeFilter, selectedOrderStatusFilter, selectedPaymentStatusFilter])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -796,9 +835,11 @@ export default function DocumentsPage() {
 
   const handleClearFilters = () => {
     setSearchTerm("")
-    setDateFilter(undefined)
+    setDateRangeFilter(undefined)
     setDocumentTypeFilter("all")
-    setCustomerTypeFilter("all") // Clear customer type filter
+    setCustomerTypeFilter("all")
+    setSelectedOrderStatusFilter(null) // Clear order status filter
+    setSelectedPaymentStatusFilter(null) // Clear payment status filter
   }
 
   const handleViewOrder = (orderId: string) => {
@@ -809,10 +850,6 @@ export default function DocumentsPage() {
     }
   }
 
-  const totalDocuments = documents.length
-  const totalPaymentSlips = documents.reduce((sum, doc) => sum + doc.paymentSlips.length, 0)
-  const totalDeliveryPhotos = documents.reduce((sum, doc) => sum + doc.deliveryPhotos.length, 0)
-
   return (
     <div className="space-y-6">
       {/* Header with Actions */}
@@ -821,20 +858,39 @@ export default function DocumentsPage() {
           <h1 className="text-3xl font-bold">เอกสาร</h1>
           <p className="text-muted-foreground">จัดการเอกสารและรูปภาพจากการจัดส่ง</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-            <Receipt className="h-3 w-3 mr-1" />
-            {totalPaymentSlips} สลิป
-          </Badge>
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            <Camera className="h-3 w-3 mr-1" />
-            {totalDeliveryPhotos} รูป
-          </Badge>
-          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-            <FileText className="h-3 w-3 mr-1" />
-            {totalDocuments} คำสั่งซื้อ
-          </Badge>
-        </div>
+      </div>
+
+      {/* Filter Cards: All Deliveries and All Payments */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-shadow border-none",
+          )}
+          onClick={() => setSelectedOrderStatusFilter(null)}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">การจัดส่งทั้งหมด</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{orderStatusCounts.all}</div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-shadow border-none",
+          )}
+          onClick={() => setSelectedPaymentStatusFilter(null)}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">การชำระเงินทั้งหมด</CardTitle>
+            <Receipt className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{paymentStatusCounts.all}</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Action Bar */}
@@ -874,7 +930,8 @@ export default function DocumentsPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div className="flex-1 min-w-0">
+            {/* ช่องค้นหา */}
+            <div className="basis-1/4">
               <Label htmlFor="search">ค้นหา</Label>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -887,23 +944,47 @@ export default function DocumentsPage() {
                 />
               </div>
             </div>
-            <div className="w-full sm:w-48">
+
+            {/* ช่องวันที่ */}
+            <div className="grow">
               <Label>วันที่</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={cn("w-full justify-start text-left font-normal", !dateFilter && "text-muted-foreground")}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !dateRangeFilter?.from && !dateRangeFilter?.to && "text-muted-foreground"
+                    )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateFilter ? format(dateFilter, "dd/MM/yyyy", { locale: th }) : "เลือกวันที่"}
+                    {dateRangeFilter?.from ? (
+                      dateRangeFilter.to ? (
+                        <>
+                          {format(dateRangeFilter.from, "dd/MM/yyyy", { locale: th })} -{" "}
+                          {format(dateRangeFilter.to, "dd/MM/yyyy", { locale: th })}
+                        </>
+                      ) : (
+                        format(dateRangeFilter.from, "dd/MM/yyyy", { locale: th })
+                      )
+                    ) : (
+                      "เลือกช่วงวันที่"
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 z-[9999]" side="bottom" align="start">
-                  <Calendar mode="single" selected={dateFilter} onSelect={(date) => setDateFilter(date)} initialFocus />
+                  <Calendar
+                    mode="range"
+                    selected={dateRangeFilter}
+                    onSelect={setDateRangeFilter}
+                    initialFocus
+                    numberOfMonths={2}
+                  />
                 </PopoverContent>
               </Popover>
             </div>
+
+            {/* ประเภทเอกสาร */}
             <div className="w-full sm:w-48">
               <Label>ประเภทเอกสาร</Label>
               <Select value={documentTypeFilter} onValueChange={setDocumentTypeFilter}>
@@ -917,7 +998,8 @@ export default function DocumentsPage() {
                 </SelectContent>
               </Select>
             </div>
-            {/* New Customer Type Filter */}
+
+            {/* ประเภทลูกค้า */}
             <div className="w-full sm:w-48">
               <Label>ประเภทลูกค้า</Label>
               <Select value={customerTypeFilter} onValueChange={setCustomerTypeFilter}>
@@ -927,10 +1009,12 @@ export default function DocumentsPage() {
                 <SelectContent>
                   <SelectItem value="all">ทั้งหมด</SelectItem>
                   <SelectItem value="ลูกค้าเงินสด">ลูกค้าเงินสด</SelectItem>
-                  <SelectItem value="ลูกค้าเครดิต">ลูกค้าเครนดิต</SelectItem>
+                  <SelectItem value="ลูกค้าเครดิต">ลูกค้าเครดิต</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {/* ปุ่มล้างตัวกรอง */}
             <Button variant="outline" className="w-full sm:w-auto bg-transparent" onClick={handleClearFilters}>
               ล้างตัวกรอง
             </Button>
@@ -946,7 +1030,7 @@ export default function DocumentsPage() {
               <CardTitle>รายการเอกสาร</CardTitle>
               <CardDescription>
                 แสดง {startIndex + 1}-{Math.min(endIndex, filteredDocuments.length)} จาก {filteredDocuments.length}{" "}
-                รายการ (ทั้งหมด {totalDocuments} รายการ)
+                รายการ (ทั้งหมด {documents.length} รายการ)
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -1122,7 +1206,6 @@ export default function DocumentsPage() {
                                           className="h-8 px-2 text-xs bg-transparent"
                                         >
                                           <Eye className="h-3 w-3 mr-1" />
-                                      
                                         </Button>
                                       </div>
                                     </td>
@@ -1201,7 +1284,6 @@ export default function DocumentsPage() {
                         )
                       )
                     })()}
-
                     {/* Payment Slips */}
                     {doc.paymentSlips.length > 0 && (
                       <div>
@@ -1230,11 +1312,7 @@ export default function DocumentsPage() {
                                 openImageViewer(index)
                               }}
                             >
-                              <img
-                                src={slip.url || "/placeholder.svg"}
-                                alt={slip.name}
-                                className="w-full h-full object-cover"
-                              />
+                              <img src={slip.url || "/placeholder.svg"} alt={slip.name} className="w-full h-full object-cover" />
                             </div>
                           ))}
                         </div>
@@ -1268,11 +1346,7 @@ export default function DocumentsPage() {
                                 openImageViewer(index)
                               }}
                             >
-                              <img
-                                src={photo.url || "/placeholder.svg"}
-                                alt={photo.name}
-                                className="w-full h-full object-cover"
-                              />
+                              <img src={photo.url || "/placeholder.svg"} alt={photo.name} className="w-full h-full object-cover" />
                             </div>
                           ))}
                         </div>
@@ -1380,7 +1454,7 @@ export default function DocumentsPage() {
                       </Badge>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">ช่องทางการสั่งซื้อ</Label>
+                      <Label className="textsm font-medium">ช่องทางการสั่งซื้อ</Label>
                       <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700 border-blue-200">
                         {selectedOrder.channel}
                       </Badge>
@@ -1392,7 +1466,6 @@ export default function DocumentsPage() {
                   </div>
                 </CardContent>
               </Card>
-
               {/* ข้อมูลคำสั่งซื้อ */}
               <Card className="border-0 shadow-sm rounded-2xl bg-gray-50 border-0 rounded-2xl">
                 <CardHeader>
@@ -1439,17 +1512,15 @@ export default function DocumentsPage() {
                   </div>
                 </CardContent>
               </Card>
-
               {/* ที่อยู่จัดส่ง */}
               <Card className="border-0 shadow-sm rounded-2xl bg-gray-50 ">
                 <CardHeader>
                   <CardTitle className="text-lg">ที่อยู่จัดส่ง</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm">{selectedOrder.shippingAddress}</p>
+                  <p className="text-sm">{String(selectedOrder.shippingAddress)}</p>
                 </CardContent>
               </Card>
-
               {/* รายการสินค้า */}
               <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
                 <CardHeader>
@@ -1483,14 +1554,11 @@ export default function DocumentsPage() {
                   <Separator className="my-4" />
                   <div className="flex justify-end">
                     <div className="text-right">
-                      <div className="text-lg font-semibold">
-                        ยอดรวมทั้งสิ้น: ฿{selectedOrder.totalPrice.toLocaleString()}
-                      </div>
+                      <div className="text-lg font-semibold">ยอดรวมทั้งสิ้น: ฿{selectedOrder.totalPrice.toLocaleString()}</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-
               {/* หมายเหตุ */}
               {selectedOrder.notes && (
                 <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
@@ -1502,7 +1570,6 @@ export default function DocumentsPage() {
                   </CardContent>
                 </Card>
               )}
-
               {/* สถานะเอกสาร */}
               <Card className="border-0 shadow-sm rounded-2xl bg-gray-50">
                 <CardHeader>
@@ -1525,7 +1592,6 @@ export default function DocumentsPage() {
                   </div>
                 </CardContent>
               </Card>
-
               <div className="flex justify-end">
                 <Button
                   variant="outline"
@@ -1539,17 +1605,10 @@ export default function DocumentsPage() {
           </DialogContent>
         </Dialog>
       )}
-
       {/* Gallery Viewer */}
       {isGalleryOpen && (
-        <GalleryViewer
-          images={selectedImages}
-          title={galleryTitle}
-          onClose={closeGallery}
-          onImageClick={openImageViewer}
-        />
+        <GalleryViewer images={selectedImages} title={galleryTitle} onClose={closeGallery} onImageClick={openImageViewer} />
       )}
-
       {/* Image Viewer */}
       {isImageViewerOpen && (
         <ImageViewer

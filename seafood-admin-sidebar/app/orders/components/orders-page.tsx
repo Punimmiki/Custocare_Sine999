@@ -1,7 +1,7 @@
 "use client"
 import React from "react"
 import { DialogTrigger } from "@/components/ui/dialog"
-import { CalendarIcon, Search, Plus, ChevronLeft, ChevronRight, Eye, CreditCard, Banknote, Edit } from "lucide-react"
+import { CalendarIcon, Search, Plus, ChevronLeft, ChevronRight, Eye, CreditCard, Banknote, Edit, Printer } from 'lucide-react'
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { useToast } from "@/hooks/use-toast"
 
 interface OrderItem {
   name: string
@@ -196,7 +197,7 @@ const orders: Order[] = [
       { name: "กุ้งขาว", quantity: 3, unit: "กิโลกรัม", price: 180, discount: 50, total: 490 },
     ],
     shippingAddress: "654 ถนนลาดพร้าว แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900",
-    notes: "ชำระเงินมัดจำแล้ว 1,500 บาท",
+    notes: "ชำระเงินมัดจำแล้ว 1,500 ��าท",
     shippingCost: 572.5,
   },
   {
@@ -272,10 +273,125 @@ export default function OrdersPage() {
   const [summaryDateTo, setSummaryDateTo] = React.useState<Date>()
   const [activeCardFilter, setActiveCardFilter] = React.useState<string | null>(null)
   const [selectedOrderIds, setSelectedOrderIds] = React.useState<Set<string>>(new Set())
+  const { toast } = useToast()
 
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
+
+  // Function to generate print content for Packing List
+  const generatePrintContent = (order: Order) => {
+    const title = "ใบจัดสินค้า/ใบส่งของ"
+    const content = `
+          <div style="font-family: Arial, sans-serif; padding: 10px; max-width: 800px; border: 1px solid #000; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div style="text-align: center; flex-grow: 1;">
+                <h2 style="margin: 0; font-size: 24px;">${title}</h2>
+                <p style="margin: 0; font-size: 14px; color: #666;">SHIPPING SLIP</p>
+              </div>
+            </div>
+            <div style="padding: 10px; border-top: 1px solid #000; background-color: #f8f8f8;">
+              <h3 style="margin: 0 0 5px 0; font-size: 16px;">ข้อมูลผู้ส่ง (Sender)</h3>
+              <p style="margin: 0; font-size: 14px;"><strong>ชื่อ:</strong> ชื่อบริษัท (กรุณาตั้งค่าใน Settings)</p>
+              <p style="margin: 0; font-size: 14px;"><strong>โทร:</strong> เบอร์โทรบริษัท (กรุณาตั้งค่าใน Settings)</p>
+              <p style="margin: 0; font-size: 14px;"><strong>ที่อยู่:</strong> ที่อยู่บริษัท (กรุณาตั้งค่าใน Settings)</p>
+            </div>
+            <div style="padding: 10px; border-top: 1px solid #000; background-color: #f8f8f8;">
+              <h3 style="margin: 0 0 5px 0; font-size: 16px;">ข้อมูลผู้รับ (Receiver)</h3>
+              <p style="margin: 0; font-size: 14px;"><strong>ชื่อ:</strong> ${order.customerName}</p>
+              <p style="margin: 0; font-size: 14px;"><strong>โทร:</strong> N/A</p>
+              <p style="margin: 0; font-size: 14px;"><strong>ที่อยู่:</strong> ${order.shippingAddress}</p>
+            </div>
+            <div style="display: flex; border-top: 1px solid #000;">
+              <div style="flex: 1; padding: 10px; border-right: 1px solid #000; background-color: #f8f9fa;">
+                <p style="margin: 0; font-size: 14px;"><strong>เลขที่คำสั่งซื้อ</strong></p>
+                <p style="margin: 0; font-size: 14px;">${order.id}</p>
+              </div>
+              <div style="flex: 1; padding: 10px; background-color: #f8f8f8;">
+                <p style="margin: 0; font-size: 14px;"><strong>วันที่ส่งสินค้า</strong></p>
+                <p style="margin: 0; font-size: 14px;">${format(new Date(order.receiveDate), "dd/MM/yyyy", {
+                  locale: th,
+                })}</p>
+              </div>
+            </div>
+            <div style="padding: 10px; border-top: 1px solid #000;">
+              <h3 style="margin: 0 0 10px 0; font-size: 16px;">รายการสินค้า</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th style="border: 1px solid #000; padding: 8px; text-align: center; background-color: #f0f0f0; font-size: 14px;">ลำดับ</th>
+                    <th style="border: 1px solid #000; padding: 8px; text-align: left; background-color: #f0f0f0; font-size: 14px;">รายการสินค้า</th>
+                    <th style="1px solid #000; padding: 8px; text-align: center; background-color: #f0f0f0; font-size: 14px;">จำนวน</th>
+                    <th style="border: 1px solid #000; padding: 8px; text-align: center; background-color: #f0f0f0; font-size: 14px;">หน่วย</th>
+                  </tr>
+                </thead>
+                <tbody>${order.items?.map((item: OrderItem, index: number) => `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${index + 1
+                    }</td>
+                    <td style="border: 1px solid #000; padding: 8px; font-size: 14px;">${item.name}</td>
+                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${item.quantity
+                    }</td>
+                    <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">${item.unit
+                    }</td>
+                  </tr>`,).join("") ||'<tr><td colspan="4" style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 14px;">ไม่มีรายการสินค้า</td></tr>'
+                }
+                </tbody>
+              </table>
+            </div>
+            <div style="display: flex; border-top: 1px solid #000;">
+              <div style="flex: 1; padding: 10px; border-right: 1px solid #000; background-color: #f8f8f8;">
+                <p style="margin: 0; font-size: 14px;"><strong>ประเภทการส่ง</strong></p>
+                <p style="margin: 0; font-size: 14px;">${order.deliveryMethod || "ไม่ระบุ"}</p>
+              </div>
+              <div style="flex: 1; padding: 10px; background-color: #f8f8f8;">
+                <p style="margin: 0; font-size: 14px;"><strong>หมายเหตุ</strong></p>
+                <p style="margin: 0; font-size: 14px;">${order.notes || "ไม่มี"}</p>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+              <div style="width: 30%; border: 1px solid #000; padding: 10px; text-align: center; background-color: #f8f8f8;">
+                <p style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold; color: #000;">ผู้จัดสินค้า</p>
+                <p style="margin: 0 0 15px 0; font-size: 14px;">Receiver</p>
+                <p style="margin: 0; font-size: 14px;">ลงชื่อ / Signature</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 5px 0; height: 1px;"></div>
+                <p style="margin: 0; font-size: 14px;">วันที่ / Date:</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 0 0; height: 1px;"></div>
+              </div>
+              <div style="width: 30%; border: 1px solid #000; padding: 10px; text-align: center; background-color: #f8f8f8;">
+                <p style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">ผู้ตรวจสอบ</p>
+                <p style="margin: 0 0 15px 0; font-size: 14px;">Inspector</p>
+                <p style="margin: 0; font-size: 14px;">ลงชื่อ / Signature</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 5px 0; height: 1px;"></div>
+                <p style="margin: 0; font-size: 14px;">วันที่ / Date:</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 0 0; height: 1px;"></div>
+              </div>
+              <div style="width: 30%; border: 1px solid #000; padding: 10px; text-align: center; background-color: #f8f8f8;">
+                <p style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">ผู้จัดส่ง</p>
+                <p style="margin: 0 0 15px 0; font-size: 14px;">Delivery Staff</p>
+                <p style="margin: 0; font-size: 14px;">ลงชื่อ / Signature</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 5px 0; height: 1px;"></div>
+                <p style="margin: 0; font-size: 14px;">วันที่ / Date:</p>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0 0 0; height: 1px;"></div>
+              </div>
+            </div>
+          </div>`
+    return content
+  }
+
+  const handlePrintDocument = (order: Order) => {
+    toast({
+      title: `กำลังพิมพ์ Packing List`,
+      description: `พิมพ์ Packing List สำหรับ ${order.id} - ${order.customerName}`,
+    })
+    const printContent = generatePrintContent(order)
+    const printWindow = window.open("", "_blank")
+    if (printWindow) {
+      printWindow.document.write(printContent)
+      printWindow.document.close()
+      printWindow.print()
+    }
+  }
 
   // คำนวณยอดต่างๆ ตาม filter วันที่
   const getFilteredOrdersForSummary = () => {
@@ -289,32 +405,21 @@ export default function OrdersPage() {
 
   const filteredOrdersForSummary = getFilteredOrdersForSummary()
   const totalAmount = filteredOrdersForSummary.reduce((sum, o) => sum + o.totalPrice, 0)
-  const totalPaid = filteredOrdersForSummary
-    .filter((o) => o.paymentStatus === "paid")
-    .reduce((sum, o) => sum + o.totalPrice, 0)
-  const totalUnpaid = filteredOrdersForSummary
-    .filter((o) => o.paymentStatus === "unpaid" || o.paymentStatus === "partially_paid")
-    .reduce((sum, o) => sum + o.totalPrice, 0)
+  const totalPaid = filteredOrdersForSummary.filter((o) => o.paymentStatus === "paid").reduce((sum, o) => sum + o.totalPrice, 0)
+  const totalUnpaid = filteredOrdersForSummary.filter((o) => o.paymentStatus === "unpaid" || o.paymentStatus === "partially_paid").reduce((sum, o) => sum + o.totalPrice, 0)
 
   // คำนวณยอดตามธนาคาร
-  const paidOrdersByBank = filteredOrdersForSummary
-    .filter((o) => o.paymentStatus === "paid")
-    .reduce(
-      (acc, order) => {
-        const bank = order.paymentMethod
-        if (!acc[bank]) {
-          acc[bank] = 0
-        }
-        acc[bank] += order.totalPrice
-        return acc
-      },
-      {} as Record<string, number>,
-    )
+  const paidOrdersByBank = filteredOrdersForSummary.filter((o) => o.paymentStatus === "paid").reduce((acc, order) => {
+    const bank = order.paymentMethod
+    if (!acc[bank]) {
+      acc[bank] = 0
+    }
+    acc[bank] += order.totalPrice
+    return acc
+  }, {} as Record<string, number>,)
 
   // คำสั่งซื้อล่าสุด (5 รายการ)
-  const latestOrders = filteredOrdersForSummary
-    .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
-    .slice(0, 5)
+  const latestOrders = filteredOrdersForSummary.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 5)
 
   // กรอง orders ตาม filter
   const filteredOrders = orders.filter((order) => {
@@ -332,7 +437,6 @@ export default function OrdersPage() {
     const matchesOrderDate = !dateFrom || orderDate >= dateFrom
     const receiveDate = new Date(order.receiveDate)
     const matchesReceiveDate = !receiveDateFrom || receiveDate >= receiveDateFrom
-
     return (
       matchesSearch &&
       matchesCustomerType &&
@@ -424,8 +528,7 @@ export default function OrdersPage() {
       .filter((order) => order!.customerType === "ลูกค้าเครดิต" && order!.paymentStatus !== "paid") as Order[]
 
     if (creditOrdersToSendBill.length > 0) {
-      console.log(
-        "Sending bills for the following credit orders:",
+      console.log("Sending bills for the following credit orders:",
         creditOrdersToSendBill.map((o) => o.id),
       )
       alert(`ส่งบิลสำหรับคำสั่งซื้อลูกค้าเครดิต: ${creditOrdersToSendBill.map((o) => o.id).join(", ")}`)
@@ -440,15 +543,11 @@ export default function OrdersPage() {
   // Determine if "Select All" checkbox should be checked
   const allCreditOrdersOnCurrentPageSelected =
     currentOrders.filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid").length > 0 &&
-    currentOrders
-      .filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid")
-      .every((order) => selectedOrderIds.has(order.id))
+    currentOrders.filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid").every((order) => selectedOrderIds.has(order.id))
 
   // Determine if "Select All" checkbox should be indeterminate
   const isIndeterminate =
-    currentOrders
-      .filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid")
-      .some((order) => selectedOrderIds.has(order.id)) && !allCreditOrdersOnCurrentPageSelected
+    currentOrders.filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid").some((order) => selectedOrderIds.has(order.id)) && !allCreditOrdersOnCurrentPageSelected
 
   const selectedBillCount = Array.from(selectedOrderIds).filter((id) => {
     const order = orders.find((o) => o.id === id)
@@ -526,15 +625,11 @@ export default function OrdersPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label className="text-sm font-medium">วันที่สั่งซื้อ</Label>
-                          <p className="text-sm">
-                            {format(new Date(selectedOrder.orderDate), "dd/MM/yyyy", { locale: th })}
-                          </p>
+                          <p className="text-sm">{format(new Date(selectedOrder.orderDate), "dd/MM/yyyy", { locale: th })}</p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium">วันที่ต้องการรับสินค้า</Label>
-                          <p className="text-sm">
-                            {format(new Date(selectedOrder.receiveDate), "dd/MM/yyyy", { locale: th })}
-                          </p>
+                          <p className="text-sm">{format(new Date(selectedOrder.receiveDate), "dd/MM/yyyy", { locale: th })}</p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium">สถานะคำสั่งซื้อ</Label>
@@ -599,9 +694,7 @@ export default function OrdersPage() {
                                 <TableCell className="text-center">{item.quantity}</TableCell>
                                 <TableCell className="text-center">{item.unit}</TableCell>
                                 <TableCell className="text-center">฿{item.price.toLocaleString()}</TableCell>
-                                <TableCell className="text-center">
-                                  {item.discount ? `฿${item.discount.toLocaleString()}` : "-"}
-                                </TableCell>
+                                <TableCell className="text-center">{item.discount ? `฿${item.discount.toLocaleString()}` : "-"}</TableCell>
                                 <TableCell className="text-center">฿{item.total.toLocaleString()}</TableCell>
                               </TableRow>
                             ))}
@@ -662,11 +755,11 @@ export default function OrdersPage() {
                     </CardContent>
                   </Card>
 
-                  <div className="flex justify-end">
+                  <div className="flex justify-end mt-6">
                     <Button
                       variant="outline"
                       onClick={() => setShowOrderDetail(false)}
-                      className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent"
+                      className="border-0 shadow-sm rounded-2xl hover:shadow-md bg-transparent mr-2"
                     >
                       ปิด
                     </Button>
@@ -783,9 +876,7 @@ export default function OrdersPage() {
                         <div key={bank} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
                           <div className="flex items-center space-x-2">
                             {bank === "cash" ? <Banknote className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
-                            <span className="text-sm font-medium">
-                              {bankMap[bank as keyof typeof bankMap]?.name || bank}
-                            </span>
+                            <span className="text-sm font-medium">{bankMap[bank as keyof typeof bankMap]?.name || bank}</span>
                           </div>
                           <span className="text-sm font-bold">฿{amount.toLocaleString()}</span>
                         </div>
@@ -830,7 +921,6 @@ export default function OrdersPage() {
                     </div>
                   </CardContent>
                 </Card>
-
                 <Button
                   variant="outline"
                   className="w-full mt-6 bg-transparent border-0 shadow-sm rounded-2xl hover:shadow-md"
@@ -860,7 +950,9 @@ export default function OrdersPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center">
-              <div className="text-2xl font-bold">{orders.filter((o) => o.orderStatus === status).length}</div>
+              <div className="text-2xl font-bold">
+                {orders.filter((o) => o.orderStatus === status).length}
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -1083,15 +1175,11 @@ export default function OrdersPage() {
                       onCheckedChange={(checked) => {
                         if (checked) {
                           const newSelected = new Set(selectedOrderIds)
-                          currentOrders
-                            .filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid")
-                            .forEach((order) => newSelected.add(order.id))
+                          currentOrders.filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid").forEach((order) => newSelected.add(order.id))
                           setSelectedOrderIds(newSelected)
                         } else {
                           const newSelected = new Set(selectedOrderIds)
-                          currentOrders
-                            .filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid")
-                            .forEach((order) => newSelected.delete(order.id))
+                          currentOrders.filter((o) => o.customerType === "ลูกค้าเครดิต" && o.paymentStatus !== "paid").forEach((order) => newSelected.delete(order.id))
                           setSelectedOrderIds(newSelected)
                         }
                       }}
@@ -1153,10 +1241,7 @@ export default function OrdersPage() {
                       {format(new Date(order.receiveDate), "dd/MM/yyyy", { locale: th })}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge
-                        variant="outline"
-                        className={cn("border", orderStatusMap[order.orderStatus as keyof typeof orderStatusMap].color)}
-                      >
+                      <Badge variant="outline" className={cn("border", orderStatusMap[order.orderStatus as keyof typeof orderStatusMap].color)}>
                         {orderStatusMap[order.orderStatus as keyof typeof orderStatusMap].label}
                       </Badge>
                     </TableCell>
@@ -1214,6 +1299,14 @@ export default function OrdersPage() {
                           className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md"
                         >
                           <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePrintDocument(order)}
+                          className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md"
+                        >
+                          <Printer className="w-4 h-4" />
                         </Button>
                         {order.orderStatus === "pending" ? (
                           <Button

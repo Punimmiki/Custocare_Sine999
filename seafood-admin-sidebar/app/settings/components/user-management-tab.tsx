@@ -3,17 +3,15 @@
 import * as React from "react"
 import { format } from "date-fns"
 import { th } from "date-fns/locale"
-import { Plus, Edit, Eye, EyeOff } from "lucide-react"
+import { Plus, Edit, Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog" // เพิ่ม DialogFooter
 
 // Sample user data
 const initialUsers = [
@@ -66,43 +64,29 @@ const roleMap = {
   Delivery: { label: "คนส่งของ", variant: "outline" as const, color: "bg-orange-100 text-orange-800" },
 }
 
-const permissions = [
-  { id: "pos", label: "ขายหน้าร้าน (POS)", description: "เข้าถึงระบบขายหน้าร้าน" },
-  { id: "orders", label: "จัดการคำสั่งซื้อ", description: "สร้าง แก้ไข และดูคำสั่งซื้อ" },
-  { id: "orders_view", label: "ดูคำสั่งซื้อ", description: "ดูคำสั่งซื้อเท่านั้น" },
-  { id: "customers", label: "จัดการลูกค้า", description: "เพิ่ม แก้ไข และดูข้อมูลลูกค้า" },
-  { id: "products", label: "จัดการสินค้า", description: "เพิ่ม แก้ไข และดูข้อมูลสินค้า" },
-  { id: "delivery", label: "จัดการการจัดส่ง", description: "จัดการและติดตามการจัดส่ง" },
-  { id: "reports", label: "ดูรายงาน", description: "เข้าถึงรายงานและสถิติ" },
-  { id: "settings", label: "ตั้งค่าระบบ", description: "จัดการการตั้งค่าระบบ" },
-]
-
 export function UserManagementTab() {
   const [users, setUsers] = React.useState(initialUsers)
   const [isAddUserOpen, setIsAddUserOpen] = React.useState(false)
   const [editingUser, setEditingUser] = React.useState<any>(null)
   const [showPassword, setShowPassword] = React.useState(false)
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false)
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = React.useState(false) // State สำหรับ Pop-up แจ้งเตือนความสำเร็จ
+  const [successMessage, setSuccessMessage] = React.useState("") // State สำหรับข้อความแจ้งเตือน
 
   // Form state
   const [formData, setFormData] = React.useState({
     username: "",
     fullName: "",
-    email: "",
     password: "",
-    role: "",
-    isActive: true,
-    permissions: [] as string[],
+    role: "", // Role will be set internally, not by user input
   })
 
   const handleAddUser = () => {
     setFormData({
       username: "",
       fullName: "",
-      email: "",
       password: "",
-      role: "",
-      isActive: true,
-      permissions: [],
+      role: "Owner", // Default role for new users as per example
     })
     setEditingUser(null)
     setIsAddUserOpen(true)
@@ -112,11 +96,8 @@ export function UserManagementTab() {
     setFormData({
       username: user.username,
       fullName: user.fullName,
-      email: user.email,
-      password: "",
-      role: user.role,
-      isActive: user.isActive,
-      permissions: user.permissions,
+      password: "", // Password is not pre-filled for security
+      role: user.role, // Display existing role
     })
     setEditingUser(user)
     setIsAddUserOpen(true)
@@ -124,40 +105,50 @@ export function UserManagementTab() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setIsConfirmDialogOpen(true) // Open confirmation dialog
+  }
 
+  const handleConfirmSubmit = () => {
     if (editingUser) {
       // Update existing user
       setUsers(
-        users.map((user) => (user.id === editingUser.id ? { ...user, ...formData, lastLogin: user.lastLogin } : user)),
+        users.map((user) =>
+          user.id === editingUser.id
+            ? {
+              ...user,
+              username: formData.username,
+              fullName: formData.fullName,
+              // Password is not updated if the field is disabled (greyed out)
+              // Only update password if it's provided (i.e., for new users or if user explicitly types)
+              ...(formData.password && { password: formData.password }),
+            }
+            : user,
+        ),
       )
+      setSuccessMessage(`ข้อมูลผู้ใช้ ${formData.username} ได้รับการบันทึกแล้ว`) // ตั้งค่าข้อความ
     } else {
       // Add new user
       const newUser = {
         id: String(users.length + 1),
-        ...formData,
+        username: formData.username,
+        fullName: formData.fullName,
+        email: "", // Email is not collected in this simplified form
+        password: formData.password,
+        role: "Owner", // Hardcode role to Owner for new users
+        isActive: true,
         lastLogin: new Date().toISOString(),
+        permissions: ["all"], // Default permissions for Owner role
       }
       setUsers([...users, newUser])
+      setSuccessMessage(`ผู้ใช้ ${formData.username} ได้รับการเพิ่มในระบบแล้ว`) // ตั้งค่าข้อความ
     }
-    setIsAddUserOpen(false)
+    setIsConfirmDialogOpen(false) // Close confirmation dialog
+    setIsAddUserOpen(false) // Close add/edit dialog
+    setIsSuccessDialogOpen(true) // Open success dialog
   }
 
   const handleToggleActive = (userId: string, isActive: boolean) => {
     setUsers(users.map((user) => (user.id === userId ? { ...user, isActive } : user)))
-  }
-
-  const handlePermissionChange = (permissionId: string, checked: boolean) => {
-    if (checked) {
-      setFormData((prev) => ({
-        ...prev,
-        permissions: [...prev.permissions, permissionId],
-      }))
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        permissions: prev.permissions.filter((p) => p !== permissionId),
-      }))
-    }
   }
 
   return (
@@ -242,7 +233,9 @@ export function UserManagementTab() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="username">ชื่อผู้ใช้<span className="text-red-500">*</span></Label>
+                <Label htmlFor="username">
+                  ชื่อผู้ใช้<span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="username"
                   value={formData.username}
@@ -252,7 +245,9 @@ export function UserManagementTab() {
                 />
               </div>
               <div>
-                <Label htmlFor="fullName">ชื่อจริง <span className="text-red-500">*</span></Label>
+                <Label htmlFor="fullName">
+                  ชื่อจริง <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="fullName"
                   value={formData.fullName}
@@ -263,26 +258,19 @@ export function UserManagementTab() {
               </div>
             </div>
             <div>
-              <Label htmlFor="email">อีเมล <span className="text-red-500">*</span></Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-                placeholder="กรอกอีเมล"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="password">รหัสผ่าน <span className="text-red-500">*</span></Label>
+              <Label htmlFor="password">
+                รหัสผ่าน <span className="text-red-500">*</span>
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-                  placeholder="กรอกรหัสผ่าน"
-                  required={!editingUser}
+                  placeholder={editingUser ? "ไม่สามารถแก้ไขรหัสผ่านได้" : "กรอกรหัสผ่าน"}
+                  required={!editingUser} // Password is required only for new users
+                  disabled={!!editingUser} // Disable when editing
+                  className={!!editingUser ? "bg-muted cursor-not-allowed" : ""} // Add styling for disabled state
                 />
                 <Button
                   type="button"
@@ -295,8 +283,16 @@ export function UserManagementTab() {
                 </Button>
               </div>
             </div>
-            
-            
+            {/* Read-only Role Display */}
+            <div>
+              <Label htmlFor="role">สิทธิ์การเข้าระบบ</Label>
+              <Input
+                id="role"
+                value={roleMap[formData.role as keyof typeof roleMap]?.label || formData.role}
+                readOnly
+                className="bg-muted cursor-not-allowed"
+              />
+            </div>
             <div className="flex gap-4 pt-4">
               <Button type="submit" className="flex-1">
                 {editingUser ? "บันทึกการแก้ไข" : "เพิ่มผู้ใช้"}
@@ -306,6 +302,41 @@ export function UserManagementTab() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingUser ? "ยืนยันการแก้ไขข้อมูลผู้ใช้" : "ยืนยันการเพิ่มผู้ใช้ใหม่"}</DialogTitle>
+            <DialogDescription>คุณแน่ใจหรือไม่ที่จะดำเนินการนี้?</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            {" "}
+            {/* ใช้ DialogFooter เพื่อจัดปุ่ม */}
+            <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>
+              ยกเลิก
+            </Button>
+            <Button onClick={handleConfirmSubmit}>
+              ยืนยัน
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ดำเนินการสำเร็จ!</DialogTitle>
+            <DialogDescription>{successMessage}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setIsSuccessDialogOpen(false)}>
+              ตกลง
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

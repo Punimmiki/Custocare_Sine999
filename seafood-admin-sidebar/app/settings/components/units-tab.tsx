@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Calculator, Plus, Edit, Trash2, Save } from "lucide-react"
+import { Calculator, Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -77,8 +77,11 @@ export function UnitsTab() {
   const [units, setUnits] = React.useState(initialUnits)
   const [isAddUnitOpen, setIsAddUnitOpen] = React.useState(false)
   const [editingUnit, setEditingUnit] = React.useState<any>(null)
+  const [showConfirmSave, setShowConfirmSave] = React.useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false)
+  const [showDeleteSuccessDialog, setShowDeleteSuccessDialog] = React.useState(false)
+  const [unitToDelete, setUnitToDelete] = React.useState<any>(null)
 
-  // Form state
   const [formData, setFormData] = React.useState({
     name: "",
     symbol: "",
@@ -87,6 +90,7 @@ export function UnitsTab() {
     isDefault: false,
   })
 
+  // เปิด dialog เพิ่มหน่วย
   const handleAddUnit = () => {
     setFormData({
       name: "",
@@ -99,6 +103,7 @@ export function UnitsTab() {
     setIsAddUnitOpen(true)
   }
 
+  // เปิด dialog แก้ไขหน่วย
   const handleEditUnit = (unit: any) => {
     setFormData({
       name: unit.name,
@@ -111,14 +116,17 @@ export function UnitsTab() {
     setIsAddUnitOpen(true)
   }
 
+  // submit form เพิ่ม/แก้ไข
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirmSave(true)
+  }
 
+  // confirm บันทึก
+  const handleConfirmSave = () => {
     if (editingUnit) {
-      // Update existing unit
       setUnits(units.map((unit) => (unit.id === editingUnit.id ? { ...unit, ...formData } : unit)))
     } else {
-      // Add new unit
       const newUnit = {
         id: String(units.length + 1),
         ...formData,
@@ -126,10 +134,21 @@ export function UnitsTab() {
       setUnits([...units, newUnit])
     }
     setIsAddUnitOpen(false)
+    setShowConfirmSave(false)
+    setShowSuccessDialog(true)
   }
 
-  const handleDeleteUnit = (unitId: string) => {
-    setUnits(units.filter((unit) => unit.id !== unitId))
+  // เตรียมเปิด dialog ยืนยันลบ พร้อมเก็บหน่วยที่ต้องการลบ
+  const handleOpenDeleteConfirm = (unit: any) => {
+    setUnitToDelete(unit)
+  }
+
+  // ลบจริงๆ หลัง confirm
+  const handleDeleteUnit = () => {
+    if (!unitToDelete) return
+    setUnits(units.filter((unit) => unit.id !== unitToDelete.id))
+    setUnitToDelete(null)
+    setShowDeleteSuccessDialog(true)
   }
 
   const handleToggleActive = (unitId: string, isActive: boolean) => {
@@ -137,18 +156,11 @@ export function UnitsTab() {
   }
 
   const handleSetDefault = (unitId: string) => {
-    setUnits(
-      units.map((unit) => ({
-        ...unit,
-        isDefault: unit.id === unitId,
-      })),
+    setUnits(units.map((unit) => ({
+      ...unit,
+      isDefault: unit.id === unitId,
+    })),
     )
-  }
-
-  const handleSave = () => {
-    // Save units settings logic here
-    console.log("Saving units settings:", units)
-    // Show success message
   }
 
   return (
@@ -199,10 +211,7 @@ export function UnitsTab() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Switch
-                          checked={unit.isActive}
-                          onCheckedChange={(checked) => handleToggleActive(unit.id, checked)}
-                        />
+                        <Switch checked={unit.isActive} onCheckedChange={(checked) => handleToggleActive(unit.id, checked)} />
                         <span className={unit.isActive ? "text-green-600" : "text-red-600"}>
                           {unit.isActive ? "ใช้งาน" : "ปิดใช้งาน"}
                         </span>
@@ -224,9 +233,14 @@ export function UnitsTab() {
                           แก้ไข
                         </Button>
                         {!unit.isDefault && (
-                          <AlertDialog>
+                          <AlertDialog
+                            open={unitToDelete?.id === unit.id}
+                            onOpenChange={(open) => {
+                              if (!open) setUnitToDelete(null)
+                            }}
+                          >
                             <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm">
+                              <Button variant="outline" size="sm" onClick={() => handleOpenDeleteConfirm(unit)}>
                                 <Trash2 className="h-4 w-4 mr-1" />
                                 ลบ
                               </Button>
@@ -239,9 +253,13 @@ export function UnitsTab() {
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+                                <AlertDialogCancel onClick={() => setUnitToDelete(null)}>
+                                  ยกเลิก
+                                </AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => handleDeleteUnit(unit.id)}
+                                  onClick={() => {
+                                    handleDeleteUnit()
+                                  }}
                                   className="bg-red-600 hover:bg-red-700"
                                 >
                                   ลบหน่วยนับ
@@ -260,7 +278,7 @@ export function UnitsTab() {
         </CardContent>
       </Card>
 
-      {/* Add/Edit Unit Dialog */}
+      {/* Add/Edit Dialog */}
       <Dialog open={isAddUnitOpen} onOpenChange={setIsAddUnitOpen}>
         <DialogContent>
           <DialogHeader>
@@ -274,7 +292,6 @@ export function UnitsTab() {
                 id="unit-name"
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="เช่น กิโลกรัม"
                 required
               />
             </div>
@@ -284,7 +301,6 @@ export function UnitsTab() {
                 id="unit-symbol"
                 value={formData.symbol}
                 onChange={(e) => setFormData((prev) => ({ ...prev, symbol: e.target.value }))}
-                placeholder="เช่น กก."
                 required
               />
             </div>
@@ -294,7 +310,7 @@ export function UnitsTab() {
                 id="unit-type"
                 value={formData.type}
                 onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border rounded-md"
                 required
               >
                 <option value="">เลือกประเภท</option>
@@ -332,7 +348,45 @@ export function UnitsTab() {
         </DialogContent>
       </Dialog>
 
-    
+      {/* Confirm Save Dialog */}
+      <AlertDialog open={showConfirmSave} onOpenChange={setShowConfirmSave}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการบันทึก</AlertDialogTitle>
+            <AlertDialogDescription>คุณแน่ใจหรือไม่ว่าต้องการบันทึกหน่วยนับนี้?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSave}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success Save Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>บันทึกสำเร็จ</DialogTitle>
+            <DialogDescription>หน่วยนับถูกบันทึกเรียบร้อยแล้ว</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowSuccessDialog(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Delete Dialog */}
+      <Dialog open={showDeleteSuccessDialog} onOpenChange={setShowDeleteSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ลบหน่วยนับสำเร็จ</DialogTitle>
+            <DialogDescription>หน่วยนับถูกลบเรียบร้อยแล้ว</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowDeleteSuccessDialog(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

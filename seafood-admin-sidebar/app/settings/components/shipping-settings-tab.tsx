@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Truck, Plus, Edit, Trash2, Save, MapPin } from "lucide-react"
+import { Truck, Plus, Edit, Trash2, Save, MapPin } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -99,10 +99,18 @@ export function ShippingSettingsTab() {
   const [editingProvider, setEditingProvider] = React.useState<any>(null)
   const [editingFeeRule, setEditingFeeRule] = React.useState<any>(null)
 
+  const [showConfirmSaveProvider, setShowConfirmSaveProvider] = React.useState(false)
+  const [showSuccessProviderDialog, setShowSuccessProviderDialog] = React.useState(false)
+  const [successProviderMessage, setSuccessProviderMessage] = React.useState("")
+
+  const [showConfirmSaveFeeRule, setShowConfirmSaveFeeRule] = React.useState(false)
+  const [showSuccessFeeRuleDialog, setShowSuccessFeeRuleDialog] = React.useState(false)
+  const [successFeeRuleMessage, setSuccessFeeRuleMessage] = React.useState("")
+
   // Provider form state
   const [providerForm, setProviderForm] = React.useState({
     name: "",
-    type: "",
+    type: "internal", // Set a default type to prevent undefined error
     description: "",
     contactInfo: "",
     isActive: true,
@@ -122,7 +130,7 @@ export function ShippingSettingsTab() {
   const handleAddProvider = () => {
     setProviderForm({
       name: "",
-      type: "",
+      type: "internal", // Ensure a default type is set
       description: "",
       contactInfo: "",
       isActive: true,
@@ -145,22 +153,33 @@ export function ShippingSettingsTab() {
 
   const handleSubmitProvider = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirmSaveProvider(true)
+  }
+
+  const handleConfirmSubmitProvider = () => {
     if (editingProvider) {
       setProviders(
         providers.map((provider) => (provider.id === editingProvider.id ? { ...provider, ...providerForm } : provider)),
       )
+      setSuccessProviderMessage(`แก้ไขผู้ให้บริการ ${providerForm.name} สำเร็จ`)
     } else {
       const newProvider = {
         id: String(providers.length + 1),
         ...providerForm,
       }
       setProviders([...providers, newProvider])
+      setSuccessProviderMessage(`เพิ่มผู้ให้บริการ ${providerForm.name} สำเร็จ`)
     }
+    setShowConfirmSaveProvider(false)
     setIsAddProviderOpen(false)
+    setShowSuccessProviderDialog(true)
   }
 
   const handleDeleteProvider = (providerId: string) => {
+    const deletedProvider = providers.find(provider => provider.id === providerId);
     setProviders(providers.filter((provider) => provider.id !== providerId))
+    setSuccessProviderMessage(`ลบผู้ให้บริการ ${deletedProvider?.name} สำเร็จ`)
+    setShowSuccessProviderDialog(true)
   }
 
   const handleAddFeeRule = () => {
@@ -193,20 +212,31 @@ export function ShippingSettingsTab() {
 
   const handleSubmitFeeRule = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirmSaveFeeRule(true)
+  }
+
+  const handleConfirmSubmitFeeRule = () => {
     if (editingFeeRule) {
       setFeeRules(feeRules.map((rule) => (rule.id === editingFeeRule.id ? { ...rule, ...feeRuleForm } : rule)))
+      setSuccessFeeRuleMessage(`แก้ไขกฎค่าจัดส่ง ${feeRuleForm.name} สำเร็จ`)
     } else {
       const newFeeRule = {
         id: String(feeRules.length + 1),
         ...feeRuleForm,
       }
       setFeeRules([...feeRules, newFeeRule])
+      setSuccessFeeRuleMessage(`เพิ่มกฎค่าจัดส่ง ${feeRuleForm.name} สำเร็จ`)
     }
+    setShowConfirmSaveFeeRule(false)
     setIsAddFeeRuleOpen(false)
+    setShowSuccessFeeRuleDialog(true)
   }
 
   const handleDeleteFeeRule = (ruleId: string) => {
+    const deletedRule = feeRules.find(rule => rule.id === ruleId);
     setFeeRules(feeRules.filter((rule) => rule.id !== ruleId))
+    setSuccessFeeRuleMessage(`ลบกฎค่าจัดส่ง ${deletedRule?.name} สำเร็จ`)
+    setShowSuccessFeeRuleDialog(true)
   }
 
   const handleSave = () => {
@@ -258,8 +288,9 @@ export function ShippingSettingsTab() {
                   <TableRow key={provider.id}>
                     <TableCell className="font-medium">{provider.name}</TableCell>
                     <TableCell>
-                      <Badge variant={providerTypes[provider.type as keyof typeof providerTypes].variant}>
-                        {providerTypes[provider.type as keyof typeof providerTypes].label}
+                      {/* Add a fallback for providerTypes[provider.type] */}
+                      <Badge variant={providerTypes[provider.type as keyof typeof providerTypes]?.variant || "default"}>
+                        {providerTypes[provider.type as keyof typeof providerTypes]?.label || provider.type}
                       </Badge>
                     </TableCell>
                     <TableCell className="max-w-xs truncate" title={provider.description}>
@@ -293,10 +324,7 @@ export function ShippingSettingsTab() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteProvider(provider.id)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
+                              <AlertDialogAction onClick={() => handleDeleteProvider(provider.id)} className="bg-red-600 hover:bg-red-700">
                                 ลบผู้ให้บริการ
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -380,10 +408,7 @@ export function ShippingSettingsTab() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteFeeRule(rule.id)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
+                              <AlertDialogAction onClick={() => handleDeleteFeeRule(rule.id)} className="bg-red-600 hover:bg-red-700">
                                 ลบกฎ
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -419,10 +444,7 @@ export function ShippingSettingsTab() {
             </div>
             <div>
               <Label htmlFor="provider-type">ประเภท *</Label>
-              <Select
-                value={providerForm.type}
-                onValueChange={(value) => setProviderForm((prev) => ({ ...prev, type: value }))}
-              >
+              <Select value={providerForm.type} onValueChange={(value) => setProviderForm((prev) => ({ ...prev, type: value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกประเภท" />
                 </SelectTrigger>
@@ -567,7 +589,59 @@ export function ShippingSettingsTab() {
         </DialogContent>
       </Dialog>
 
-    
+      {/* Confirm Save Provider Dialog */}
+      <AlertDialog open={showConfirmSaveProvider} onOpenChange={setShowConfirmSaveProvider}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{editingProvider ? "ยืนยันการแก้ไขผู้ให้บริการ" : "ยืนยันการเพิ่มผู้ให้บริการใหม่"}</AlertDialogTitle>
+            <AlertDialogDescription>คุณแน่ใจหรือไม่ว่าต้องการบันทึกข้อมูลผู้ให้บริการนี้?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmSaveProvider(false)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmitProvider}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success Provider Dialog */}
+      <Dialog open={showSuccessProviderDialog} onOpenChange={setShowSuccessProviderDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ดำเนินการสำเร็จ!</DialogTitle>
+            <DialogDescription>{successProviderMessage}</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowSuccessProviderDialog(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Save Fee Rule Dialog */}
+      <AlertDialog open={showConfirmSaveFeeRule} onOpenChange={setShowConfirmSaveFeeRule}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{editingFeeRule ? "ยืนยันการแก้ไขกฎค่าจัดส่ง" : "ยืนยันการเพิ่มกฎค่าจัดส่งใหม่"}</AlertDialogTitle>
+            <AlertDialogDescription>คุณแน่ใจหรือไม่ว่าต้องการบันทึกกฎค่าจัดส่งนี้?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmSaveFeeRule(false)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmitFeeRule}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success Fee Rule Dialog */}
+      <Dialog open={showSuccessFeeRuleDialog} onOpenChange={setShowSuccessFeeRuleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ดำเนินการสำเร็จ!</DialogTitle>
+            <DialogDescription>{successFeeRuleMessage}</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowSuccessFeeRuleDialog(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

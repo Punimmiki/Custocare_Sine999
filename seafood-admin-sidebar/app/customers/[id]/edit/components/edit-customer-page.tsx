@@ -2,8 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowLeft, User, CreditCard, Banknote, MessageCircle } from "lucide-react"
-
+import { ArrowLeft, User, CreditCard, Banknote, MessageCircle, CheckCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
 interface EditCustomerPageProps {
   customerId: string
@@ -207,20 +206,18 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
   const [customerPhone, setCustomerPhone] = React.useState("")
   const [customerAddress, setCustomerAddress] = React.useState("")
   const [customerType, setCustomerType] = React.useState<"cash" | "credit">("cash")
-
   const [creditType, setCreditType] = React.useState<"amount" | "bills" | "days">("amount")
   const [creditLimit, setCreditLimit] = React.useState(0)
   const [creditBills, setCreditBills] = React.useState(0)
   const [creditDays, setCreditDays] = React.useState(0)
-
   const [notifications, setNotifications] = React.useState({
     orderConfirmation: false,
     paymentReminder: false,
     packaging: false,
     shipping: false,
   })
-
   const [showEditConfirmation, setShowEditConfirmation] = React.useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false) // New state for success dialog
   const [isLoading, setIsLoading] = React.useState(true) // New state for loading
   const [customerFound, setCustomerFound] = React.useState(false) // New state to check if customer exists
 
@@ -228,14 +225,12 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
   React.useEffect(() => {
     setIsLoading(true)
     const foundCustomer = initialCustomers.find((c) => c.id === customerId)
-
     if (foundCustomer) {
       setCustomerFound(true)
       setCustomerName(foundCustomer.name)
       setCustomerPhone(foundCustomer.phone)
       setCustomerAddress(foundCustomer.address)
       setCustomerType(foundCustomer.type)
-
       if (foundCustomer.type === "credit") {
         // For credit customers, set creditLimit and default creditType to 'amount'
         // If your mock data had creditBills or creditDays, you'd add logic here to infer creditType
@@ -247,7 +242,6 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
         setCreditDays(0)
         setCreditType("amount") // Reset for cash customers
       }
-
       // Set detailed notifications based on the single lineNotifications from mock data
       setNotifications({
         orderConfirmation: foundCustomer.lineNotifications,
@@ -291,10 +285,17 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
       notifications,
     })
     setShowEditConfirmation(false)
+    setShowSuccessDialog(true) // Show success dialog after confirmation
   }
 
   const cancelEdit = () => {
     setShowEditConfirmation(false)
+  }
+
+  const closeSuccessDialog = () => {
+    setShowSuccessDialog(false)
+    // Optionally, redirect to another page or refresh data here
+    // For example: router.push('/customers');
   }
 
   if (isLoading) {
@@ -412,7 +413,6 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
                   </div>
                 </RadioGroup>
               </div>
-
               {/* Credit Information Card */}
               {customerType === "credit" && (
                 <Card className="border-0 shadow-sm rounded-2xl bg-blue-50">
@@ -560,12 +560,28 @@ const EditCustomerPage = ({ customerId }: EditCustomerPageProps) => {
             <DialogTitle>ยืนยันการแก้ไขข้อมูล</DialogTitle>
             <DialogDescription>คุณต้องการบันทึกการเปลี่ยนแปลงข้อมูลสำหรับลูกค้า "{customerName}" หรือไม่?</DialogDescription>
           </DialogHeader>
-          <div className="flex justify-end gap-2 mt-4">
+          <DialogFooter className="mt-4">
             <Button variant="outline" onClick={cancelEdit}>
               ยกเลิก
             </Button>
             <Button onClick={confirmEdit}>ยืนยันการแก้ไข</Button>
-          </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader className="flex flex-col items-center text-center">
+            <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
+            <DialogTitle className="text-xl font-bold">แก้ไขสำเร็จแล้ว!</DialogTitle>
+            <DialogDescription>ข้อมูลลูกค้า "{customerName}" ได้รับการบันทึกเรียบร้อยแล้ว</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button onClick={closeSuccessDialog} className="w-full">
+              ตกลง
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

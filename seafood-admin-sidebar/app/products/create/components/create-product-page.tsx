@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowLeft, Package, Upload, X, Star } from "lucide-react"
+import { ArrowLeft, Package, Upload, X, Star, Plus } from 'lucide-react' // Added Plus icon
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,16 +23,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { type ProductImage } from "@/types/product"
 
 const categories = ["ปลา", "กุ้ง", "หอย", "ปู", "ปลาหมึก"]
 const units = ["กิโลกรัม", "ตัว", "โหล", "กล่อง", "ถุง"]
-
-interface ProductImage {
-  id: string
-  url: string
-  file: File
-  isCover: boolean
-}
 
 interface ExistingProduct {
   name: string
@@ -61,9 +55,11 @@ const CreateProductPage = () => {
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = React.useState(false)
   const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = React.useState(false)
 
+  // New state for product variants
+  const [productVariants, setProductVariants] = React.useState<{ id: string; name: string; price: string }[]>([])
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-
     files.forEach((file) => {
       if (productImages.length < 5) {
         const reader = new FileReader()
@@ -79,7 +75,6 @@ const CreateProductPage = () => {
         reader.readAsDataURL(file)
       }
     })
-
     // Reset input
     e.target.value = ""
   }
@@ -87,12 +82,10 @@ const CreateProductPage = () => {
   const removeImage = (imageId: string) => {
     setProductImages((prev) => {
       const filtered = prev.filter((img) => img.id !== imageId)
-
       // If removed image was cover, make first image the new cover
       if (filtered.length > 0 && !filtered.some((img) => img.isCover)) {
         filtered[0].isCover = true
       }
-
       return filtered
     })
   }
@@ -115,15 +108,37 @@ const CreateProductPage = () => {
     )
   }
 
+  // Variant handlers
+  const addVariant = () => {
+    setProductVariants((prev) => [...prev, { id: Date.now().toString(), name: "", price: "" }])
+  }
+
+  const removeVariant = (id: string) => {
+    setProductVariants((prev) => prev.filter((variant) => variant.id !== id))
+  }
+
+  const handleVariantChange = (id: string, field: "name" | "price", value: string) => {
+    setProductVariants((prev) =>
+      prev.map((variant) => (variant.id === id ? { ...variant, [field]: value } : variant)),
+    )
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // Basic validation for variants
+    if (productVariants.length > 0) {
+      for (const variant of productVariants) {
+        if (!variant.name.trim() || !variant.price.trim() || isNaN(Number(variant.price))) {
+          alert("กรุณากรอกชื่อและราคาของตัวเลือกสินค้าให้ครบถ้วนและถูกต้อง")
+          return
+        }
+      }
+    }
 
-    // Check for duplicate product
     if (checkDuplicateProduct()) {
       setIsDuplicateDialogOpen(true)
       return
     }
-
     setIsSubmitDialogOpen(true)
   }
 
@@ -136,10 +151,10 @@ const CreateProductPage = () => {
       productStock: Number.parseInt(productStock),
       productDescription,
       productImages,
+      productVariants: productVariants.map(v => ({ name: v.name, price: Number.parseFloat(v.price) })), // Convert variant prices to number
       showOnWebsite,
       categoryShowOnWebsite,
     })
-
     setIsSubmitDialogOpen(false)
     setIsSuccessDialogOpen(true)
   }
@@ -154,6 +169,7 @@ const CreateProductPage = () => {
     setProductStock("")
     setProductDescription("")
     setProductImages([])
+    setProductVariants([]) // Reset variants
     setShowOnWebsite(true)
     setCategoryShowOnWebsite(true)
   }
@@ -186,7 +202,9 @@ const CreateProductPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="product-name">ชื่อสินค้า <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="product-name">
+                    ชื่อสินค้า <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="product-name"
                     value={productName}
@@ -195,10 +213,11 @@ const CreateProductPage = () => {
                     required
                   />
                 </div>
-
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="product-price">ราคา (บาท) <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="product-price">
+                      ราคา (บาท) <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="product-price"
                       type="number"
@@ -211,7 +230,9 @@ const CreateProductPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="product-unit">หน่วย <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="product-unit">
+                      หน่วย <span className="text-red-500">*</span>
+                    </Label>
                     <Select value={productUnit} onValueChange={setProductUnit} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกหน่วย" />
@@ -226,10 +247,11 @@ const CreateProductPage = () => {
                     </Select>
                   </div>
                 </div>
-
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="product-category">หมวดหมู่ <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="product-category">
+                      หมวดหมู่ <span className="text-red-500">*</span>
+                    </Label>
                     <Select value={productCategory} onValueChange={setProductCategory} required>
                       <SelectTrigger>
                         <SelectValue placeholder="เลือกหมวดหมู่" />
@@ -244,7 +266,9 @@ const CreateProductPage = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="product-stock">จำนวนคงเหลือ <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="product-stock">
+                      จำนวนคงเหลือ <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="product-stock"
                       type="number"
@@ -256,7 +280,6 @@ const CreateProductPage = () => {
                     />
                   </div>
                 </div>
-
                 <div>
                   <Label htmlFor="product-description">รายละเอียดสินค้า</Label>
                   <Textarea
@@ -267,6 +290,61 @@ const CreateProductPage = () => {
                     rows={3}
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Product Variants */}
+            <Card className="border-0 rounded-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  เพิ่มสินค้าย่อย
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  เพิ่มตัวเลือกสินค้าย่อย เช่น ส่วนหัว ส่วนหาง กำหนดราคาที่ต่างกัน
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {productVariants.map((variant, index) => (
+                  <div key={variant.id} className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <Label htmlFor={`variant-name-${variant.id}`}>ชื่อตัวเลือก</Label>
+                      <Input
+                        id={`variant-name-${variant.id}`}
+                        value={variant.name}
+                        onChange={(e) => handleVariantChange(variant.id, "name", e.target.value)}
+                        placeholder="เช่น หัว, ท้อง, หาง"
+                        required
+                      />
+                    </div>
+                    <div className="w-28">
+                      <Label htmlFor={`variant-price-${variant.id}`}>ราคา</Label>
+                      <Input
+                        id={`variant-price-${variant.id}`}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={variant.price}
+                        onChange={(e) => handleVariantChange(variant.id, "price", e.target.value)}
+                        placeholder="0.00"
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => removeVariant(variant.id)}
+                      className="shrink-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" onClick={addVariant} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  เพิ่มตัวเลือก
+                </Button>
               </CardContent>
             </Card>
 
@@ -304,7 +382,9 @@ const CreateProductPage = () => {
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>ยืนยันการเพิ่มสินค้า</AlertDialogTitle>
-                    <AlertDialogDescription>คุณแน่ใจหรือไม่ที่จะเพิ่มสินค้า "{productName}" เข้าสู่ระบบ?</AlertDialogDescription>
+                    <AlertDialogDescription>
+                      คุณแน่ใจหรือไม่ที่จะเพิ่มสินค้า "{productName}" เข้าสู่ระบบ?
+                    </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
@@ -385,13 +465,7 @@ const CreateProductPage = () => {
               {/* File Input */}
               {productImages.length < 5 && (
                 <div>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="cursor-pointer"
-                  />
+                  <Input type="file" accept="image/*" multiple onChange={handleImageUpload} className="cursor-pointer" />
                 </div>
               )}
 
@@ -442,6 +516,7 @@ const CreateProductPage = () => {
     </div>
   )
 }
+
 
 export { CreateProductPage }
 export default CreateProductPage
