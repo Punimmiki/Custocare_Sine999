@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Edit, Trash2, Eye, EyeOff, Package } from "lucide-react"
+import { Plus, Edit, Trash2, Eye, EyeOff, Package } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -44,21 +44,21 @@ const ManageCategoriesPage = () => {
     { id: "4", name: "ปู", showOnWebsite: true, productCount: 3 },
     { id: "5", name: "ปลาหมึก", showOnWebsite: true, productCount: 7 },
   ])
-
   const [newCategoryName, setNewCategoryName] = React.useState("")
   const [editingCategory, setEditingCategory] = React.useState<Category | null>(null)
   const [editCategoryName, setEditCategoryName] = React.useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false)
-
   // สำหรับลบ
   const [categoryToDelete, setCategoryToDelete] = React.useState<Category | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
   const [showDeleteSuccess, setShowDeleteSuccess] = React.useState(false)
-
   // สำหรับเพิ่ม ยืนยัน
   const [showAddConfirm, setShowAddConfirm] = React.useState(false)
   const [showAddSuccess, setShowAddSuccess] = React.useState(false)
+  // สำหรับแก้ไข ยืนยันและสำเร็จ
+  const [showEditConfirm, setShowEditConfirm] = React.useState(false)
+  const [showEditSuccess, setShowEditSuccess] = React.useState(false)
 
   const handleAddCategory = () => {
     if (newCategoryName.trim()) {
@@ -81,7 +81,21 @@ const ManageCategoriesPage = () => {
     setShowAddSuccess(true)
   }
 
+  // เปิด popup ยืนยันแก้ไข
+  const openEditDialog = (category: Category) => {
+    setEditingCategory(category)
+    setEditCategoryName(category.name)
+    setIsEditDialogOpen(true)
+  }
+
   const handleEditCategory = () => {
+    if (editingCategory && editCategoryName.trim()) {
+      setShowEditConfirm(true) // เปิด Pop-up ยืนยันก่อนแก้ไข
+    }
+  }
+
+  // กดยืนยันแก้ไขจริง ๆ
+  const handleEditCategoryConfirmed = () => {
     if (editingCategory && editCategoryName.trim()) {
       setCategories((prev) =>
         prev.map((cat) => (cat.id === editingCategory.id ? { ...cat, name: editCategoryName.trim() } : cat)),
@@ -89,6 +103,8 @@ const ManageCategoriesPage = () => {
       setEditingCategory(null)
       setEditCategoryName("")
       setIsEditDialogOpen(false)
+      setShowEditConfirm(false) // ปิด Pop-up ยืนยัน
+      setShowEditSuccess(true) // เปิด Pop-up แจ้งเตือนความสำเร็จ
     }
   }
 
@@ -111,12 +127,6 @@ const ManageCategoriesPage = () => {
     setCategories((prev) =>
       prev.map((cat) => (cat.id === categoryId ? { ...cat, showOnWebsite: !cat.showOnWebsite } : cat)),
     )
-  }
-
-  const openEditDialog = (category: Category) => {
-    setEditingCategory(category)
-    setEditCategoryName(category.name)
-    setIsEditDialogOpen(true)
   }
 
   return (
@@ -209,7 +219,6 @@ const ManageCategoriesPage = () => {
                     onCheckedChange={() => toggleWebsiteVisibility(category.id)}
                   />
                 </div>
-
                 <div className="flex items-center gap-2">
                   {/* Edit Button */}
                   <Button
@@ -220,7 +229,6 @@ const ManageCategoriesPage = () => {
                   >
                     <Edit className="h-3 w-3" />
                   </Button>
-
                   {/* Delete Button */}
                   <Button
                     variant="outline"
@@ -233,14 +241,12 @@ const ManageCategoriesPage = () => {
                   </Button>
                 </div>
               </div>
-
               {category.productCount > 0 && (
                 <p className="text-xs text-amber-600 mt-2">⚠️ ไม่สามารถลบได้เนื่องจากมีสินค้าในหมวดหมู่นี้</p>
               )}
             </CardContent>
           </Card>
         ))}
-
         {categories.length === 0 && (
           <div className="col-span-full">
             <Card className="border-0 shadow-sm rounded-2xl bg-white">
@@ -293,16 +299,11 @@ const ManageCategoriesPage = () => {
         <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>ยืนยันการเพิ่มหมวดหมู่</AlertDialogTitle>
-            <AlertDialogDescription>
-              คุณแน่ใจหรือไม่ที่จะเพิ่มหมวดหมู่ "{newCategoryName.trim()}"?
-            </AlertDialogDescription>
+            <AlertDialogDescription>คุณแน่ใจหรือไม่ที่จะเพิ่มหมวดหมู่ "{newCategoryName.trim()}"?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setShowAddConfirm(false)}>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleAddCategoryConfirmed}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
+            <AlertDialogAction onClick={handleAddCategoryConfirmed} className="bg-primary text-primary-foreground hover:bg-primary/90">
               เพิ่มหมวดหมู่
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -322,6 +323,35 @@ const ManageCategoriesPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Confirm Dialog */}
+      <AlertDialog open={showEditConfirm} onOpenChange={setShowEditConfirm}>
+        <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการแก้ไขหมวดหมู่</AlertDialogTitle>
+            <AlertDialogDescription>คุณแน่ใจหรือไม่ที่จะแก้ไขหมวดหมู่ "{editingCategory?.name}" เป็น "{editCategoryName.trim()}"?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowEditConfirm(false)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleEditCategoryConfirmed} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              บันทึกการแก้ไข
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Success Dialog */}
+      <Dialog open={showEditSuccess} onOpenChange={setShowEditSuccess}>
+        <DialogContent className="border-0 rounded-3xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle>แก้ไขหมวดหมู่สำเร็จ</DialogTitle>
+            <DialogDescription>หมวดหมู่ถูกแก้ไขเรียบร้อยแล้ว</DialogDescription>
+          </DialogHeader>
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setShowEditSuccess(false)}>ตกลง</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirm AlertDialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent className="border-0 rounded-3xl shadow-2xl">
@@ -333,10 +363,7 @@ const ManageCategoriesPage = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setShowDeleteConfirm(false)}>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteCategoryConfirmed}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleDeleteCategoryConfirmed} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               ลบหมวดหมู่
             </AlertDialogAction>
           </AlertDialogFooter>

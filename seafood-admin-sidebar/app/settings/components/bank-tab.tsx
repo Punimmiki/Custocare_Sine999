@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog" // เพิ่ม DialogFooter
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,6 +73,7 @@ export function BankTab() {
     qrCode: "",
     notes: "",
   })
+  const [showConfirmSave, setShowConfirmSave] = React.useState(false) // State สำหรับยืนยันการบันทึก
   const [showSuccessDialog, setShowSuccessDialog] = React.useState(false)
   const [successMessage, setSuccessMessage] = React.useState("")
 
@@ -99,6 +100,10 @@ export function BankTab() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirmSave(true) // เปิด Pop-up ยืนยันก่อนบันทึก
+  }
+
+  const handleConfirmSave = () => {
     if (editingBank) {
       setBankAccounts((prev) =>
         prev.map((bank) => (bank.id === editingBank.id ? { ...bank, ...formData } : bank)),
@@ -106,12 +111,13 @@ export function BankTab() {
       setSuccessMessage("แก้ไขบัญชีธนาคารสำเร็จ")
     } else {
       const newBank = {
-        id: Date.now().toString(),
+        id: Date.now().toString(), // ใช้ Date.now().toString() เพื่อให้ ID ไม่ซ้ำ
         ...formData,
       }
       setBankAccounts((prev) => [...prev, newBank])
       setSuccessMessage("เพิ่มบัญชีธนาคารสำเร็จ")
     }
+    setShowConfirmSave(false) // ปิด Pop-up ยืนยัน
     setIsAddBankOpen(false)
     setShowSuccessDialog(true)
   }
@@ -340,15 +346,30 @@ export function BankTab() {
         </DialogContent>
       </Dialog>
 
+      {/* Confirm Save Dialog */}
+      <AlertDialog open={showConfirmSave} onOpenChange={setShowConfirmSave}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{editingBank ? "ยืนยันการแก้ไขบัญชีธนาคาร" : "ยืนยันการเพิ่มบัญชีธนาคารใหม่"}</AlertDialogTitle>
+            <AlertDialogDescription>คุณแน่ใจหรือไม่ว่าต้องการบันทึกข้อมูลบัญชีธนาคารนี้?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmSave(false)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSave}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{successMessage}</DialogTitle>
-            <DialogDescription>ดำเนินการเรียบร้อยแล้ว</DialogDescription>
+            <DialogTitle>ดำเนินการสำเร็จ!</DialogTitle>
+            <DialogDescription>{successMessage}</DialogDescription>
           </DialogHeader>
-          <div className="pt-4 flex justify-end">
+          <DialogFooter>
             <Button onClick={() => setShowSuccessDialog(false)}>ตกลง</Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
