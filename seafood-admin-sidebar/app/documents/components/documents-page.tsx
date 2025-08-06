@@ -864,7 +864,7 @@ export default function DocumentsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card
           className={cn(
-            "cursor-pointer hover:shadow-md transition-shadow border-none",
+            "cursor-pointer hover:shadow-md transition-shadow border-none rounded-2xl",
           )}
           onClick={() => setSelectedOrderStatusFilter(null)}
         >

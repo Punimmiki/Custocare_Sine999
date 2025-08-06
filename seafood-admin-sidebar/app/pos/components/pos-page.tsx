@@ -205,7 +205,7 @@ const categories = [
   {
     id: "shrimp",
     name: "กุ้ง",
-    subtitle: "45 ราย��าร",
+    subtitle: "45 รายการ",
     icon: () => (
       <svg
         className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 mx-auto"
