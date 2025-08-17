@@ -1,27 +1,30 @@
 "use client"
 
-import * as React from "react"
+import React, { useState } from "react"
+
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   Search,
   Plus,
   Minus,
-  CreditCard,
-  Printer,
+  Trash2,
   Save,
-  X,
-  QrCode,
-  Fish,
-  Waves,
-  Shell,
-  Wallet,
   BarChart3,
+  Fish,
+  Shell,
+  ChevronDown,
+  User,
+  X,
+  ArrowLeft,
+  Edit,
+  Banknote,
+  QrCode,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +36,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Products data
 const products = [
@@ -170,13 +174,49 @@ const products = [
   },
   {
     id: "12",
+    name: "ปลาดุกยักษ์",
+    price: 190,
+    originalPrice: 220,
+    unit: "กิโลกรัม",
+    category: "fish",
+    image: "/placeholder.svg?height=200&width=300&text=Giant+Catfish",
+    stock: 14,
+    sold: 5,
+    hasQuantityControl: false,
+  },
+  {
+    id: "13",
     name: "กุ้งก้ามกราม",
     price: 380,
     originalPrice: 420,
     unit: "กิโลกรัม",
     category: "shrimp",
-    image: "/placeholder.svg?height=200&width=300&text=Mantis+Shrimp",
+    image: "/placeholder.svg?height=200&width=300&text=River+Prawn",
     stock: 12,
+    sold: 7,
+    hasQuantityControl: false,
+  },
+  {
+    id: "14",
+    name: "หอยเซลลิดใหญ่",
+    price: 160,
+    originalPrice: 180,
+    unit: "กิโลกรัม",
+    category: "shellfish",
+    image: "/placeholder.svg?height=200&width=300&text=Large+Clam",
+    stock: 25,
+    sold: 11,
+    hasQuantityControl: false,
+  },
+  {
+    id: "15",
+    name: "ปูป่าดอกกะเฉด",
+    price: 250,
+    originalPrice: 280,
+    unit: "ตัว",
+    category: "crab",
+    image: "/placeholder.svg?height=200&width=300&text=Wild+Flower+Crab",
+    stock: 9,
     sold: 4,
     hasQuantityControl: false,
   },
@@ -187,108 +227,68 @@ const categories = [
   {
     id: "all",
     name: "ทั้งหมด",
-    subtitle: "235 รายการ",
-    icon: Waves,
-    bgColor: "bg-blue-50",
-    textColor: "text-blue-700",
-    iconColor: "text-blue-600",
-  },
-  {
-    id: "fish",
-    name: "ปลา",
-    subtitle: "89 รายการ",
-    icon: Fish,
-    bgColor: "bg-white",
-    textColor: "text-gray-700",
-    iconColor: "text-blue-500",
+    icon: () => (
+      <img
+        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/icons8-shrimp-and-lobster-100%20%281%29-8fkONqOAQ3vNZNa5XaSfiBV5y2vz07.png"
+        alt="all seafood"
+        className="w-4 h-4 object-contain"
+        style={{
+          filter:
+            "brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(196deg) brightness(104%) contrast(97%)",
+        }}
+      />
+    ),
   },
   {
     id: "shrimp",
     name: "กุ้ง",
-    subtitle: "45 รายการ",
     icon: () => (
-      <svg
-        className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 mx-auto"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path d="M2 12c0-1.5 1-3 2.5-3.5C6 8 8 8.5 10 9c2 .5 4 1 6 1s4-.5 6-1c1.5-.5 2.5-2 2.5-3.5" />
-        <path d="M2 12c0 1.5 1 3 2.5 3.5C6 16 8 15.5 10 15c2-.5 4-1 6-1s4 .5 6 1c1.5.5 2.5 2 2.5 3.5" />
-        <circle cx="4" cy="12" r="1" />
-        <circle cx="20" cy="12" r="1" />
-      </svg>
+      <img
+        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/icons8-shrimp-100%20%282%29-HtcLrNGk3AJvvAboXlXQ68hBeBzysl.png"
+        alt="shrimp"
+        className="w-4 h-4 object-contain"
+        style={{
+          filter:
+            "brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(196deg) brightness(104%) contrast(97%)",
+        }}
+      />
     ),
-    bgColor: "bg-white",
-    textColor: "text-gray-700",
-    iconColor: "text-blue-500",
   },
-  {
-    id: "shellfish",
-    name: "หอย",
-    subtitle: "32 รายการ",
-    icon: Shell,
-    bgColor: "bg-white",
-    textColor: "text-gray-700",
-    iconColor: "text-blue-500",
-  },
+  { id: "fish", name: "ปลา", icon: Fish },
+  { id: "shellfish", name: "หอย", icon: Shell },
   {
     id: "crab",
     name: "ปู",
-    subtitle: "28 รายการ",
     icon: () => (
-      <svg
-        className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 mx-auto"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <ellipse cx="12" cy="12" rx="6" ry="4" />
-        <path d="M6 10l-2-2" />
-        <path d="M18 10l2-2" />
-        <path d="M6 14l-2 2" />
-        <path d="M18 14l2 2" />
-        <path d="M8 8l-1-3" />
-        <path d="M16 8l1-3" />
-        <path d="M8 16l-1 3" />
-        <path d="M16 16l1 3" />
-        <circle cx="10" cy="10" r="1" />
-        <circle cx="14" cy="10" r="1" />
-      </svg>
+      <img
+        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/icons8-crab-100%20%282%29-glK3wJcIi7wCroxL18kJwSNACoVTM0.png"
+        alt="crab"
+        className="w-4 h-4 object-contain"
+        style={{
+          filter:
+            "brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(196deg) brightness(104%) contrast(97%)",
+        }}
+      />
     ),
-    bgColor: "bg-white",
-    textColor: "text-gray-700",
-    iconColor: "text-blue-500",
   },
   {
     id: "squid",
     name: "ปลาหมึก",
-    subtitle: "41 รายการ",
     icon: () => (
-      <svg
-        className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 mx-auto"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <ellipse cx="12" cy="8" rx="4" ry="6" />
-        <path d="M8 14v6" />
-        <path d="M10 14v8" />
-        <path d="M12 14v8" />
-        <path d="M14 14v8" />
-        <path d="M16 14v6" />
-        <circle cx="10" cy="6" r="1" />
-        <circle cx="14" cy="6" r="1" />
+      <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12,2C15.31,2 18,4.69 18,8C18,11.31 15.31,14 12,14C8.69,14 6,11.31 6,8C6,4.69 8.69,2 12,2M7,14V16H8V22H10V16H11V22H13V16H14V22H16V16H17V14H7Z" />
       </svg>
     ),
-    bgColor: "bg-white",
-    textColor: "text-gray-700",
-    iconColor: "text-blue-500",
   },
 ]
+
+interface Customer {
+  id: string
+  name: string
+  phone: string
+  address: string
+  email?: string
+}
 
 interface CartItem {
   id: string
@@ -308,6 +308,7 @@ interface SavedOrder {
   paymentMethod: string
   discount: number
   discountType: "percent" | "amount"
+  customerId?: string
 }
 
 interface SaleRecord {
@@ -320,13 +321,19 @@ interface SaleRecord {
   paymentMethod: string
   timestamp: Date
   customerNotes: string
+  customerId?: string
 }
 
 export const POSPage = () => {
+  const [showPaymentPage, setShowPaymentPage] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "transfer" | "credit">("cash")
+  const [amountReceived, setAmountReceived] = useState(0)
+  const [changeAmount, setChangeAmount] = useState(0)
+
   const [searchTerm, setSearchTerm] = React.useState("")
   const [selectedCategory, setSelectedCategory] = React.useState("all")
+  const [isSearchExpanded, setIsSearchExpanded] = React.useState(false)
   const [cartItems, setCartItems] = React.useState<CartItem[]>([])
-  const [paymentMethod, setPaymentMethod] = React.useState("cash")
   const [customerNotes, setCustomerNotes] = React.useState("")
   const [discount, setDiscount] = React.useState(0)
   const [discountType, setDiscountType] = React.useState<"percent" | "amount">("amount")
@@ -337,8 +344,46 @@ export const POSPage = () => {
   const [showSalesHistory, setShowSalesHistory] = React.useState(false)
   const [showSaveOrderDialog, setShowSaveOrderDialog] = React.useState(false)
   const [productQuantities, setProductQuantities] = React.useState<{ [key: string]: number }>({})
-  const [amountReceived, setAmountReceived] = React.useState(0) // New state for amount received
-  const [changeAmount, setChangeAmount] = React.useState(0) // New state for change amount
+
+  const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null)
+  const [showCustomerDialog, setShowCustomerDialog] = React.useState(false)
+  const [showNewCustomerForm, setShowNewCustomerForm] = React.useState(false)
+  const [customerSearchTerm, setCustomerSearchTerm] = React.useState("")
+  const [newCustomer, setNewCustomer] = React.useState({
+    name: "",
+    phone: "",
+    address: "",
+  })
+
+  const [editingItem, setEditingItem] = useState<CartItem | null>(null)
+  const [editPrice, setEditPrice] = useState("")
+  const [editDiscount, setEditDiscount] = useState("")
+  const [editDiscountType, setEditDiscountType] = useState<"percent" | "amount">("amount")
+  const [swipedItemId, setSwipedItemId] = useState<string | null>(null)
+
+  const [customers, setCustomers] = React.useState<Customer[]>([
+    {
+      id: "1",
+      name: "ปุนิม",
+      phone: "0980157529",
+      address: "123 ถนนสุขุมวิท กรุงเทพฯ",
+      email: "punimmiki@gmail.com",
+    },
+    {
+      id: "2",
+      name: "สมชาย ใจดี",
+      phone: "0812345678",
+      address: "456 ถนนพหลโยธิน กรุงเทพฯ",
+    },
+    {
+      id: "3",
+      name: "สมหญิง รักสะอาด",
+      phone: "0887654321",
+      address: "789 ถนนรัชดาภิเษก กรุงเทพฯ",
+    },
+  ])
+
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false)
 
   // Filter products based on search and category
   const filteredProducts = products
@@ -347,7 +392,39 @@ export const POSPage = () => {
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
       return matchesSearch && matchesCategory && product.stock > 0
     })
-    .sort((a, b) => a.name.localeCompare(b.name)) // Add this line for A-Z sorting
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  const filteredCustomers = customers.filter(
+    (customer) =>
+      customer.name.toLowerCase().includes(customerSearchTerm.toLowerCase()) ||
+      customer.phone.includes(customerSearchTerm),
+  )
+
+  const handleSelectCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setShowCustomerDialog(false)
+    setCustomerSearchTerm("")
+  }
+
+  const handleAddNewCustomer = () => {
+    if (newCustomer.name && newCustomer.phone) {
+      const customer: Customer = {
+        id: Date.now().toString(),
+        name: newCustomer.name,
+        phone: newCustomer.phone,
+        address: newCustomer.address,
+      }
+      setCustomers([customer, ...customers])
+      setSelectedCustomer(customer)
+      setNewCustomer({ name: "", phone: "", address: "" })
+      setShowNewCustomerForm(false)
+      setShowCustomerDialog(false)
+    }
+  }
+
+  const handleRemoveCustomer = () => {
+    setSelectedCustomer(null)
+  }
 
   // Add product to cart
   const addToCart = (product: (typeof products)[0]) => {
@@ -433,6 +510,7 @@ export const POSPage = () => {
       paymentMethod,
       discount,
       discountType,
+      customerId: selectedCustomer?.id, // Added customer ID to saved order
     }
 
     setSavedOrders([...savedOrders, newSavedOrder])
@@ -460,15 +538,12 @@ export const POSPage = () => {
   const discountAmount = discountType === "percent" ? (subtotal * discount) / 100 : discount
   const total = subtotal - discountAmount
 
-  // Handle sale confirmation
   const handleConfirmSale = () => {
     if (cartItems.length === 0) return
-    // Removed the validation for amountReceived < total for cash payments
-    // if (paymentMethod === "cash" && amountReceived < total) {
-    //   alert("จำนวนเงินที่รับไม่เพียงพอ") // Or use a more sophisticated toast/dialog
-    //   return
-    // }
+    setShowPaymentPage(true)
+  }
 
+  const handlePaymentComplete = () => {
     const saleRecord: SaleRecord = {
       id: `SALE-${Date.now()}`,
       items: [...cartItems],
@@ -479,10 +554,16 @@ export const POSPage = () => {
       paymentMethod,
       timestamp: new Date(),
       customerNotes,
+      customerId: selectedCustomer?.id,
     }
 
     setSalesHistory([saleRecord, ...salesHistory])
     setShowReceiptPreview(true)
+    setShowPaymentPage(false)
+  }
+
+  const handleQuickAmount = (amount: number) => {
+    setAmountReceived(amount)
   }
 
   // Handle print receipt
@@ -492,149 +573,492 @@ export const POSPage = () => {
     setShowReceiptPreview(false)
   }
 
-  // Calculate change amount
   React.useEffect(() => {
-    setChangeAmount(amountReceived - total)
-  }, [amountReceived, total])
+    if (paymentMethod === "cash") {
+      setChangeAmount(Math.max(0, amountReceived - total))
+    } else {
+      setChangeAmount(0)
+    }
+  }, [amountReceived, total, paymentMethod])
+
+  const editItem = (item: CartItem) => {
+    setEditingItem(item)
+    setEditPrice(item.price.toString())
+    setEditDiscount("0")
+    setEditDiscountType("amount")
+  }
+
+  const saveEditedItem = () => {
+    if (!editingItem) return
+
+    const newPrice = Number.parseFloat(editPrice) || editingItem.price
+    const discount = Number.parseFloat(editDiscount) || 0
+
+    let finalPrice = newPrice
+    if (discount > 0) {
+      if (editDiscountType === "percent") {
+        finalPrice = newPrice * (1 - discount / 100)
+      } else {
+        finalPrice = Math.max(0, newPrice - discount)
+      }
+    }
+
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === editingItem.id ? { ...item, price: finalPrice, total: finalPrice * item.quantity } : item,
+      ),
+    )
+
+    setEditingItem(null)
+    setEditPrice("")
+    setEditDiscount("")
+  }
+
+  if (showPaymentPage) {
+    return (
+      <div className="h-screen bg-slate-50 flex">
+        {/* Left Side - Authentic Thai Receipt */}
+        <div className="w-[35%] bg-white p-3 border-r border-slate-200 overflow-y-auto">
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              onClick={() => setShowPaymentPage(false)}
+              className="p-2 hover:bg-slate-100 rounded-full"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Authentic Thai Receipt Format */}
+          <div className="font-mono text-center space-y-1 mb-3">
+            <div className="text-sm font-bold">บจก.ทราย 999 ซีฟู้ด (โกดัง)</div>
+            <div className="text-xs">132 ต.ช้างคลาน อ.เมืองเชียงใหม่, เชียงใหม่, 50300</div>
+            <div className="text-xs">โทรศัพท์: 0864047004</div>
+          </div>
+
+          <div className="text-center text-sm font-bold mb-2">ใบเสร็จ</div>
+          <div className="border-t border-dotted border-slate-400 mb-2"></div>
+
+          <div className="font-mono text-xs space-y-1 mb-2">
+            <div className="flex justify-between">
+              <span>เลขที่:</span>
+              <span>{String(Date.now()).slice(-6)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>สั่งกลับบ้าน:</span>
+              <span className="font-medium">{selectedCustomer?.name || "ลูก"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>ชื่อพนักงาน:</span>
+              <span></span>
+            </div>
+            <div className="flex justify-between">
+              <span>เวลา:</span>
+              <span>
+                {new Date()
+                  .toLocaleString("th-TH", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                  .replace(",", "")}
+              </span>
+            </div>
+          </div>
+
+          <div className="border-t border-dotted border-slate-400 mb-2"></div>
+
+          {/* Items Header */}
+          <div className="font-mono text-xs flex justify-between mb-1">
+            <span className="w-[50%]">สินค้า</span>
+            <span className="w-[15%] text-center">Qty</span>
+            <span className="w-[17%] text-right">ราคา</span>
+            <span className="w-[18%] text-right">ราคารวม</span>
+          </div>
+
+          {/* Order Items */}
+          <div className="font-mono text-xs space-y-1 mb-2">
+            {cartItems.map((item, index) => (
+              <div key={item.id}>
+                <div className="flex justify-between">
+                  <span className="w-[50%]">
+                    {index + 1}. {item.name}
+                  </span>
+                  <span className="w-[15%] text-center">{item.quantity}</span>
+                  <span className="w-[17%] text-right">{item.price.toFixed(2)}</span>
+                  <span className="w-[18%] text-right">{(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="font-mono text-xs mb-2">
+            <div className="text-center">ยอดรวม</div>
+          </div>
+
+          <div className="border-t border-dotted border-slate-400 mb-2"></div>
+
+          {/* Totals */}
+          <div className="font-mono text-xs space-y-1">
+            <div className="flex justify-between">
+              <span>ทั้งหมด</span>
+              <span>฿{total.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>เงินสด</span>
+              <span>
+                ฿{paymentMethod === "cash" && amountReceived > 0 ? amountReceived.toFixed(2) : total.toFixed(2)}
+              </span>
+            </div>
+            {paymentMethod === "cash" && changeAmount > 0 && (
+              <div className="flex justify-between">
+                <span>เงินทอน</span>
+                <span>฿{changeAmount.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-dotted border-slate-400 mt-2 mb-2"></div>
+
+          <div className="font-mono text-xs text-center space-y-1">
+            <div>เลขบัญชี 1833766135 ธ.กสิกร</div>
+            <div>ชื่อบัญชี บจก.ทราย999ซีฟู้ด</div>
+            <div>ขอบคุณค่ะ</div>
+          </div>
+        </div>
+
+        {/* Payment Section - 65% */}
+        <div className="w-[65%] bg-white p-6 flex flex-col">
+          <div className="text-center mb-8">
+            <div className="text-4xl font-bold text-slate-800 mb-2">฿{total.toFixed(2)}</div>
+            <div className="text-slate-500 text-lg">ยอดที่ต้องชำระ</div>
+          </div>
+
+          {/* Payment Method Selection */}
+          <div className="mb-8">
+            <div className="grid grid-cols-3 gap-4">
+              <Button
+                onClick={() => setPaymentMethod("cash")}
+                variant={null}
+                className={`h-20 rounded-lg flex flex-col items-center justify-center space-y-2 transition-all duration-200
+    ring-0 outline-none shadow-none focus:outline-none focus:ring-0 active:ring-0 ${
+      paymentMethod === "cash"
+        ? "bg-blue-50 text-blue-600 border border-blue-200"
+        : "bg-slate-50 text-slate-600 border border-slate-200"
+    }`}
+              >
+                <Banknote className={`w-6 h-6 ${paymentMethod === "cash" ? "text-blue-600" : "text-slate-500"}`} />
+                <span className="text-sm font-medium">เงินสด</span>
+              </Button>
+
+              <Button
+                onClick={() => setPaymentMethod("qr")}
+                variant={null}
+                className={`h-20 rounded-lg flex flex-col items-center justify-center space-y-2 transition-all duration-200
+    ring-0 outline-none shadow-none focus:outline-none focus:ring-0 active:ring-0 ${
+      paymentMethod === "qr"
+        ? "bg-blue-50 text-blue-600 border border-blue-200"
+        : "bg-slate-50 text-slate-600 border border-slate-200"
+    }`}
+              >
+                <QrCode className={`w-6 h-6 ${paymentMethod === "qr" ? "text-blue-600" : "text-slate-500"}`} />
+                <span className="text-sm font-medium">QR Code</span>
+              </Button>
+
+              <Button
+                onClick={() => setPaymentMethod("transfer")}
+                variant={null}
+                className={`h-20 rounded-lg flex flex-col items-center justify-center space-y-2 transition-all duration-200
+    ring-0 outline-none shadow-none focus:outline-none focus:ring-0 active:ring-0 ${
+      paymentMethod === "transfer"
+        ? "bg-blue-50 text-blue-600 border border-blue-200"
+        : "bg-slate-50 text-slate-600 border border-slate-200"
+    }`}
+              >
+                <div
+                  className={`w-6 h-6 flex items-center justify-center ${
+                    paymentMethod === "transfer" ? "text-blue-600" : "text-slate-500"
+                  }`}
+                >
+                  <span className="text-xl font-bold">...</span>
+                </div>
+                <span className="text-sm font-medium">อื่น ๆ</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Cash Payment Interface */}
+          {paymentMethod === "cash" && (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-lg font-medium text-slate-700 mb-4 flex items-center gap-2">
+                  <Banknote className="w-5 h-5 text-slate-600" />
+                  จำนวนเงินที่รับ
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={amountReceived || ""}
+                    onChange={(e) => setAmountReceived(Number(e.target.value))}
+                    className="w-full text-2xl font-semibold text-center py-4 bg-transparent border-0 border-b border-slate-300 focus:border-blue-500 focus:outline-none transition-colors duration-200"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              {/* Quick Amount Buttons */}
+              <div className="grid grid-cols-3 gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => handleQuickAmount(total)}
+                  className="h-14 rounded-lg text-lg font-medium border hover:bg-slate-50"
+                >
+                  ฿{total.toFixed(2)}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleQuickAmount(Math.ceil(total / 100) * 100)}
+                  className="h-14 rounded-lg text-lg font-medium border hover:bg-slate-50"
+                >
+                  ฿{(Math.ceil(total / 100) * 100).toFixed(2)}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleQuickAmount(Math.ceil(total / 500) * 500)}
+                  className="h-14 rounded-lg text-lg font-medium border hover:bg-slate-50"
+                >
+                  ฿{(Math.ceil(total / 500) * 500).toFixed(2)}
+                </Button>
+              </div>
+
+              {/* Change Display */}
+              {amountReceived > 0 && (
+                <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-medium text-slate-600">เงินทอน</span>
+                    <span className="text-3xl font-bold text-black">฿{changeAmount.toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Transfer/Credit Payment Interface */}
+          {(paymentMethod === "transfer" || paymentMethod === "credit") && (
+            <div className="bg-white p-4 rounded-lg border text-center">
+              <div className="text-lg font-medium text-slate-800 mb-2">
+                {paymentMethod === "transfer" ? "วิธีการชำระเงินอื่น ๆ" : "ชำระด้วยเครดิต"}
+              </div>
+              <div className="text-sm text-slate-600">
+                {paymentMethod === "transfer" ? "กรุณาเลือกวิธีการชำระเงินอื่น ๆ" : "ชำระด้วยบัตรเครดิต/เดบิต"}
+              </div>
+            </div>
+          )}
+
+          {/* Complete Payment Button */}
+          <Button
+            onClick={handlePaymentComplete}
+            disabled={paymentMethod === "cash" && amountReceived < total}
+            className="w-full h-16 mt-auto bg-[#378afa] hover:bg-blue-700 text-white font-semibold rounded-lg text-xl transition-all duration-200"
+          >
+            ยืนยันการชำระเงิน
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="bg-slate-50 min-h-full">
+    <div className="bg-slate-50 h-screen overflow-hidden">
       {/* Header - แบ่งเป็น 2 column */}
-      <div className="bg-white shadow-sm border-b border-slate-200">
+      <div className="bg-white shadow-sm border-b border-slate-200 flex-shrink-0">
         <div className="flex flex-col md:flex-row">
-          {/* Left side - Search bar เต็มพื้นที่ (สำหรับฝั่งสินค้า) */}
-          <div className="flex-1 p-3 md:p-4 lg:p-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="ค้นหาสินค้าทะเล..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 h-10 md:h-11 text-sm rounded-full border-slate-200 bg-slate-50 focus:bg-white transition-colors w-full"
-              />
+          {/* Left side - Category dropdown and Search bar */}
+          <div className="w-full lg:w-[65%] p-2 md:p-3">
+            <div className="flex gap-3 items-center">
+              {/* Category Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-8 md:h-9 px-3 rounded-full hover:bg-slate-50 transition-colors whitespace-nowrap border-0"
+                  >
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const selectedCat = categories.find((cat) => cat.id === selectedCategory)
+                        const IconComponent = selectedCat?.icon || Fish
+                        return (
+                          <>
+                            <IconComponent className="w-4 h-4 text-blue-500" />
+                            <span className="text-base">{selectedCat?.name || "ทั้งหมด"}</span>
+                            <ChevronDown className="w-4 h-4" />
+                          </>
+                        )
+                      })()}
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48 border-0 shadow-lg">
+                  {categories
+                    .filter((category) => !category.name.includes("......"))
+                    .map((category) => {
+                      const IconComponent = category.icon
+                      return (
+                        <DropdownMenuItem
+                          key={category.id}
+                          onClick={() => setSelectedCategory(category.id)}
+                          className="flex items-center gap-3 p-3 cursor-pointer hover:bg-slate-50"
+                        >
+                          <div className="flex-shrink-0">
+                            <IconComponent className="w-4 h-4 text-blue-500" />
+                          </div>
+                          <span className="font-medium text-sm text-slate-700">{category.name}</span>
+                        </DropdownMenuItem>
+                      )
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <div className="flex-1 flex justify-end">
+                <div className="relative">
+                  {!isSearchExpanded ? (
+                    // Search icon only - positioned at far right of left panel
+                    <button
+                      onClick={() => setIsSearchExpanded(true)}
+                      className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                    >
+                      <Search className="h-4 w-4 text-slate-500" />
+                    </button>
+                  ) : (
+                    // Expanded search bar
+                    <div className="relative w-80">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Input
+                        placeholder="ค้นหาสินค้าทะเล..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onBlur={() => {
+                          if (!searchTerm) {
+                            setIsSearchExpanded(false)
+                          }
+                        }}
+                        autoFocus
+                        className="pl-10 pr-10 py-2 h-9 text-sm bg-white border border-slate-200 rounded-full placeholder:text-slate-400 w-full focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                      />
+                      <button
+                        onClick={() => {
+                          setSearchTerm("")
+                          setIsSearchExpanded(false)
+                        }}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-slate-100 rounded-full transition-colors"
+                      >
+                        <X className="h-3 w-3 text-slate-400" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Right side - ปุ่มสำหรับฝั่ง cart */}
-          <div className="w-full md:w-72 lg:w-80 xl:w-96 p-3 md:p-4 lg:p-6 flex items-center justify-end gap-2">
+          <div className="w-full lg:w-[35%] p-2 md:p-3 flex items-center justify-end gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="h-10 md:h-11 px-3 rounded-full border-slate-200 hover:bg-slate-50 bg-white text-xs whitespace-nowrap"
+              className="h-8 md:h-9 px-2 rounded-lg border-slate-200 hover:bg-slate-50 bg-white text-xs whitespace-nowrap"
               onClick={() => setShowSavedOrders(true)}
             >
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-4 h-4 mr-1" />
               รายการพักซื้อ {savedOrders.length > 0 && `(${savedOrders.length})`}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="h-10 md:h-11 px-3 rounded-full border-slate-200 hover:bg-slate-50 bg-white text-xs whitespace-nowrap"
+              className="h-8 md:h-9 px-2 rounded-lg border-slate-200 hover:bg-slate-50 bg-white text-xs whitespace-nowrap"
               onClick={() => setShowSalesHistory(true)}
             >
-              <BarChart3 className="w-4 h-4 mr-2" />
+              <BarChart3 className="w-4 h-4 mr-1" />
               ประวัติขาย
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-70px)] md:min-h-[calc(100vh-80px)]">
+      {/* Main Content */}
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-60px)] md:h-[calc(100vh-65px)] overflow-hidden">
         {/* Left Panel - Products */}
-        <div className="flex-1 p-3 md:p-4 lg:p-6">
-          {/* Category Section */}
-          <div className="mb-4 md:mb-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 lg:gap-4 mb-4 md:mb-6">
-              {categories.map((category) => {
-                const IconComponent = category.icon
-                return (
-                  <Card
-                    key={category.id}
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-md border-0 shadow-sm ${
-                      selectedCategory === category.id ? "ring-2 ring-blue-200" : "hover:bg-slate-50"
-                    } bg-white overflow-hidden`}
-                    onClick={() => setSelectedCategory(category.id)}
-                  >
-                    <CardContent className="p-2 md:p-3 lg:p-4 text-center h-full flex flex-col justify-center">
-                      <div className={`mb-1 md:mb-2 lg:mb-3 flex justify-center text-blue-500`}>
-                        <IconComponent />
-                      </div>
-                      <h3 className={`font-semibold mb-1 text-xs md:text-sm text-slate-700 truncate`}>
-                        {category.name}
-                      </h3>
-                      <p className="text-xs text-slate-500 hidden md:block truncate">{category.subtitle}</p>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          </div>
-
+        <div className="w-full lg:w-[65%] bg-white border-r border-slate-200 p-2 lg:p-4 flex-1 lg:flex-none overflow-hidden">
           {/* Product Grid */}
-          <ScrollArea className="h-[calc(100vh-180px)] md:h-[calc(100vh-220px)] lg:h-[calc(100vh-260px)]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-4 lg:gap-6 p-2 md:p-4 pt-4 md:pt-8 pb-4 md:pb-8">
-              {filteredProducts.map((product) => (
-                <Card
+          <ScrollArea className="h-full">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 p-2">
+              {filteredProducts.slice(0, 25).map((product) => (
+                <div
                   key={product.id}
-                  className="group hover:shadow-xl hover:scale-[1.02] hover:border-2 hover:border-blue-200 transition-all duration-300 border-2 border-transparent shadow-md bg-white rounded-2xl overflow-hidden"
+                  className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-slate-200 shadow-md bg-white rounded-xl overflow-hidden cursor-pointer h-48 md:h-52 flex flex-col"
+                  onClick={() => addToCart(product)}
                 >
-                  <div className="relative overflow-hidden">
+                  <div className="relative overflow-hidden h-32 md:h-36 flex-shrink-0">
                     <img
-                      src={product.image || "/placeholder.svg"}
+                      src={product.image || "/placeholder.svg?height=144&width=160&query=aquatic product"}
                       alt={product.name}
-                      className="w-full h-32 md:h-40 lg:h-48 object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
-                        target.src = "/placeholder.svg?height=192&width=320"
+                        target.src = "/aquatic-product.png"
                       }}
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
-                  <CardContent className="p-3 md:p-4 lg:p-6">
-                    <h3 className="font-semibold text-sm md:text-base mb-2 md:mb-3 text-slate-800 leading-tight line-clamp-2 min-h-[2.5rem] md:min-h-[3rem]">
+                  <div className="px-2 py-2 flex-1 flex flex-col justify-between">
+                    <h3 className="text-xs md:text-sm font-medium text-slate-800 leading-tight mb-1 line-clamp-1">
                       {product.name}
                     </h3>
-                    <div className="flex flex-col mb-3 md:mb-4">
-                      {" "}
-                      {/* Changed to flex-col */}
-                      <div className="flex items-baseline gap-1">
-                        {" "}
-                        {/* Group price and unit */}
-                        <span className="text-base md:text-lg lg:text-xl font-bold text-slate-800">
-                          ฿{product.price}
-                        </span>
-                        <span className="text-xs md:text-sm text-slate-500">/{product.unit}</span>
-                      </div>
-                      {product.originalPrice && (
-                        <span className="text-xs md:text-sm text-slate-400 line-through">฿{product.originalPrice}</span>
-                      )}
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xs md:text-sm font-semibold text-blue-600">฿{product.price}</span>
+                      <span className="text-xs md:text-sm text-slate-500">/{product.unit}</span>
                     </div>
-                    <Button
-                      onClick={() => addToCart(product)}
-                      className="w-full bg-[#eff7ff] text-[#378afa] hover:bg-blue-100 hover:text-blue-700 hover:border-blue-300 rounded-2xl py-2 md:py-3 text-xs md:text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
-                    >
-                      เพิ่มลงตะกร้า
-                    </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           </ScrollArea>
         </div>
 
         {/* Right Panel - Cart */}
-        <div className="w-full lg:w-72 xl:w-80 2xl:w-96 bg-white shadow-lg border-t lg:border-t-0 lg:border-l border-slate-200 min-h-[50vh] lg:min-h-full flex-shrink-0">
+        <div className="w-full lg:w-[35%] bg-white shadow-lg border-t lg:border-t-0 lg:border-sm border-slate-200 flex-shrink-0 overflow-hidden">
           <div className="p-3 md:p-4 lg:p-6 h-full flex flex-col bg-white">
-            {/* Cart Header */}
             <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h2 className="text-base md:text-lg font-semibold text-slate-800">ตะกร้าสินค้า</h2>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCustomerDialog(true)}
+                  className="h-8 rounded-lg border-slate-200 hover:bg-slate-50 bg-white text-sm justify-start px-3"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  {selectedCustomer ? selectedCustomer.name : "เลือกลูกค้า"}
+                </Button>
+                {selectedCustomer && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleRemoveCustomer}
+                    className="h-8 w-8 text-red-500 hover:bg-red-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
                 {cartItems.length} รายการ
               </div>
             </div>
 
             {/* Cart Items */}
-            <div className="flex-1 mb-4 md:mb-6">
-              <ScrollArea className="h-full max-h-[200px] md:max-h-[300px] lg:max-h-[400px] xl:max-h-[500px]">
+            <div className="flex-1 min-h-0">
+              <ScrollArea className="h-[250px] lg:h-full">
                 {cartItems.length === 0 ? (
                   <div className="flex items-center justify-center h-24 md:h-32 text-slate-500">
                     <div className="text-center">
@@ -643,59 +1067,106 @@ export const POSPage = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-3 md:space-y-4">
+                  <div className="space-y-2 mb-2">
                     {cartItems.map((item) => (
-                      <div key={item.id} className="flex items-start gap-2 md:gap-3 p-2 md:p-3 bg-slate-50 rounded-lg">
-                        <img
-                          src={item.image || "/placeholder.svg"}
-                          alt={item.name}
-                          className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover flex-shrink-0"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.src = "/placeholder.svg?height=48&width=48"
+                      <div key={item.id} className="relative overflow-hidden rounded-lg">
+                        <div
+                          className={`flex items-center justify-between p-2 bg-white transition-transform duration-300 ease-out ${
+                            swipedItemId === item.id ? "-translate-x-16" : "translate-x-0"
+                          }`}
+                          onMouseDown={(e) => {
+                            const startX = e.clientX
+                            const handleMouseMove = (e: MouseEvent) => {
+                              const deltaX = startX - e.clientX
+                              if (deltaX > 50) {
+                                setSwipedItemId(item.id)
+                              } else if (deltaX < -20) {
+                                setSwipedItemId(null)
+                              }
+                            }
+                            const handleMouseUp = () => {
+                              document.removeEventListener("mousemove", handleMouseMove)
+                              document.removeEventListener("mouseup", handleMouseUp)
+                            }
+                            document.addEventListener("mousemove", handleMouseMove)
+                            document.addEventListener("mouseup", handleMouseUp)
                           }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-xs md:text-sm text-slate-800 leading-tight mb-1 line-clamp-2">
-                            {item.name}
-                          </h4>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-blue-600 font-semibold text-xs md:text-sm">฿{item.price}</span>
-                            <span className="text-xs text-slate-500">/{item.unit}</span>
+                          onTouchStart={(e) => {
+                            const startX = e.touches[0].clientX
+                            const handleTouchMove = (e: TouchEvent) => {
+                              const deltaX = startX - e.touches[0].clientX
+                              if (deltaX > 50) {
+                                setSwipedItemId(item.id)
+                              } else if (deltaX < -20) {
+                                setSwipedItemId(null)
+                              }
+                            }
+                            const handleTouchEnd = () => {
+                              document.removeEventListener("touchmove", handleTouchMove)
+                              document.removeEventListener("touchend", handleTouchEnd)
+                            }
+                            document.addEventListener("touchmove", handleTouchMove)
+                            document.addEventListener("touchend", handleTouchEnd)
+                          }}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm  text-slate-800 truncate">
+                                {item.name} x {item.quantity}
+                              </span>
+                              <span className="text-xs font-semibold text-blue-600 ml-2">
+                                ฿{Math.round(item.total)}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1 md:gap-2">
+                          {swipedItemId !== item.id && (
+                            <div className="flex items-center gap-1 ml-2">
                               <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-5 w-5 md:h-6 md:w-6 rounded-full border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
+                                className="h-8 w-8 rounded-full border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
                               >
-                                <Minus className="h-2 w-2 md:h-3 md:w-3" />
+                                <Minus className="h-6 w-6" />
                               </Button>
-                              <span className="w-4 md:w-6 text-center text-xs font-semibold">{item.quantity}</span>
                               <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-5 w-5 md:h-6 md:w-6 rounded-full border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
+                                className="h-8 w-8 rounded-full border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
                               >
-                                <Plus className="h-2 w-2 md:h-3 md:w-3" />
+                                <Plus className="h-6 w-6" />
                               </Button>
                             </div>
-                            <span className="text-blue-600 font-semibold text-xs md:text-sm">
-                              ฿{item.total.toFixed(2)}
-                            </span>
-                          </div>
+                          )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 md:h-6 md:w-6 text-red-500 hover:bg-red-50 flex-shrink-0"
-                          onClick={() => removeFromCart(item.id)}
-                        >
-                          <X className="h-2 w-2 md:h-3 md:w-3" />
-                        </Button>
+
+                        {swipedItemId === item.id && (
+                          <div className="absolute right-0 top-0 h-full flex items-center bg-slate-100 pr-2 gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-12 w-12 md:h-14 md:w-14 text-blue-600 hover:bg-blue-50 rounded-lg"
+                              onClick={() => {
+                                editItem(item)
+                                setSwipedItemId(null)
+                              }}
+                            >
+                              <Edit className="h-5 w-5 md:h-6 md:w-6" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-12 w-12 md:h-14 md:w-14 text-red-500 hover:bg-red-50 rounded-lg"
+                              onClick={() => {
+                                removeFromCart(item.id)
+                                setSwipedItemId(null)
+                              }}
+                            >
+                              <Trash2 className="h-5 w-5 md:h-6 md:w-6" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -703,19 +1174,18 @@ export const POSPage = () => {
               </ScrollArea>
             </div>
 
-            {/* Summary */}
-            <div className="space-y-2 md:space-y-3 mb-4 md:mb-6 pt-3 md:pt-4 border-t border-slate-200">
+            <div className="flex-shrink-0 mt-0">
               {/* Discount Section */}
-              <div className="space-y-2">
+              <div className="space-y-3 mt-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs md:text-sm font-medium text-slate-700">ส่วนลด</span>
+                  <span className="text-sm font-medium text-slate-700">ส่วนลด</span>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
+                <div className="space-y-3">
+                  <div className="flex gap-3">
                     <Button
                       variant={discountType === "amount" ? "default" : "outline"}
                       size="sm"
-                      className={`flex-1 h-8 text-xs rounded-lg transition-colors ${
+                      className={`flex-1 h-9 text-xs rounded-lg transition-colors ${
                         discountType === "amount"
                           ? "bg-[#378afa] text-white hover:bg-[#378afa]"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50 bg-white"
@@ -727,7 +1197,7 @@ export const POSPage = () => {
                     <Button
                       variant={discountType === "percent" ? "default" : "outline"}
                       size="sm"
-                      className={`flex-1 h-8 text-xs rounded-lg transition-colors ${
+                      className={`flex-1 h-9 text-xs rounded-lg transition-colors ${
                         discountType === "percent"
                           ? "bg-[#378afa] text-white hover:bg-[#378afa]"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50 bg-white"
@@ -737,7 +1207,7 @@ export const POSPage = () => {
                       %
                     </Button>
                   </div>
-                  <div className="relative">
+                  <div className="relative mt-3">
                     <Input
                       type="number"
                       placeholder={discountType === "percent" ? "ใส่เปอร์เซ็นต์ (0-100)" : "ใส่จำนวนเงิน"}
@@ -746,7 +1216,7 @@ export const POSPage = () => {
                         const value = Number(e.target.value)
                         setDiscount(value < 0 ? 0 : value) // Ensure value is not negative
                       }}
-                      className="h-8 text-xs pr-12"
+                      className="h-9 text-xs pr-12"
                       min="0" // Add min attribute
                       max={discountType === "percent" ? 100 : undefined}
                     />
@@ -757,177 +1227,191 @@ export const POSPage = () => {
                 </div>
               </div>
 
-              <div className="flex justify-between text-xs md:text-sm">
+              <div className="flex justify-between text-xs mt-4">
                 <span className="text-slate-600">ยอดรวม</span>
-                <span className="font-semibold text-slate-800">฿{subtotal.toFixed(2)}</span>
+                <span className="font-semibold text-slate-800">฿{Math.round(subtotal)}</span>
               </div>
               {discountAmount > 0 && (
-                <div className="flex justify-between text-xs md:text-sm">
+                <div className="flex justify-between text-xs">
                   <span className="text-slate-600">ส่วนลด</span>
-                  <span className="font-semibold text-red-600">-฿{discountAmount.toFixed(2)}</span>
+                  <span className="font-semibold text-red-600">-฿{Math.round(discountAmount)}</span>
                 </div>
               )}
-              <div className="border-t border-dashed border-slate-300 pt-2 md:pt-3">
-                <div className="flex justify-between text-sm md:text-base font-bold">
+              <div className="border-t border-dashed border-slate-300 pt-2">
+                <div className="flex justify-between text-sm font-bold">
                   <span className="text-slate-800">ยอดสุทธิ</span>
-                  <span className="text-blue-600">฿{total.toFixed(2)}</span>
+                  <span className="text-blue-600">฿{Math.round(total)}</span>
                 </div>
               </div>
-            </div>
 
-            {/* Payment Method */}
-            <div className="mb-4 md:mb-6">
-              <h3 className="text-xs md:text-sm font-medium text-slate-700 mb-2 md:mb-3">วิธีการชำระเงิน</h3>
-              <div className="grid grid-cols-3 gap-1 md:gap-2">
+              {/* Action Buttons */}
+              <div className="space-y-2 mt-4">
                 <Button
-                  variant={paymentMethod === "cash" ? "default" : "outline"}
-                  className={`flex flex-col items-center gap-1 md:gap-2 h-12 md:h-16 rounded-lg border-0 text-xs transition-colors ${
-                    paymentMethod === "cash"
-                      ? "bg-[#eff7ff] text-[#378afa] hover:bg-blue-200"
-                      : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                  }`}
-                  onClick={() => {
-                    setPaymentMethod("cash")
-                    setAmountReceived(0) // Reset amount received when switching to cash
-                  }}
-                >
-                  <Wallet className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="truncate">เงินสด</span>
-                </Button>
-                <Button
-                  variant={paymentMethod === "card" ? "default" : "outline"}
-                  className={`flex flex-col items-center gap-1 md:gap-2 h-12 md:h-16 rounded-lg border-0 text-xs transition-colors ${
-                    paymentMethod === "card"
-                      ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                      : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                  }`}
-                  onClick={() => {
-                    setPaymentMethod("card")
-                    setAmountReceived(0) // Reset amount received when switching from cash
-                  }}
-                >
-                  <CreditCard className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="truncate">บัตรเครดิต</span>
-                </Button>
-                <Button
-                  variant={paymentMethod === "qr" ? "default" : "outline"}
-                  className={`flex flex-col items-center gap-1 md:gap-2 h-12 md:h-16 rounded-lg border-0 text-xs transition-colors ${
-                    paymentMethod === "qr"
-                      ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                      : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                  }`}
-                  onClick={() => {
-                    setPaymentMethod("qr")
-                    setAmountReceived(0) // Reset amount received when switching from cash
-                  }}
-                >
-                  <QrCode className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="truncate">QR Code</span>
-                </Button>
-              </div>
-
-              {paymentMethod === "cash" && (
-                <div className="mt-4 space-y-3">
-                  <div className="text-xs md:text-sm font-medium text-slate-700">รับเงิน:</div>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      placeholder="จำนวนเงินที่รับ"
-                      value={amountReceived === 0 ? "" : amountReceived}
-                      onChange={(e) => {
-                        const value = Number(e.target.value)
-                        setAmountReceived(value < 0 ? 0 : value)
-                      }}
-                      className="h-10 text-sm pr-12"
-                      min="0"
-                    />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-slate-500 font-medium">
-                      ฿
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[100, 500, 1000, 2000, 5000].map((amount) => (
-                      <Button
-                        key={amount}
-                        variant="outline"
-                        className="h-10 rounded-lg border-slate-200 hover:bg-slate-50 bg-white text-xs md:text-sm"
-                        onClick={() => setAmountReceived((prev) => prev + amount)}
-                      >
-                        ฿{amount.toLocaleString()}
-                      </Button>
-                    ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full h-10 rounded-lg border-slate-200 hover:bg-slate-50 bg-white text-sm font-semibold"
-                    onClick={() => setAmountReceived(total)}
-                  >
-                    จ่ายพอดี ฿{total.toFixed(2)}
-                  </Button>
-                  <div className="flex justify-between text-sm md:text-base font-bold pt-2 border-t border-dashed border-slate-300">
-                    <span className="text-slate-800">เงินทอน</span>
-                    <span className={`text-blue-600 ${changeAmount < 0 ? "text-red-600" : ""}`}>
-                      ฿{changeAmount.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-2 md:space-y-3">
-              <Button
-                onClick={handleConfirmSale}
-                className="w-full h-10 md:h-12 bg-[#378afa] hover:bg-blue-700 text-white font-semibold rounded-full text-xs md:text-sm transition-colors"
-                disabled={cartItems.length === 0}
-              >
-                ยืนยันการสั่งซื้อ
-              </Button>
-              <div className="grid grid-cols-2 gap-2 md:gap-3">
-                <AlertDialog open={showSaveOrderDialog} onOpenChange={setShowSaveOrderDialog}>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="h-8 md:h-10 rounded-full border-slate-200 hover:bg-slate-50 bg-white text-xs transition-colors"
-                      disabled={cartItems.length === 0}
-                    >
-                      <Save className="w-2 h-2 md:w-3 md:h-3 mr-1" />
-                      <span className="truncate">พักคำสั่งซื้อ</span>
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-3xl">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-slate-800">พักการซื้อ</AlertDialogTitle>
-                      <AlertDialogDescription className="text-slate-600">
-                        พักการซื้อแล้ว คุณสามารถกลับมาดำเนินการต่อได้ในภายหลัง
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="rounded-full">ยกเลิก</AlertDialogCancel>
-                      <AlertDialogAction onClick={saveOrder} className="rounded-full bg-blue-600 hover:bg-blue-700">
-                        ตกลง
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-                <Button
-                  variant="outline"
-                  onClick={clearCart}
-                  className="h-8 md:h-10 rounded-full border-slate-200 hover:bg-slate-50 bg-white text-xs transition-colors"
+                  onClick={handleConfirmSale}
+                  className="w-full h-10 md:h-12 bg-[#378afa] hover:bg-blue-700 text-white font-semibold rounded-lg text-xs md:text-sm transition-colors"
                   disabled={cartItems.length === 0}
                 >
-                  <X className="w-2 h-2 md:w-3 md:h-3 mr-1" />
-                  <span className="truncate">ล้างตะกร้า</span>
+                  ชำระเงิน
                 </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <AlertDialog open={showSaveOrderDialog} onOpenChange={setShowSaveOrderDialog}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="h-8 md:h-10 rounded-lg border-slate-200 hover:bg-slate-50 bg-white text-xs transition-colors"
+                        disabled={cartItems.length === 0}
+                      >
+                        <Save className="w-2 h-2 md:w-3 md:h-3 mr-1" />
+                        <span className="truncate">พักคำสั่งซื้อ</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="rounded-lg">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-slate-800">พักการซื้อ</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-600">
+                          พักการซื้อแล้ว คุณสามารถกลับมาดำเนินการต่อได้ในภายหลัง
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-lg">ยกเลิก</AlertDialogCancel>
+                        <AlertDialogAction onClick={saveOrder} className="rounded-lg bg-blue-600 hover:bg-blue-700">
+                          ตกลง
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <Button
+                    variant="outline"
+                    onClick={clearCart}
+                    className="h-8 md:h-10 rounded-lg border-slate-200 hover:bg-slate-50 bg-white text-xs transition-colors"
+                    disabled={cartItems.length === 0}
+                  >
+                    <Trash2 className="w-2 h-2 md:w-3 md:h-3 mr-1" />
+                    <span className="truncate">ล้างตะกร้า</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      <Dialog open={showCustomerDialog} onOpenChange={setShowCustomerDialog}>
+        <DialogContent className="max-w-md rounded-lg max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="text-center text-slate-800">เลือกลูกค้า</DialogTitle>
+          </DialogHeader>
+
+          {!showNewCustomerForm ? (
+            <div className="space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="ค้นหาลูกค้า..."
+                  value={customerSearchTerm}
+                  onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                  className="pl-10 h-10 rounded-lg"
+                />
+              </div>
+
+              {/* Add New Customer Button */}
+              <Button
+                onClick={() => setShowNewCustomerForm(true)}
+                className="w-full h-10 bg-[#378afa] hover:bg-blue-700 text-white rounded-lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                เพิ่มลูกค้าใหม่
+              </Button>
+
+              {/* Customer List */}
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                <h3 className="text-sm font-medium text-slate-600 mb-2">ลูกค้าล่าสุด</h3>
+                {filteredCustomers.map((customer) => (
+                  <div
+                    key={customer.id}
+                    onClick={() => handleSelectCustomer(customer)}
+                    className="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-slate-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-slate-800 truncate">{customer.name}</p>
+                      <p className="text-xs text-slate-500">{customer.phone}</p>
+                    </div>
+                  </div>
+                ))}
+                {filteredCustomers.length === 0 && (
+                  <div className="text-center py-4 text-slate-500">
+                    <p className="text-sm">ไม่พบลูกค้า</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Button variant="ghost" size="icon" onClick={() => setShowNewCustomerForm(false)} className="h-8 w-8">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <h3 className="font-medium text-slate-800">เพิ่มลูกค้าใหม่</h3>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block">ชื่อลูกค้า *</label>
+                  <Input
+                    placeholder="กรอกชื่อลูกค้า"
+                    value={newCustomer.name}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                    className="h-10 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block">เบอร์โทร *</label>
+                  <Input
+                    placeholder="กรอกเบอร์โทร"
+                    value={newCustomer.phone}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                    className="h-10 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block">ที่อยู่</label>
+                  <textarea
+                    placeholder="กรอกที่อยู่"
+                    value={newCustomer.address}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                    className="w-full h-20 px-3 py-2 border border-slate-200 rounded-lg resize-none text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowNewCustomerForm(false)}
+                  className="flex-1 h-10 rounded-lg"
+                >
+                  ยกเลิก
+                </Button>
+                <Button
+                  onClick={handleAddNewCustomer}
+                  disabled={!newCustomer.name || !newCustomer.phone}
+                  className="flex-1 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                >
+                  บันทึก
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Saved Orders Dialog */}
       <Dialog open={showSavedOrders} onOpenChange={setShowSavedOrders}>
-        <DialogContent className="max-w-2xl rounded-3xl max-h-[80vh] overflow-hidden">
+        <DialogContent className="max-w-2xl rounded-lg max-h-[80vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-center text-slate-800">รายการพักคำสั่งซื้อ</DialogTitle>
           </DialogHeader>
@@ -939,53 +1423,69 @@ export const POSPage = () => {
                   <p>ไม่มีรายการพักคำสั่งซื้อ</p>
                 </div>
               ) : (
-                savedOrders.map((order) => (
-                  <Card key={order.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-slate-800 truncate">{order.id}</h3>
-                          <p className="text-sm text-slate-500">{order.timestamp.toLocaleString("th-TH")}</p>
-                        </div>
-                        <div className="text-right ml-4">
-                          <p className="font-bold text-blue-600">
-                            ฿{order.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
-                          </p>
-                          <p className="text-xs text-slate-500">{order.items.length} รายการ</p>
-                        </div>
-                      </div>
-                      <div className="space-y-1 mb-3">
-                        {order.items.slice(0, 3).map((item) => (
-                          <div key={item.id} className="flex justify-between text-sm">
-                            <span className="text-slate-600 truncate flex-1 mr-2">{item.name}</span>
-                            <span className="text-slate-800 whitespace-nowrap">{item.quantity}x</span>
+                savedOrders.map((order) => {
+                  const orderCustomer = customers.find((c) => c.id === order.customerId)
+
+                  return (
+                    <Card key={order.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-slate-800 truncate">{order.id}</h3>
+                            <p className="text-sm text-slate-500">{order.timestamp.toLocaleString("th-TH")}</p>
+                            <div className="mt-1">
+                              {orderCustomer ? (
+                                <p className="text-sm text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded-md inline-block">
+                                  👤 {orderCustomer.name}
+                                </p>
+                              ) : (
+                                <p className="text-sm text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-md inline-block">
+                                  👤 ไม่ระบุลูกค้า
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        ))}
-                        {order.items.length > 3 && (
-                          <p className="text-xs text-slate-500">และอีก {order.items.length - 3} รายการ</p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 bg-transparent"
-                          onClick={() => loadSavedOrder(order)}
-                        >
-                          โหลดคำสั่งซื้อ
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:bg-red-50 bg-transparent"
-                          onClick={() => deleteSavedOrder(order.id)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                          <div className="text-right ml-4">
+                            <p className="font-bold text-blue-600">
+                              ฿{Math.round(order.items.reduce((sum, item) => sum + item.total, 0))}
+                            </p>
+                            <p className="text-xs text-slate-500">{order.items.length} รายการ</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 mb-3">
+                          {order.items.slice(0, 3).map((item) => (
+                            <div key={item.id} className="flex justify-between text-sm">
+                              <span className="text-slate-600 truncate flex-1 mr-2">{item.name}</span>
+                              <span className="text-slate-800 whitespace-nowrap">{item.quantity}x</span>
+                            </div>
+                          ))}
+                          {order.items.length > 3 && (
+                            <p className="text-xs text-slate-500">และอีก {order.items.length - 3} รายการ</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 bg-transparent"
+                            onClick={() => loadSavedOrder(order)}
+                          >
+                            โหลดคำสั่งซื้อ
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:bg-red-50 bg-transparent"
+                            onClick={() => deleteSavedOrder(order.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })
               )}
             </div>
           </ScrollArea>
@@ -1046,7 +1546,7 @@ export const POSPage = () => {
                                 ? "เงินสด"
                                 : sale.paymentMethod === "card"
                                   ? "บัตรเครดิต"
-                                  : "QR Code"}
+                                  : "โอนเงิน"}
                             </p>
                           </div>
                           <div className="text-right ml-4">
@@ -1079,116 +1579,61 @@ export const POSPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Receipt Preview Dialog */}
-      <Dialog open={showReceiptPreview} onOpenChange={setShowReceiptPreview}>
-        <DialogContent className="max-w-md rounded-3xl">
+      <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
+        <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
-            <DialogTitle className="text-center text-slate-800">ใบเสร็จรับเงิน</DialogTitle>
+            <DialogTitle className="text-lg font-semibold text-slate-800">แก้ไขสินค้า</DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 top-4 h-6 w-6"
+              onClick={() => setEditingItem(null)}
+            />
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="text-center border-b pb-4">
-              <h2 className="text-xl font-bold text-slate-800">ร้านอาหารทะเลสด</h2>
-              <p className="text-sm text-slate-600">123 ถนนสุขุมวิท กรุงเทพฯ 10110</p>
-              <p className="text-sm text-slate-600">โทร: 02-123-4567</p>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">ราคา</label>
+              <Input
+                type="number"
+                value={editPrice}
+                onChange={(e) => setEditPrice(e.target.value)}
+                className="w-full rounded-lg"
+                placeholder="ราคาสินค้า"
+              />
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-600">วันที่:</span>
-                <span className="text-slate-800">{new Date().toLocaleString("th-TH")}</span>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">ส่วนลด</label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={editDiscount}
+                  onChange={(e) => setEditDiscount(e.target.value)}
+                  className="flex-1 rounded-lg"
+                  placeholder="0"
+                />
+                <Select
+                  value={editDiscountType}
+                  onValueChange={(value: "percent" | "amount") => setEditDiscountType(value)}
+                >
+                  <SelectTrigger className="w-20 rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="amount">บาท</SelectItem>
+                    <SelectItem value="percent">%</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">การชำระ:</span>
-                <span className="text-slate-800">
-                  {paymentMethod === "cash" ? "เงินสด" : paymentMethod === "card" ? "บัตรเครดิต" : "QR Code"}
-                </span>
-              </div>
-              {paymentMethod === "cash" && amountReceived > 0 && (
-                <>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">รับเงิน:</span>
-                    <span className="text-slate-800">฿{amountReceived.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">เงินทอน:</span>
-                    <span className="text-slate-800">฿{changeAmount.toFixed(2)}</span>
-                  </div>
-                </>
-              )}
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex justify-between text-sm">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-slate-800 truncate">{item.name}</div>
-                    <div className="text-slate-500">
-                      {item.quantity} {item.unit} x ฿{item.price}
-                    </div>
-                  </div>
-                  <div className="text-slate-800 font-medium ml-2">฿{item.total.toFixed(2)}</div>
-                </div>
-              ))}
-            </div>
-            <Separator />
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-600">ยอดรวม:</span>
-                <span className="text-slate-800">฿{subtotal.toFixed(2)}</span>
-              </div>
-              {discountAmount > 0 && (
-                <div className="flex justify-between text-red-600">
-                  <span>
-                    ส่วนลด:
-                    {discountType === "percent" && discount > 0 ? ` (${discount}%)` : ""}
-                  </span>
-                  <span>-฿{discountAmount.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold text-lg border-t pt-2">
-                <span className="text-slate-800">ยอดสุทธิ:</span>
-                <span className="text-blue-600">฿{total.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="text-center text-sm text-slate-500 border-t pt-4">
-              ขอบคุณที่ใช้บริการ
-              <br />
-              โปรดตรวจสอบสินค้าก่อนรับ
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowReceiptPreview(false)}
-                className="flex-1 rounded-full border-slate-200 hover:bg-slate-50"
-              >
-                ยกเลิก
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button className="flex-1 rounded-full bg-blue-600 hover:bg-blue-700">
-                    <Printer className="w-4 h-4 mr-2" />
-                    พิมพ์ใบเสร็จ
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-3xl">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-slate-800">ยืนยันการพิมพ์ใบเสร็จ</AlertDialogTitle>
-                    <AlertDialogDescription className="text-slate-600">
-                      คุณต้องการพิมพ์ใบเสร็จและทำรายการขายใหม่ใช่หรือไม่?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="rounded-full">ยกเลิก</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handlePrintReceipt}
-                      className="rounded-full bg-blue-600 hover:bg-blue-700"
-                    >
-                      พิมพ์
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           </div>
+          <DialogFooter>
+            <Button
+              onClick={saveEditedItem}
+              className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg"
+            >
+              บันทึก
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
