@@ -833,12 +833,11 @@ export const POSPage = () => {
                 </Button>
               </div>
 
-              {/* Change Display */}
               {amountReceived > 0 && (
-                <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-medium text-slate-600">เงินทอน</span>
-                    <span className="text-3xl font-bold text-black">฿{changeAmount.toFixed(2)}</span>
+                    <span className="text-base font-medium text-slate-600">เงินทอน</span>
+                    <span className="text-xl font-bold text-black">฿{changeAmount.toFixed(2)}</span>
                   </div>
                 </div>
               )}
